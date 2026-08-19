@@ -38,10 +38,12 @@
 /* =========================================================
    BAGAJ ATÖLYESİ — hediyelikleri birleştir, bagajı doğru uçağa yükle
 
-   TAHTA TASARIMI (referans: piyasadaki merge oyunları)
-   - Hücreler birbirinden AYRIK durmuyor: aradaki boşluk hücrenin %4,5'i.
-     Önce %10'du ve tahta dama tahtası gibi parçalanmış görünüyordu.
-   - Boş hücre sönük ve düz; gözü parçalar toplasın, ızgara değil.
+   TAHTA TASARIMI
+   - Tahtanın tamamı tek bir görsel (assets/matrix.png). Hücrelerin konumu
+     o görselden ÖLÇÜLDÜ ve script.js'teki TAHTA tablosunda duruyor;
+     buradaki kurallar yalnızca görselin üstüne binen katmanlar için.
+   - Görsel yokken oyun oynanabilir kalsın diye kodun kendi çizdiği sönük
+     tepsi ve hücreler duruyor (bkz. .sanat-tahta).
    - Parça hücrenin İÇİNDE duran bir resim değil, tahtanın ÜSTÜNE konmuş bir
      nesne: hücreden taşar, altında temas gölgesi vardır. Kutuya sığdırılmış
      görsel hissi buradan geliyordu.
@@ -66,7 +68,6 @@
   /* Sahne ölçüleri: HÜCRE boyutu tek kaynaktan gelsin diye değişken.
      script.js sahne genişliğini ölçüp --hucre'yi günceller. */
   --hucre:64px;
-  --bosluk:calc(var(--hucre)*0.045);
 }
 *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 html,body{ height:100%; overflow:hidden; }
@@ -159,14 +160,15 @@ body{ font-family:var(--body); color:var(--text); background:#9BDCF2; user-selec
 
 /* ---------- MERGE MATRİSİ ----------
    Beyaz bir tepsi; hücreler onun içine gömülü, sönük ve BİRBİRİNE YAKIN. */
+/* Tahta TEK BİR GÖRSEL. Ölçüsü de o görselden geliyor: hücre kenarı ne
+   olursa olsun görsel aynı oranda büyüyor (--tahta-en / --tahta-boy hücre
+   cinsinden en ve boy, script.js'te görselden hesaplanıyor). Hücreler CSS
+   ızgarasıyla değil, görselden ölçülmüş yüzdelerle MUTLAK yerleştiriliyor —
+   tek yol budur, yoksa çizilen kutucukla dokunma alanı kayar. */
 #izgara{
-  flex:none; display:grid;
-  /* Sütun/satır sayısı script.js'teki SUTUN ve SATIR'dan geliyor: iki yerde
-     ayrı ayrı yazılınca biri güncellenmeyi unutuluyor. */
-  grid-template-columns:repeat(var(--sutun,7), var(--hucre));
-  grid-template-rows:repeat(var(--satir,9), var(--hucre));
-  gap:var(--bosluk);
-  padding:calc(var(--hucre)*0.10);
+  position:relative; flex:none;
+  width:calc(var(--hucre) * var(--tahta-en, 7.53));
+  height:calc(var(--hucre) * var(--tahta-boy, 9.76));
   border-radius:calc(var(--hucre)*0.28);
   background-color:var(--tahta);
   background-image:var(--tahta-gorsel, none);
@@ -177,25 +179,25 @@ body{ font-family:var(--body); color:var(--text); background:#9BDCF2; user-selec
   margin:auto 0;
 }
 .hucre{
-  position:relative; border-radius:calc(var(--hucre)*0.14);
+  position:absolute; border-radius:calc(var(--hucre)*0.18);
   background-color:var(--hucre-renk);
-  background-image:var(--hucre-gorsel, none);
-  background-size:100% 100%; background-repeat:no-repeat;
   box-shadow:inset 0 1px 2px var(--hucre-koyu);
   display:grid; place-items:center;
   touch-action:none;
-  transition:background .12s, box-shadow .12s;
+  transition:background-color .12s, box-shadow .12s;
 }
 /* Sürükleme sırasında altındaki hücre: birleşme olacaksa yeşil. */
 .hucre.uzeri{ background:#F3F6FB; }
 .hucre.birlesir{ background:#D8F7E4; box-shadow:0 0 0 3px #38C172 inset; }
 
-/* Tahta/hücre görseli geldiğinde koddan gelen zemin ve gölge çekilir:
-   çizim görselin üstüne binmesin. */
-.sanat-tahta #izgara{ background-color:transparent; box-shadow:none; }
-.sanat-hucre .hucre{ background-color:transparent; box-shadow:none; }
-.sanat-hucre .hucre.uzeri{ box-shadow:0 0 0 3px rgba(255,255,255,.9) inset; }
-.sanat-hucre .hucre.birlesir{ background-color:rgba(56,193,114,.30); box-shadow:0 0 0 3px #38C172 inset; }
+/* Tahta görseli geldiğinde koddan gelen tepsi ve hücre zeminleri çekilir:
+   çizim görselin üstüne binmesin. Vurgular ise kalır — sürüklerken hangi
+   hücrenin hedef olduğunu görmek şart. */
+.sanat-tahta #izgara{ background-color:transparent; box-shadow:none; border-radius:0; }
+.sanat-tahta .hucre{ background-color:transparent; box-shadow:none; }
+.sanat-tahta .hucre.uzeri{ box-shadow:0 0 0 3px rgba(255,255,255,.95) inset; }
+.sanat-tahta .hucre.birlesir{ background-color:rgba(56,193,114,.28);
+  box-shadow:0 0 0 3px #38C172 inset; }
 
 /* ---------- PARÇALAR ----------
    Geçici kutu hücreye SIĞAR (kart gibi durur, zaten öyle olmalı).
