@@ -4,6 +4,7 @@
    o yüzden font-weight aralık olarak yazılıyor.
    latin-ext alt kümesi ŞART: Türkçe ğ ş ı İ harfleri orada.
    Lisans: SIL Open Font License, bkz. assets/fonts/LICENSE.txt          */
+@font-face{
   font-family:'Fredoka'; font-style:normal; font-weight:300 700; font-display:swap;
   src:url(assets/fonts/fredoka-latin-ext.woff2) format('woff2');
   unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
@@ -35,77 +36,91 @@
 }
 
 /* =========================================================
-   BAG MERGE — hediyelikleri birleştir, bagajı doğru uçağa yükle
-   Palet Bag Globe'dan (Turkish Technology kurumsal renkleri) geliyor;
-   iki oyun aynı stand'da akraba görünsün diye.
+   BAGAJ ATÖLYESİ — hediyelikleri birleştir, bagajı doğru uçağa yükle
+
+   TAHTA TASARIMI (referans: piyasadaki merge oyunları)
+   - Hücreler birbirinden AYRIK durmuyor: aradaki boşluk hücrenin %4,5'i.
+     Önce %10'du ve tahta dama tahtası gibi parçalanmış görünüyordu.
+   - Boş hücre sönük ve düz; gözü parçalar toplasın, ızgara değil.
+   - Parça hücrenin İÇİNDE duran bir resim değil, tahtanın ÜSTÜNE konmuş bir
+     nesne: hücreden taşar, altında temas gölgesi vardır. Kutuya sığdırılmış
+     görsel hissi buradan geliyordu.
+
+   RENKLER: Bag Globe'un kurumsal lacivert-mor paleti bırakıldı. Zemin artık
+   gündüz havaalanı ışığı — üstte gökyüzü, altta sıcak krem. Hediyelik
+   görselleri kendi gerçek renklerinde geliyor, arayüz onların önüne
+   geçmemeli. Buradaki renkli kutular yalnızca görsel gelene kadar duruyor.
    ========================================================= */
 :root{
-  --royal:#0035D7; --navy:#1C1C51; --sky:#0182C9; --mor:#9E55A0; --kirmizi:#CD2028;
-  --text:#eef2fb; --muted:#a4b0cd;
+  /* Zemin: gökyüzünden sıcak ufka. Terminal görseli gelince kalkacak. */
+  --gok1:#8FD8F2; --gok2:#B7E7F7; --gok3:#FFE7C4;
+  /* Tahta */
+  --tahta:rgba(255,255,255,.82); --hucre-renk:#E3E8F1; --hucre-koyu:rgba(40,54,86,.10);
+  /* Yazı */
+  --text:#1E2C4A; --muted:#7B89A4; --vurgu:#12608F; --sicak:#F08A24;
+  --kart:#ffffff; --kart-golge:0 6px 0 rgba(30,45,80,.10), 0 12px 22px rgba(30,45,80,.18);
   --hud:'Fredoka',system-ui,sans-serif; --body:'Nunito',system-ui,sans-serif;
   /* Uçuş kodu gibi "resmi" yazılar nötr fontla — havalimanı panosu havası */
   --pano:'Open Sans','Segoe UI',Arial,sans-serif;
 
   /* Sahne ölçüleri: HÜCRE boyutu tek kaynaktan gelsin diye değişken.
-     script.js sahne genişliğini ölçüp --hucre'yi günceller; ızgara, uçak
-     kartları ve sürüklenen kopya hep bu ölçüye göre büyür/küçülür. */
+     script.js sahne genişliğini ölçüp --hucre'yi günceller. */
   --hucre:64px;
-  --bosluk:calc(var(--hucre)*0.10);
+  --bosluk:calc(var(--hucre)*0.045);
 }
 *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 html,body{ height:100%; overflow:hidden; }
-body{ font-family:var(--body); color:var(--text); background:#0a0f22; user-select:none; touch-action:none; }
+body{ font-family:var(--body); color:var(--text); background:#9BDCF2; user-select:none; touch-action:none; }
 .gizli{ display:none !important; }
 
 /* ================= SAHNE =================
-   9:16 KİLİTLİ. Pencere ne olursa olsun oyun hep aynı oranda; kioskta zaten
-   tam ekran, geliştirme makinesinde de aynı yerleşimi görelim diye. */
+   9:16 KİLİTLİ. Pencere ne olursa olsun oyun hep aynı oranda. */
 #sahne{
   position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
   width:min(100vw, calc(100vh * 9 / 16));
   height:min(100vh, calc(100vw * 16 / 9));
   display:flex; flex-direction:column; align-items:center;
   overflow:hidden;
-  /* Zemin görseli (assets/bg_terminal.png) gelince bu degrade kalkacak */
   background:
-    radial-gradient(120% 70% at 50% -10%, rgba(1,130,201,.35), transparent 60%),
-    radial-gradient(90% 60% at 50% 110%, rgba(158,85,160,.25), transparent 60%),
-    linear-gradient(170deg, var(--navy), #14102b 60%, #0a0f22);
+    radial-gradient(80% 30% at 26% 4%, rgba(255,255,255,.65), transparent 60%),
+    linear-gradient(180deg, var(--gok1) 0%, var(--gok2) 46%, var(--gok3) 100%);
 }
 
 /* ---------- ÜST BİLGİ ---------- */
 #hud{
   width:100%; flex:none; display:flex; justify-content:space-between; align-items:center;
-  gap:calc(var(--hucre)*0.14); padding:calc(var(--hucre)*0.20) calc(var(--hucre)*0.30);
+  gap:calc(var(--hucre)*0.14); padding:calc(var(--hucre)*0.22) calc(var(--hucre)*0.26) calc(var(--hucre)*0.14);
 }
 .hud-kutu{
-  flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
-  padding:calc(var(--hucre)*0.14) calc(var(--hucre)*0.10);
-  border-radius:calc(var(--hucre)*0.20);
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:1px;
+  padding:calc(var(--hucre)*0.12) calc(var(--hucre)*0.10);
+  border-radius:999px;
+  background:var(--kart);
+  box-shadow:0 4px 0 rgba(30,45,80,.10), 0 9px 16px rgba(30,45,80,.16);
 }
-.hud-etiket{ font-family:var(--hud); font-size:calc(var(--hucre)*0.17); letter-spacing:.16em; color:var(--muted); }
-.hud-deger{ font-family:var(--hud); font-weight:700; font-size:calc(var(--hucre)*0.36); line-height:1; }
+.hud-etiket{ font-family:var(--hud); font-size:calc(var(--hucre)*0.15); letter-spacing:.14em; color:var(--muted); }
+.hud-deger{ font-family:var(--hud); font-weight:700; font-size:calc(var(--hucre)*0.34); line-height:1; color:var(--vurgu); }
 
 /* ---------- UÇAKLAR ---------- */
 #ucaklar{
   width:100%; flex:none; display:flex; justify-content:center; align-items:stretch;
-  gap:calc(var(--hucre)*0.16); padding:0 calc(var(--hucre)*0.30) calc(var(--hucre)*0.22);
+  gap:calc(var(--hucre)*0.16); padding:0 calc(var(--hucre)*0.26) calc(var(--hucre)*0.22);
 }
 .ucak{
   flex:1 1 0; min-width:0; position:relative;
   display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-  gap:calc(var(--hucre)*0.06);
-  padding:calc(var(--hucre)*0.16) calc(var(--hucre)*0.08) calc(var(--hucre)*0.12);
-  border-radius:calc(var(--hucre)*0.24);
-  background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
-  border:2px solid rgba(255,255,255,.12);
-  transition:transform .16s, border-color .16s, background .16s;
+  gap:calc(var(--hucre)*0.04);
+  padding:calc(var(--hucre)*0.14) calc(var(--hucre)*0.08) calc(var(--hucre)*0.12);
+  border-radius:calc(var(--hucre)*0.28);
+  background:var(--kart);
+  box-shadow:var(--kart-golge);
+  transition:transform .16s, box-shadow .16s, background .16s;
 }
-/* Bagaj uçağın üstüne geldiğinde: doğruysa yeşil, yanlışsa kırmızı çerçeve.
+/* Bagaj uçağın üstüne geldiğinde: doğruysa yeşil, yanlışsa kırmızı.
    Çocuk parmağını bırakmadan hedefin doğru olup olmadığını görsün. */
-.ucak.hedef{ border-color:#22c55e; background:rgba(34,197,94,.18); transform:translateY(-4px) scale(1.03); }
-.ucak.hedef-yanlis{ border-color:var(--kirmizi); background:rgba(205,32,40,.16); }
+.ucak.hedef{ background:#E9FBEF; transform:translateY(-6px) scale(1.04);
+  box-shadow:0 0 0 4px #38C172, 0 10px 0 rgba(30,45,80,.12), 0 18px 28px rgba(30,45,80,.22); }
+.ucak.hedef-yanlis{ background:#FFEEEE; box-shadow:0 0 0 4px #D64545, var(--kart-golge); }
 .ucak.kalkiyor{ animation:ucakKalk .75s cubic-bezier(.4,0,.9,.2) forwards; }
 .ucak.geliyor{ animation:ucakGel .45s cubic-bezier(.2,.9,.3,1.2) backwards; }
 @keyframes ucakKalk{
@@ -117,110 +132,159 @@ body{ font-family:var(--body); color:var(--text); background:#0a0f22; user-selec
   from{ transform:translateY(60%) scale(.8); opacity:0; }
   to{ transform:translateY(0) scale(1); opacity:1; }
 }
-.ucak-gorsel{ width:100%; height:calc(var(--hucre)*0.86); object-fit:contain; pointer-events:none; }
+.ucak-gorsel{ width:104%; height:calc(var(--hucre)*0.84); object-fit:contain; pointer-events:none;
+  filter:drop-shadow(0 calc(var(--hucre)*0.04) calc(var(--hucre)*0.05) rgba(25,35,65,.30)); }
 /* Görsel gelmeden önce uçağın yerini tutan geçici kutu */
 .ucak-gecici{
-  width:86%; height:calc(var(--hucre)*0.62); border-radius:calc(var(--hucre)*0.14);
-  background:linear-gradient(135deg, var(--sky), var(--royal));
-  display:grid; place-items:center; font-size:calc(var(--hucre)*0.34);
+  width:88%; height:calc(var(--hucre)*0.56); border-radius:calc(var(--hucre)*0.18);
+  background:linear-gradient(170deg, #BFE6F7, #7FBCE0 60%, #4E88B5);
+  display:grid; place-items:center; color:#fff; font-size:calc(var(--hucre)*0.30);
 }
-.ucak-kod{ font-family:var(--pano); font-weight:700; font-size:calc(var(--hucre)*0.24); letter-spacing:.06em; }
-.ucak-sehir{ font-family:var(--body); font-size:calc(var(--hucre)*0.19); color:var(--muted); }
+.ucak-kod{ font-family:var(--pano); font-weight:700; font-size:calc(var(--hucre)*0.23);
+  letter-spacing:.04em; color:var(--text); }
+.ucak-sehir{ font-family:var(--hud); font-weight:500; font-size:calc(var(--hucre)*0.19); color:var(--muted); }
 /* İstenen bagajın küçük rozeti: çocuk okuma bilmese de neyi üreteceğini görür */
 .ucak-rozet{
-  position:absolute; right:calc(var(--hucre)*-0.06); top:calc(var(--hucre)*-0.06);
-  width:calc(var(--hucre)*0.52); height:calc(var(--hucre)*0.52);
-  border-radius:50%; background:#fff; border:2px solid rgba(0,0,0,.15);
+  position:absolute; right:calc(var(--hucre)*-0.08); top:calc(var(--hucre)*-0.10);
+  width:calc(var(--hucre)*0.58); height:calc(var(--hucre)*0.58);
+  border-radius:50%; background:#fff;
   display:grid; place-items:center; overflow:hidden;
-  box-shadow:0 4px 10px rgba(0,0,0,.35);
+  box-shadow:0 3px 0 rgba(30,45,80,.12), 0 7px 12px rgba(30,45,80,.22);
 }
-.ucak-rozet img{ width:80%; height:80%; object-fit:contain; }
+.ucak-rozet img{ width:84%; height:84%; object-fit:contain; }
+/* Rozetin içindeki GEÇİCİ kutuya ad sığmıyor, taşıyordu: sadece rakam. */
+.ucak-rozet .parca-gecici{ width:100%; height:100%; border-radius:50%; }
+.ucak-rozet .parca-gecici .pg-ad{ display:none; }
+.ucak-rozet .parca-gecici .pg-tier{ font-size:calc(var(--hucre)*0.26); }
 
-/* ---------- MERGE MATRİSİ ---------- */
+/* ---------- MERGE MATRİSİ ----------
+   Beyaz bir tepsi; hücreler onun içine gömülü, sönük ve BİRBİRİNE YAKIN. */
 #izgara{
   flex:none; display:grid;
   grid-template-columns:repeat(5, var(--hucre));
   grid-template-rows:repeat(6, var(--hucre));
   gap:var(--bosluk);
-  padding:var(--bosluk);
-  border-radius:calc(var(--hucre)*0.26);
-  background:rgba(0,0,0,.26);
-  border:1px solid rgba(255,255,255,.10);
+  padding:calc(var(--hucre)*0.10);
+  border-radius:calc(var(--hucre)*0.28);
+  background:var(--tahta);
+  box-shadow:0 6px 0 rgba(30,45,80,.08), 0 14px 26px rgba(30,45,80,.18),
+             inset 0 2px 0 rgba(255,255,255,.9);
+  /* Uçakların altında kalan boşluğun ORTASINA otursun */
+  margin:auto 0;
 }
 .hucre{
-  position:relative; border-radius:calc(var(--hucre)*0.18);
-  background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.07);
+  position:relative; border-radius:calc(var(--hucre)*0.14);
+  background:var(--hucre-renk);
+  box-shadow:inset 0 1px 2px var(--hucre-koyu);
   display:grid; place-items:center;
   touch-action:none;
+  transition:background .12s, box-shadow .12s;
 }
-/* Sürükleme sırasında altındaki hücre: birleşme olacaksa yeşil, sadece
-   taşıma olacaksa nötr parlama. */
-.hucre.uzeri{ border-color:rgba(255,255,255,.45); background:rgba(255,255,255,.12); }
-.hucre.birlesir{ border-color:#22c55e; background:rgba(34,197,94,.22); box-shadow:0 0 0 2px rgba(34,197,94,.35) inset; }
+/* Sürükleme sırasında altındaki hücre: birleşme olacaksa yeşil. */
+.hucre.uzeri{ background:#F3F6FB; }
+.hucre.birlesir{ background:#D8F7E4; box-shadow:0 0 0 3px #38C172 inset; }
 
-/* Parça = hücrenin içindeki hediyelik/bagaj */
+/* ---------- PARÇALAR ----------
+   Geçici kutu hücreye SIĞAR (kart gibi durur, zaten öyle olmalı).
+   Gerçek görsel hücreden TAŞAR ve altına temas gölgesi düşer — tahtanın
+   üstünde duran bir nesne gibi görünsün diye. */
 .parca{
-  width:86%; height:86%; position:relative;
+  width:88%; height:88%; position:relative;
   display:grid; place-items:center;
   cursor:grab; touch-action:none;
   animation:parcaGel .22s cubic-bezier(.2,.9,.3,1.4);
 }
-.parca.tasiniyor{ opacity:.32; }
-.parca img{ width:100%; height:100%; object-fit:contain; pointer-events:none;
-  filter:drop-shadow(0 3px 6px rgba(0,0,0,.45)); }
+.parca.gorselli{
+  width:110%; height:110%; z-index:2;
+  /* Temas gölgesi: nesnenin altında yere değdiği yer. Elips nesnenin
+     ALTINDA kalmalı — daha aşağıdayken bir alttaki hücreye taşıyor ve
+     boş hücrenin içinde sahipsiz bir leke gibi duruyordu. */
+  background:radial-gradient(ellipse 44% 7% at 50% 87%,
+             rgba(28,42,74,.34), rgba(28,42,74,0) 72%);
+}
+.parca.tasiniyor{ opacity:.28; }
+.parca img{ width:100%; height:100%; object-fit:contain; pointer-events:none; }
+.parca.gorselli img{
+  filter:drop-shadow(0 calc(var(--hucre)*0.03) calc(var(--hucre)*0.045) rgba(25,35,65,.34));
+}
 @keyframes parcaGel{ from{ transform:scale(.3); opacity:0; } to{ transform:scale(1); opacity:1; } }
 .parca.birlesti{ animation:parcaBirles .32s cubic-bezier(.2,.9,.3,1.6); }
 @keyframes parcaBirles{ 0%{ transform:scale(.5); } 55%{ transform:scale(1.28); } 100%{ transform:scale(1); } }
 
-/* GEÇİCİ parça görünümü — hediyelik görselleri gelene kadar.
-   Şehir rengi + basamak numarası + kısa ad. Görsel assets/ içine düşünce
-   script otomatik onu kullanır, buradaki kutu bir daha görünmez. */
+/* GEÇİCİ parça görünümü — hediyelik görselleri gelene kadar. */
 .parca-gecici{
-  width:100%; height:100%; border-radius:calc(var(--hucre)*0.16);
+  width:100%; height:100%; border-radius:calc(var(--hucre)*0.20);
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
   color:#fff; text-align:center; line-height:1.05;
-  box-shadow:0 3px 8px rgba(0,0,0,.4) , 0 0 0 2px rgba(255,255,255,.18) inset;
+  text-shadow:0 1px 2px rgba(0,0,0,.35);
+  box-shadow:inset 0 calc(var(--hucre)*0.10) 0 rgba(255,255,255,.16),
+             0 0 0 calc(var(--hucre)*0.025) rgba(24,36,66,.30),
+             0 3px 0 rgba(30,45,80,.14), 0 6px 10px rgba(30,45,80,.20);
 }
-.parca-gecici .pg-ad{ font-family:var(--hud); font-weight:600; font-size:calc(var(--hucre)*0.145); padding:0 2px; }
+.parca-gecici .pg-ad{ font-family:var(--hud); font-weight:600; font-size:calc(var(--hucre)*0.14); padding:0 2px; }
 .parca-gecici .pg-tier{ font-family:var(--hud); font-weight:700; font-size:calc(var(--hucre)*0.30); }
 
-/* Makine (bagaj bandı): ızgaranın içinde sabit bir hücre */
-.hucre.makine{ background:linear-gradient(180deg, rgba(158,85,160,.35), rgba(0,53,215,.30));
-  border-color:rgba(255,255,255,.28); cursor:pointer; overflow:hidden; }
-.hucre.makine:active{ transform:scale(.96); }
-.makine-gorsel{ width:100%; height:100%; object-fit:contain; pointer-events:none; }
-.makine-gecici{ display:grid; place-items:center; width:100%; height:100%;
-  font-family:var(--hud); font-weight:700; font-size:calc(var(--hucre)*0.16);
-  letter-spacing:.08em; text-align:center; }
-/* Dolum göstergesi: makine hazır değilken alttan dolan çubuk.
-   Sınırsız basılırsa matris saniyede tıkanıyor, o yüzden var. */
-.makine-dolum{ position:absolute; left:0; bottom:0; width:100%; height:calc(var(--hucre)*0.10);
-  background:rgba(0,0,0,.35); }
-.makine-dolum > i{ display:block; height:100%; width:0%;
-  background:linear-gradient(90deg, var(--mor), var(--sky)); }
-.hucre.makine.hazir{ box-shadow:0 0 0 2px rgba(255,255,255,.5) inset, 0 0 18px rgba(158,85,160,.5); }
+/* ---------- MAKİNE (BAGAJ BANDI) ----------
+   Makine de bir NESNE: hücreye boyanmış bir zemin değil, tahtanın üstünde
+   duran, hücreden taşan bir cihaz. Hücrenin kendisi sıradan hücre gibi. */
+.hucre.makine{ cursor:pointer; }
+.hucre.makine:active .makine-gorsel{ transform:scale(.94); }
+.makine-gorsel{
+  width:122%; height:122%; object-fit:contain; pointer-events:none; z-index:2;
+  transition:transform .12s;
+  filter:drop-shadow(0 calc(var(--hucre)*0.04) calc(var(--hucre)*0.05) rgba(25,35,65,.38));
+}
+/* Görsel yokken makinenin yerini tutan kutu */
+.makine-gecici{ display:grid; place-items:center; width:88%; height:88%;
+  border-radius:calc(var(--hucre)*0.20);
+  background:linear-gradient(170deg, #9AA6C4, #5C6A8E 60%, #3C4763);
+  font-family:var(--hud); font-weight:700; font-size:calc(var(--hucre)*0.15);
+  letter-spacing:.06em; text-align:center; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.35); }
+/* Dolum göstergesi: makine hazır değilken dolan küçük çubuk. Sınırsız
+   basılırsa matris saniyede tıkanıyor, o yüzden var. */
+.makine-dolum{
+  position:absolute; left:14%; right:14%; bottom:calc(var(--hucre)*0.03);
+  height:calc(var(--hucre)*0.085); border-radius:999px; z-index:3;
+  background:rgba(22,34,60,.32); overflow:hidden;
+  box-shadow:0 1px 0 rgba(255,255,255,.5);
+}
+.makine-dolum > i{ display:block; height:100%; width:0%; border-radius:999px;
+  background:linear-gradient(90deg, #FFD84D, var(--sicak)); }
+/* Makine hazırken çubuk görünmesin: dolu bir çubuk hiçbir şey anlatmıyor,
+   sadece makinenin altında duran sarı bir çizgi gibi duruyordu. */
+.hucre.makine.hazir .makine-dolum{ opacity:0; }
+.makine-dolum{ transition:opacity .2s; }
+/* Hazır olduğunda nabız gibi atsın: çocuk "buraya bas" işaretini kaçırmasın */
+.hucre.makine.hazir{ animation:makineNabiz 1.6s ease-in-out infinite; }
+@keyframes makineNabiz{
+  0%,100%{ box-shadow:inset 0 1px 2px var(--hucre-koyu), 0 0 0 0 rgba(255,197,49,.7); }
+  60%{ box-shadow:inset 0 1px 2px var(--hucre-koyu), 0 0 0 calc(var(--hucre)*0.16) rgba(255,197,49,0); }
+}
 
 /* ---------- SÜRÜKLENEN KOPYA ---------- */
 #surukle{
   position:absolute; z-index:40; pointer-events:none;
   width:var(--hucre); height:var(--hucre);
   display:grid; place-items:center;
-  transform:translate(-50%,-50%) scale(1.12);
-  filter:drop-shadow(0 10px 18px rgba(0,0,0,.55));
+  transform:translate(-50%,-50%) scale(1.18) rotate(-4deg);
+  filter:drop-shadow(0 calc(var(--hucre)*0.12) calc(var(--hucre)*0.10) rgba(25,35,65,.40));
 }
-#surukle img{ width:86%; height:86%; object-fit:contain; }
-#surukle .parca-gecici{ width:86%; height:86%; }
+#surukle img{ width:88%; height:88%; object-fit:contain; }
+#surukle.gorselli img{ width:112%; height:112%; }
+#surukle .parca-gecici{ width:88%; height:88%; }
 
 /* ---------- BALONCUKLAR (puan / uyarı) ---------- */
 #baloncuklar{ position:absolute; inset:0; pointer-events:none; z-index:45; }
 .baloncuk{
   position:absolute; transform:translate(-50%,-50%);
   font-family:var(--hud); font-weight:700; font-size:calc(var(--hucre)*0.30);
-  color:#fff; text-shadow:0 2px 6px rgba(0,0,0,.6); white-space:nowrap;
+  color:#FFD84D; -webkit-text-stroke:calc(var(--hucre)*0.02) #1E2C4A;
+  paint-order:stroke fill; white-space:nowrap;
   animation:baloncukCik .9s ease-out forwards;
 }
-.baloncuk.uyari{ font-size:calc(var(--hucre)*0.22); color:#ffd0d2; }
+.baloncuk.uyari{ font-size:calc(var(--hucre)*0.20); color:#fff;
+  background:#D64545; padding:.35em .7em; border-radius:999px;
+  -webkit-text-stroke:0; box-shadow:0 4px 10px rgba(30,45,80,.30); }
 @keyframes baloncukCik{
   0%{ opacity:0; transform:translate(-50%,-50%) scale(.6); }
   25%{ opacity:1; transform:translate(-50%,-90%) scale(1.1); }
@@ -228,10 +292,11 @@ body{ font-family:var(--body); color:var(--text); background:#0a0f22; user-selec
 }
 
 /* ---------- TAM EKRAN KATMANLAR (başlangıç / bitiş) ---------- */
-.katman{ position:fixed; inset:0; z-index:60; display:grid; place-items:center; overflow:hidden; background:#0a0f22; }
+.katman{ position:fixed; inset:0; z-index:60; display:grid; place-items:center; overflow:hidden;
+  background:linear-gradient(180deg, var(--gok1), var(--gok2) 46%, var(--gok3)); }
 /* Arkada bulanık kopya: ekran oranı görselden farklıysa yanlar boş kalmasın */
 .katman-bg{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-  filter:blur(26px) brightness(.55); transform:scale(1.1); }
+  filter:blur(26px) brightness(.9); transform:scale(1.1); }
 /* Asıl tasarım: hiçbir yeri kırpılmadan tam görünür */
 .katman-img{ position:relative; max-width:100%; max-height:100%; object-fit:contain; }
 .katman-img:not([src]), .katman-bg:not([src]){ display:none; }
@@ -240,18 +305,14 @@ body{ font-family:var(--body); color:var(--text); background:#0a0f22; user-selec
 
 /* GEÇİCİ başlangıç/bitiş panelleri — tasarım görselleri gelince silinecek */
 .gecici-panel{
-  position:relative; text-align:center; padding:34px 30px; border-radius:22px;
-  width:min(78vw, 460px);
-  background:linear-gradient(180deg, rgba(36,26,68,.9), rgba(20,16,43,.92));
-  border:1px solid rgba(158,85,160,.35); box-shadow:0 24px 60px rgba(0,0,0,.55);
+  position:relative; text-align:center; padding:34px 30px 28px; border-radius:30px;
+  width:min(78vw, 460px); color:var(--text);
+  background:var(--kart);
+  box-shadow:0 8px 0 rgba(30,45,80,.12), 0 20px 40px rgba(30,45,80,.26);
 }
-.gecici-panel h1{ font-family:var(--hud); font-weight:700; letter-spacing:.08em; font-size:34px; }
+.gecici-panel h1{ font-family:var(--hud); font-weight:700; letter-spacing:.02em; font-size:36px;
+  color:var(--vurgu); }
 .gecici-panel p{ color:var(--muted); font-size:15px; margin-top:10px; line-height:1.5; }
 .gecici-panel .bit-satir{ font-size:16px; color:var(--text); margin-top:6px; }
-.gecici-panel .bit-puan{ font-family:var(--hud); font-size:22px; color:#7fd4ff; margin-top:14px; }
-.gecici-not{ display:block; margin-top:18px; font-size:11px; letter-spacing:.08em; color:#6f7ea3; }
-
-/* Izgara, uçakların altında kalan boşluğun ORTASINA otursun: hücre ölçüsü
-   ekran oranına göre değiştiği için altta ya da üstte artan boşluk hep
-   eşit paylaşılsın diye (kioskta ızgara parmağa yakın kalmalı). */
-#izgara{ margin:auto 0; }
+.gecici-panel .bit-puan{ font-family:var(--hud); font-weight:700; font-size:26px; color:var(--sicak); margin-top:14px; }
+.gecici-not{ display:block; margin-top:18px; font-size:11px; letter-spacing:.06em; color:#9AA6C6; }
