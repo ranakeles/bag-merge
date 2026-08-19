@@ -161,12 +161,16 @@ body{ font-family:var(--body); color:var(--text); background:#9BDCF2; user-selec
    Beyaz bir tepsi; hücreler onun içine gömülü, sönük ve BİRBİRİNE YAKIN. */
 #izgara{
   flex:none; display:grid;
-  grid-template-columns:repeat(5, var(--hucre));
-  grid-template-rows:repeat(6, var(--hucre));
+  /* Sütun/satır sayısı script.js'teki SUTUN ve SATIR'dan geliyor: iki yerde
+     ayrı ayrı yazılınca biri güncellenmeyi unutuluyor. */
+  grid-template-columns:repeat(var(--sutun,7), var(--hucre));
+  grid-template-rows:repeat(var(--satir,9), var(--hucre));
   gap:var(--bosluk);
   padding:calc(var(--hucre)*0.10);
   border-radius:calc(var(--hucre)*0.28);
-  background:var(--tahta);
+  background-color:var(--tahta);
+  background-image:var(--tahta-gorsel, none);
+  background-size:100% 100%; background-repeat:no-repeat;
   box-shadow:0 6px 0 rgba(30,45,80,.08), 0 14px 26px rgba(30,45,80,.18),
              inset 0 2px 0 rgba(255,255,255,.9);
   /* Uçakların altında kalan boşluğun ORTASINA otursun */
@@ -174,7 +178,9 @@ body{ font-family:var(--body); color:var(--text); background:#9BDCF2; user-selec
 }
 .hucre{
   position:relative; border-radius:calc(var(--hucre)*0.14);
-  background:var(--hucre-renk);
+  background-color:var(--hucre-renk);
+  background-image:var(--hucre-gorsel, none);
+  background-size:100% 100%; background-repeat:no-repeat;
   box-shadow:inset 0 1px 2px var(--hucre-koyu);
   display:grid; place-items:center;
   touch-action:none;
@@ -183,6 +189,13 @@ body{ font-family:var(--body); color:var(--text); background:#9BDCF2; user-selec
 /* Sürükleme sırasında altındaki hücre: birleşme olacaksa yeşil. */
 .hucre.uzeri{ background:#F3F6FB; }
 .hucre.birlesir{ background:#D8F7E4; box-shadow:0 0 0 3px #38C172 inset; }
+
+/* Tahta/hücre görseli geldiğinde koddan gelen zemin ve gölge çekilir:
+   çizim görselin üstüne binmesin. */
+.sanat-tahta #izgara{ background-color:transparent; box-shadow:none; }
+.sanat-hucre .hucre{ background-color:transparent; box-shadow:none; }
+.sanat-hucre .hucre.uzeri{ box-shadow:0 0 0 3px rgba(255,255,255,.9) inset; }
+.sanat-hucre .hucre.birlesir{ background-color:rgba(56,193,114,.30); box-shadow:0 0 0 3px #38C172 inset; }
 
 /* ---------- PARÇALAR ----------
    Geçici kutu hücreye SIĞAR (kart gibi durur, zaten öyle olmalı).

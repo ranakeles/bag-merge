@@ -15,13 +15,16 @@
    ========================================================= */
 
 /* ---------- 1) AYARLAR + ŞEHİR ZİNCİRLERİ ---------- */
-const SUTUN = 5, SATIR = 6;
+const SUTUN = 7, SATIR = 9;
 /* Makine ızgaranın ORTASINDA: sekiz komşusu da var, düşen hediyelikler
    parmağın rahat ulaştığı yere geliyor. Kenara alınırsa komşu sayısı
    üçe düşüyor ve makine sürekli "yer yok" diyor.                        */
-const MAKINE_YERI = { s:2, k:2 };
-const MAKINE_BEKLEME = 1500;   // ms — arka arkaya basıp matrisi tıkamasın
-const MAKINE_ADET = 2;         // her basışta düşen hediyelik
+const MAKINE_YERI = { s:4, k:3 };
+/* Tahta 5x6'dan 7x9'a çıktı: 30 hücre yerine 63. Aynı hızda hediyelik
+   düşürünce tahta bir türlü dolmuyor ve oyun yavaş hissettiriyordu, o
+   yüzden makine hem daha sık hem daha çok veriyor. */
+const MAKINE_BEKLEME = 1200;   // ms — arka arkaya basıp matrisi tıkamasın
+const MAKINE_ADET = 3;         // her basışta düşen hediyelik
 
 const HEDEF_SIPARIS = 10;      // bu kadar bagaj teslim edilince oyun biter
 const UCAK_SAYISI = 3;         // aynı anda bekleyen sipariş
@@ -106,7 +109,8 @@ function basamakBilgisi(sehir, basamak){ return SEHIRLER[sehir].zincir[basamak-1
 function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, basamak).dosya; }
 
 function beklenenGorseller(){
-  const liste = ['assets/machine.png','assets/ucak.png','assets/home_page.png','assets/end_page.png'];
+  const liste = ['assets/machine.png','assets/ucak.png','assets/home_page.png','assets/end_page.png',
+                 'assets/board.png','assets/cell.png'];
   for(const s of SEHIR_LISTE){
     for(let b=1;b<=SON_BASAMAK;b++) liste.push(parcaGorseli(s,b));
   }
@@ -176,12 +180,18 @@ let makineHazir = true, makineAnI = 0, makineEl = null, dolumEl = null;
 function olculeriGuncelle(){
   const sahne = $('#sahne');
   const G = sahne.clientWidth, Y = sahne.clientHeight;
-  /* Izgaranın genişliği = 5 hücre + 4 boşluk (hücrenin %4,5'i) + 2 kenar
-     payı (%10) = 5.38 hücre. Hücreler sıklaşınca bu çarpan da değişti. */
-  const enGore = (G * 0.94) / 5.38;
-  const boyGore = Y / 9.6;         // hud + uçaklar + ızgara toplamı ≈ 9,6 hücre
+  /* Çarpanlar ızgara ölçüsünden TÜRETİLİYOR, elle yazılmıyor: sütun/satır
+     sayısı değişince buranın da düzeltilmesi unutuluyordu.
+     Genişlik = sütun + (sütun-1)·boşluk + 2·kenar payı, hücre cinsinden. */
+  const enHucre  = SUTUN + (SUTUN-1)*0.045 + 0.20;
+  const boyHucre = SATIR + (SATIR-1)*0.045 + 0.20 + 2.9;   // +2.9 ≈ hud + uçaklar
+  const enGore = (G * 0.94) / enHucre;
+  const boyGore = (Y * 0.99) / boyHucre;
   const h = Math.max(28, Math.floor(Math.min(enGore, boyGore)));
-  document.documentElement.style.setProperty('--hucre', h + 'px');
+  const kok = document.documentElement;
+  kok.style.setProperty('--hucre', h + 'px');
+  kok.style.setProperty('--sutun', SUTUN);
+  kok.style.setProperty('--satir', SATIR);
 }
 
 /* ---------- 5) IZGARA VE PARÇALAR ---------- */
@@ -592,8 +602,24 @@ function katmanGorseli(gorselAd, imgId, bgId, geciciId){
   $(geciciId).classList.add('gizli');
 }
 
+/* Tahta ve hücre görselleri geldiğinde koddaki geçici zemin kalkar.
+   Görsel yolları CSS değişkenine yazılıyor; stil dosyası varsa onu, yoksa
+   kendi çizdiği düz zemini kullanıyor. */
+function tahtaGorselleri(){
+  const kok = document.documentElement;
+  if(gorselVar('assets/board.png')){
+    kok.style.setProperty('--tahta-gorsel', 'url(' + gorselYolu('assets/board.png') + ')');
+    document.body.classList.add('sanat-tahta');
+  }
+  if(gorselVar('assets/cell.png')){
+    kok.style.setProperty('--hucre-gorsel', 'url(' + gorselYolu('assets/cell.png') + ')');
+    document.body.classList.add('sanat-hucre');
+  }
+}
+
 function kur(){
   olculeriGuncelle();
+  tahtaGorselleri();
   window.addEventListener('resize', olculeriGuncelle);
 
   katmanGorseli('assets/home_page.png', '#basImg', '#basBg', '#basGecici');
