@@ -1,0 +1,10 @@
+# macOS her klasöre bunları bırakıyor — depoya girmesinler
+.DS_Store
+._*
+
+# Paketleyicinin ürettiği geçici dosyalar
+/tmp/
+bm_opt/
+
+# Yerel geliştirme ayarları — depoya girmesin
+.claude/

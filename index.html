@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bagaj Atölyesi — Turkish Technology</title>
+  <!-- Yazı tipleri Google'dan DEĞİL, assets/fonts/ içinden yükleniyor
+       (@font-face kuralları style.css'in başında). Kiosk internetsiz
+       çalışacağı için dışarıdan font çekmek riskliydi. -->
+  <meta name="color-scheme" content="light">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ================= SAHNE =================
+     Her şey 9:16 dikey bir kutunun içinde. Kiosk ekranı dikey; geliştirme
+     makinesinde pencere hangi orana gelirse gelsin oyun aynı görünsün diye
+     sahne oranı KİLİTLİ, ölçüler script.js'te sahne genişliğinden türetiliyor. -->
+<div id="sahne">
+
+  <!-- ÜST BİLGİ: tamamlanan sipariş / puan / geçen süre.
+       Şimdilik düz yazı — çerçeve ve rakam görselleri gelince buradaki
+       kutular görselin üstüne oturacak (bkz. style.css .hud-* kuralları). -->
+  <div id="hud">
+    <div class="hud-kutu"><span class="hud-etiket">SİPARİŞ</span><span class="hud-deger" id="hudSiparis">0/10</span></div>
+    <div class="hud-kutu"><span class="hud-etiket">PUAN</span><span class="hud-deger" id="hudPuan">0</span></div>
+    <div class="hud-kutu"><span class="hud-etiket">SÜRE</span><span class="hud-deger" id="hudSure">00:00</span></div>
+  </div>
+
+  <!-- ================= UÇAKLAR (SİPARİŞLER) =================
+       Üç park yeri. Her uçağın uçuş kodu, gittiği şehir ve istediği bagajın
+       rozeti var. Sipariş tamamlanınca uçak kalkar, yerine yenisi gelir.
+       İçeriği script dolduruyor. -->
+  <div id="ucaklar"></div>
+
+  <!-- ================= MERGE MATRİSİ =================
+       5 sütun × 6 satır. Hücreler script'te üretiliyor; biri sabit olarak
+       BAGAJ BANDI (makine) — üstüne basınca komşu boş hücrelere hediyelik
+       düşürür. Aynı iki hediyelik birleşince bir üst basamağa çıkar. -->
+  <div id="izgara"></div>
+
+  <!-- Parmağın altında sürüklenen kopya. Hücrenin içindeki asıl parça yerinde
+       kalır (yarı saydam), taşınan bu katmandır — sürükleme ızgaranın dışına,
+       uçakların üstüne kadar çıkabilsin diye sahne seviyesinde duruyor. -->
+  <div id="surukle" class="gizli"></div>
+
+  <!-- Kısa geri bildirimler: "+120", "yanlış uçak" gibi. Script yerleştirir. -->
+  <div id="baloncuklar"></div>
+</div>
+
+<!-- ================= BAŞLANGIÇ =================
+     Tasarımın tamamı tek bir görsel olacak (assets/home_page.png). O gelene
+     kadar geçici bir panel duruyor; tüm ekran dokunmatik, çocuk nereye basarsa
+     bassın oyun başlar. -->
+<div id="basScreen" class="katman">
+  <img id="basBg"  class="katman-bg"  alt="" aria-hidden="true">
+  <img id="basImg" class="katman-img" alt="Bagaj Atölyesi">
+  <div class="gecici-panel" id="basGecici">
+    <h1>BAGAJ ATÖLYESİ</h1>
+    <p>Hediyelikleri birleştir, bagajı hazırla, doğru uçağa yükle.</p>
+    <span class="gecici-not">geçici ekran — tasarım görseli gelince kalkacak</span>
+  </div>
+  <button id="basBtn" class="katman-hit" aria-label="Oyna"></button>
+</div>
+
+<!-- ================= BİTİŞ ================= -->
+<div id="bitScreen" class="katman gizli">
+  <img id="bitBg"  class="katman-bg"  alt="" aria-hidden="true">
+  <img id="bitImg" class="katman-img" alt="">
+  <div class="gecici-panel" id="bitGecici">
+    <h1>TEBRİKLER</h1>
+    <p class="bit-satir">Tamamlanan sipariş: <b id="bitSiparis">0</b></p>
+    <p class="bit-satir">Süre: <b id="bitSure">00:00</b></p>
+    <p class="bit-puan"><b id="bitPuan">0</b> puan</p>
+    <span class="gecici-not">geçici ekran — tasarım görseli gelince kalkacak</span>
+  </div>
+  <button id="bitBtn" class="katman-hit" aria-label="Tekrar oyna"></button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

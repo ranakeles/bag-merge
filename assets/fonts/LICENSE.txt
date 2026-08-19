@@ -1,0 +1,23 @@
+FONTS IN THIS FOLDER
+====================
+
+Fredoka    — https://fonts.google.com/specimen/Fredoka
+Nunito     — https://fonts.google.com/specimen/Nunito
+Open Sans  — https://fonts.google.com/specimen/Open+Sans
+
+All three are licensed under the SIL Open Font License, Version 1.1, which
+permits bundling them with this game and redistributing them:
+
+    https://openfontlicense.org
+
+Only the latin and latin-ext subsets are included. latin-ext is required —
+the Turkish letters ğ ş ı İ live there.
+
+Each family ships as a single variable font file per subset, so one file
+covers every weight the game uses. Google serves a separate file per
+requested weight, but they are byte-identical; keeping one of each brought
+the total from 500 KB down to 192 KB.
+
+To refresh them: request the families from the Google Fonts CSS API with a
+modern browser User-Agent, take the latin and latin-ext @font-face blocks,
+download the .woff2 files and drop the duplicates.

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bag Globe — Turkish Technology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --c-royal:#0035D7;--c-navy:#1C1C51;--c-sky:#0182C9;--c-dark:#1C122F;
+  --c-purple:#9E55A0;--c-red:#CD2028;--p2:#c479c6;--s2:#33a4dd;
+  --green:#22c55e;--bg0:#160c26;--panel:rgba(36,26,68,.78);--panel2:rgba(28,18,47,.9);
+  --line:rgba(158,85,160,.30);--text:#ece8f5;--muted:#a99fc4;
+  --hud:'Rajdhani',sans-serif;--body:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{font-family:var(--body);color:var(--text);overflow:hidden;user-select:none;
+  background:radial-gradient(1100px 720px at 80% -12%,rgba(158,85,160,.20),transparent 60%),
+    radial-gradient(900px 620px at -5% 112%,rgba(1,130,201,.16),transparent 55%),
+    linear-gradient(158deg,var(--c-navy),var(--c-dark) 55%,var(--bg0));}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.4;z-index:0;
+  background-image:linear-gradient(rgba(158,85,160,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(1,130,201,.05) 1px,transparent 1px);
+  background-size:46px 46px;mask-image:radial-gradient(circle at 50% 35%,#000,transparent 80%);}
+#app{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:center;gap:16px;padding:12px 24px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(28,18,47,.92),rgba(28,18,47,.4));backdrop-filter:blur(6px);}
+.logo{display:flex;align-items:center;gap:10px;height:38px;}
+.station{margin-left:8px;display:flex;align-items:center;gap:10px;}
+.station .num{font-family:var(--hud);font-weight:700;font-size:15px;color:#fff;background:var(--c-purple);
+  width:26px;height:26px;border-radius:7px;display:grid;place-items:center;box-shadow:0 0 14px rgba(158,85,160,.65);}
+.station .ttl{font-family:var(--hud);letter-spacing:.22em;font-weight:700;font-size:17px;}
+.station .ttl em{font-style:normal;color:var(--p2);}
+.spacer{flex:1;}
+.stat{font-family:var(--hud);text-align:right;}
+.stat .lab{font-size:10px;letter-spacing:.2em;color:var(--muted);}
+.stat .val{font-size:23px;font-weight:700;line-height:1;}
+.stat.time .val{color:var(--p2);}.stat.score .val{color:var(--s2);}.stat.match .val{color:var(--green);}
+.stat.div{width:1px;height:32px;background:var(--line);}
+.progress{height:4px;background:rgba(255,255,255,.06);}
+.progress>i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--c-purple),var(--c-sky));
+  box-shadow:0 0 12px var(--c-purple);transition:width .9s linear;}
+
+.screen{flex:1;display:flex;flex-direction:column;min-height:0;}
+.hidden{display:none!important;}
+
+/* START / END */
+.center-wrap{flex:1;display:grid;place-items:center;padding:20px;overflow:auto;}
+.panel-card{width:min(940px,95vw);background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--line);border-radius:20px;padding:30px 36px;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+.hero{display:flex;align-items:center;gap:18px;margin-bottom:12px;}
+.hero .ico{width:60px;height:60px;flex:none;display:grid;place-items:center;color:var(--p2);filter:drop-shadow(0 0 16px rgba(158,85,160,.7));}
+.hero h1{font-family:var(--hud);font-weight:700;letter-spacing:.07em;font-size:38px;line-height:1;}
+.hero p{color:var(--muted);font-size:13.5px;margin-top:6px;max-width:600px;line-height:1.5;}
+.section-h{font-family:var(--hud);letter-spacing:.24em;font-size:12px;color:var(--p2);margin:18px 0 10px;}
+.how{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;}
+.how .step{background:rgba(1,130,201,.07);border:1px solid var(--line);border-radius:13px;padding:12px 13px;}
+.how .step .n{font-family:var(--hud);font-weight:700;color:var(--s2);font-size:12px;letter-spacing:.1em;}
+.how .step h4{font-family:var(--hud);letter-spacing:.04em;font-size:14px;margin:3px 0;}
+.how .step small{color:var(--muted);font-size:11.5px;line-height:1.4;display:block;}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+.fstep{padding:13px 14px;display:flex;flex-direction:column;gap:7px;position:relative;}
+.fstep:not(:last-child)::after{content:"›";position:absolute;right:-8px;top:50%;transform:translateY(-50%);color:var(--c-purple);font-size:22px;font-family:var(--hud);z-index:2;}
+.ficon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--c-purple),var(--c-sky));box-shadow:0 4px 14px rgba(1,130,201,.3);}
+.ft{font-family:var(--hud);letter-spacing:.06em;font-weight:700;font-size:13px;}
+.fd{font-size:11px;color:var(--muted);line-height:1.4;}
+.does{display:flex;gap:11px;align-items:center;background:rgba(205,32,40,.08);border:1px solid rgba(205,32,40,.25);
+  border-radius:12px;padding:11px 15px;color:#f3c9cb;font-size:12.5px;margin-top:12px;line-height:1.45;}
+.does b{color:#ff8a8f;}
+.namerow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px;}
+.namerow input{flex:1;min-width:200px;background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text);
+  font-family:var(--body);font-size:16px;padding:14px 16px;border-radius:12px;outline:none;}
+.namerow input:focus{border-color:var(--c-purple);box-shadow:0 0 0 3px rgba(158,85,160,.22);}
+.btn{font-family:var(--hud);font-weight:700;letter-spacing:.12em;font-size:18px;border:none;cursor:pointer;
+  padding:15px 34px;border-radius:12px;color:#fff;background:linear-gradient(90deg,var(--c-royal),var(--c-sky));
+  box-shadow:0 8px 26px rgba(0,53,215,.4);transition:transform .12s;}
+.btn:active{transform:translateY(2px) scale(.99);}
+.btn.ghost{background:transparent;color:var(--p2);border:1px solid var(--c-purple);box-shadow:none;}
+
+/* PLAY */
+.play{flex:1;display:flex;flex-direction:column;min-height:0;padding:12px 22px 10px;gap:10px;}
+.belt-label,.pax-label{font-family:var(--hud);letter-spacing:.3em;font-size:11px;color:var(--p2);margin:0 0 6px 4px;}
+.belt{position:relative;border-radius:16px;padding:15px 14px;border:1px solid var(--line);
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 28px,rgba(255,255,255,.06) 28px 56px),linear-gradient(180deg,#241a44,#1a1130);
+  display:flex;gap:12px;flex-wrap:wrap;justify-content:center;min-height:116px;align-items:center;transition:all .4s;}
+.belt::after{content:"";position:absolute;left:10px;right:10px;bottom:6px;height:3px;border-radius:3px;
+  background:repeating-linear-gradient(90deg,var(--c-purple) 0 14px,transparent 14px 28px);opacity:.5;}
+.bag{width:116px;border-radius:12px;overflow:hidden;cursor:grab;touch-action:none;flex:none;
+  background:#1a1336;border:2px solid rgba(255,255,255,.08);box-shadow:0 10px 24px rgba(0,0,0,.45);
+  transition:transform .15s,box-shadow .15s,opacity .2s;}
+.bag.dragging{cursor:grabbing;box-shadow:0 18px 40px rgba(0,0,0,.6);transition:none;z-index:50;}
+.bag.selected{border-color:var(--c-purple);box-shadow:0 0 0 3px rgba(158,85,160,.4),0 10px 24px rgba(0,0,0,.45);}
+.bag.gone{opacity:0;transform:scale(.6);pointer-events:none;}
+.bag .top{height:7px;}
+.bag .body{padding:9px 10px 7px;}
+.bag .code{font-family:var(--hud);font-weight:700;font-size:19px;letter-spacing:.04em;line-height:1;}
+.bag .route{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.06em;}
+.bag .bc{height:14px;margin-top:8px;background:repeating-linear-gradient(90deg,#cdd9ee 0 1.5px,transparent 1.5px 3px,#cdd9ee 3px 4px,transparent 4px 7px);border-radius:2px;opacity:.5;}
+.pax-area{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:11px;align-content:start;overflow:hidden;padding-top:2px;}
+.pax{border-radius:14px;padding:11px 13px;border:2px dashed var(--line);
+  background:linear-gradient(180deg,rgba(36,26,68,.7),rgba(28,18,47,.7));display:flex;align-items:center;gap:11px;
+  transition:background .15s,box-shadow .15s,border-color .15s;min-height:72px;position:relative;overflow:visible;}
+.pax.hot{border-style:solid;border-color:var(--c-purple);background:rgba(158,85,160,.16);box-shadow:0 0 26px rgba(158,85,160,.35) inset;}
+.pax.matched{border-style:solid;border-color:rgba(34,197,94,.6);background:rgba(34,197,94,.12);}
+.pax.bad{animation:shake .35s;border-color:var(--c-red);}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.pax .av{width:40px;height:40px;border-radius:11px;flex:none;display:grid;place-items:center;font-family:var(--hud);font-weight:700;color:#fff;font-size:15px;}
+.pax .info{flex:1;min-width:0;}
+.pax .nm{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pax .fl{font-family:var(--hud);font-size:13px;color:var(--p2);letter-spacing:.04em;margin-top:1px;}
+.pax .ds{font-size:11px;color:var(--muted);}
+.pax .check{width:25px;height:25px;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--green);color:#06210f;font-weight:700;opacity:0;transform:scale(.4);transition:.2s;}
+.pax.matched .check{opacity:1;transform:scale(1);}
+.flow-footer{flex:none;display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:8px;}
+.flow-footer .ff-lab{font-family:var(--hud);letter-spacing:.14em;font-size:10px;color:var(--p2);flex:none;margin-right:2px;}
+.flow-footer .chip{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);}
+.flow-footer .chip b{color:#d8d2e8;font-family:var(--hud);letter-spacing:.04em;font-weight:700;font-size:11.5px;}
+.flow-footer .ci{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--c-purple),var(--c-sky));flex:none;}
+.flow-footer .arr{color:var(--c-purple);font-family:var(--hud);font-size:14px;}
+.flow-footer .ff-brand{margin-left:auto;font-size:10px;color:var(--muted);letter-spacing:.06em;}
+.flow-footer .ff-brand b{color:var(--c-red);}
+
+/* ===== DEPARTURE ANIMATION ===== */
+@keyframes bagPop{
+  0%{transform:scale(0) rotate(-40deg);opacity:0;}
+  65%{transform:scale(1.35) rotate(8deg);opacity:1;}
+  100%{transform:scale(1) rotate(0);opacity:1;}
+}
+@keyframes paxDepart{
+  0%{transform:translateX(0) scale(1);opacity:1;}
+  18%{transform:translateX(-10px) scale(1.03);opacity:1;}
+  100%{transform:translateX(170%) scale(0.75);opacity:0;filter:blur(2px);}
+}
+@keyframes beltSuccessAnim{
+  from{opacity:0;transform:scale(0.82);}
+  to{opacity:1;transform:scale(1);}
+}
+@keyframes confettiRain{
+  0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+  100%{transform:translateY(120px) rotate(720deg);opacity:0;}
+}
+.pax.departing{animation:paxDepart .78s cubic-bezier(.4,0,.9,.1) forwards;}
+.dep-bag-icon{position:absolute;top:-22px;right:4px;width:30px;height:30px;
+  animation:bagPop .38s ease-out forwards;pointer-events:none;z-index:20;}
+.belt-success-msg{animation:beltSuccessAnim .5s ease-out forwards;
+  display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:12px;width:100%;}
+.belt-success-msg .bsm-ico{font-size:42px;line-height:1;filter:drop-shadow(0 0 20px rgba(34,197,94,.9));}
+.belt-success-msg .bsm-t{font-family:var(--hud);font-weight:700;letter-spacing:.12em;font-size:17px;
+  color:var(--green);text-shadow:0 0 16px rgba(34,197,94,.5);}
+.belt-success-msg .bsm-s{font-size:11px;color:var(--muted);letter-spacing:.06em;}
+.confetti-dot{position:absolute;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:30;
+  animation:confettiRain .9s ease-in forwards;}
+
+/* FLASH */
+.flash{position:fixed;inset:0;z-index:60;display:grid;place-items:center;pointer-events:none;opacity:0;transition:opacity .15s;}
+.flash.show{opacity:1;}
+.flash .fcard{transform:scale(.94);transition:transform .25s cubic-bezier(.2,.8,.2,1);background:rgba(28,18,47,.94);
+  border:1px solid var(--line);border-radius:16px;padding:18px 28px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+.flash.show .fcard{transform:scale(1);}
+.flash .ftag{font-family:var(--hud);font-weight:700;letter-spacing:.1em;font-size:26px;}
+.flash .ftag.ok{color:var(--green);}.flash .ftag.no{color:var(--c-red);}
+.flash .fpts{font-family:var(--hud);font-weight:700;font-size:15px;margin-top:5px;}
+
+/* END */
+.end-score{font-family:var(--hud);font-weight:700;font-size:64px;color:var(--s2);line-height:1;text-shadow:0 0 30px rgba(51,164,221,.4);}
+.end-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;align-items:center;margin:14px 0 18px;}
+.end-stats{display:flex;gap:22px;margin-top:10px;}
+.end-stats div .v{font-family:var(--hud);font-weight:700;font-size:25px;}
+.end-stats div .l{font-size:11px;color:var(--muted);letter-spacing:.13em;}
+.box{background:linear-gradient(180deg,rgba(36,26,68,.7),rgba(28,18,47,.7));border:1px solid var(--line);border-radius:14px;padding:14px 16px;}
+.box h5{font-family:var(--hud);letter-spacing:.2em;font-size:12px;color:var(--p2);margin-bottom:10px;}
+.lb-row{display:flex;align-items:center;gap:10px;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.lb-row:last-child{border-bottom:none;}
+.lb-row .rk{font-family:var(--hud);font-weight:700;width:18px;color:var(--muted);}
+.lb-row .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#cdc6df;}
+.lb-row .sc{font-family:var(--hud);font-weight:700;color:var(--s2);}
+.lb-row.me{background:rgba(158,85,160,.16);border-radius:8px;padding:6px 8px;border:none;}
+.lb-row.me .nm{color:var(--p2);font-weight:600;}
+.passport{display:flex;align-items:center;gap:12px;background:rgba(158,85,160,.08);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:12.5px;color:#cdc6df;margin-top:6px;}
+
+@media(max-width:840px){.how,.flow{grid-template-columns:1fr 1fr;}.fstep::after{display:none;}.pax-area{grid-template-columns:1fr 1fr;}.end-grid{grid-template-columns:1fr;}.hero h1{font-size:28px;}.flow-footer{display:none;}}
+@media(max-height:600px){.how{display:none;}}
+
+  #playScreen{position:relative;}
+  .bg-flyover{position:absolute;z-index:80;left:-20%;bottom:24%;pointer-events:none;
+    filter:drop-shadow(0 10px 26px rgba(0,0,0,.55));animation:bgPlaneFly 2.6s cubic-bezier(.3,0,.7,1) forwards;}
+  @keyframes bgPlaneFly{0%{left:-20%;bottom:22%;transform:rotate(0)}55%{bottom:30%}100%{left:120%;bottom:58%;transform:rotate(-12deg)}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="logo">
+      <svg height="36" viewBox="0 0 440 110" xmlns="http://www.w3.org/2000/svg"><g transform="translate(4,7) scale(0.795) translate(-235.772,-478.653)"><path transform="matrix(1,0,0,-1,280.9243,541.3447)" d="M0 0C5.137 19.306-.725 39.539-14.745 50.26-33.842 38.173-44.854 15.438-40.875-8.245-39.563-16.073-36.724-23.265-32.728-29.573-17.798-25.415-4.668-17.544 0 0M25.776-55.718C57.295-50.427 78.548-20.585 73.249 10.925 68.846 37.15 47.461 56.265 22.25 58.904 17.158 59.439 11.901 59.293 6.598 58.407 .313 57.353-5.549 55.308-10.888 52.477 16.891 43.055 31.828 28.733 32.862 14.059 33.372 4.996 29.16-1.555 23.626-6.898L62.907-4.153C64.018-4.077 64.367-5.371 63.02-5.757L-30.669-32.621C-21.133-45.757-6.32-54.496 10.126-56.215 15.216-56.75 20.474-56.613 25.776-55.718M22.611 62.353C53.467 59.141 77.531 33.068 77.541 1.366 77.554-32.514 50.097-59.991 16.217-60.003-17.665-60.014-45.14-32.558-45.152 1.323-45.164 35.204-17.708 62.68 16.173 62.692 18.345 62.692 20.492 62.572 22.611 62.353" fill="#ffffff"/><path transform="matrix(1,0,0,-1,240.0493,549.5891)" d="M0 0C1.312-7.829 4.151-15.022 8.147-21.329 23.077-17.171 36.207-9.299 40.875 8.245 46.012 27.55 40.15 47.783 26.13 58.504 7.033 46.417-3.979 23.682 0 0M114.124 19.17C119.423-12.341 98.17-42.183 66.651-47.473 61.349-48.368 56.091-48.506 51.001-47.97 34.555-46.251 19.74-37.512 10.206-24.376L103.895 2.487C105.242 2.874 104.893 4.166 103.782 4.09L64.501 1.347C70.035 6.688 74.247 13.241 73.737 22.302 72.703 36.978 57.766 51.299 29.987 60.722 35.326 63.553 41.188 65.598 47.473 66.651 52.776 67.538 58.033 67.683 63.123 67.148 88.336 64.51 109.721 45.394 114.124 19.17" fill="#c90c0f"/></g><text x="120" y="46" font-family="Arial Black,Arial" font-weight="900" font-size="33" fill="#e8edf5" letter-spacing="1">TURKISH</text><text x="120" y="88" font-family="Arial Black,Arial" font-weight="900" font-size="33" fill="#e8edf5" letter-spacing="1">TECHNOLOGY</text></svg>
+    </div>
+    <div class="station"><div class="num">1</div><div class="ttl">BAG <em>GLOBE</em></div></div>
+    <div class="spacer"></div>
+    <div class="stat match"><div class="lab">EŞLEŞTİRME</div><div class="val" id="matchCount">0/6</div></div>
+    <div class="stat div"></div>
+    <div class="stat time"><div class="lab">KALAN SÜRE</div><div class="val" id="timer">01:20</div></div>
+    <div class="stat div"></div>
+    <div class="stat score"><div class="lab">PUAN</div><div class="val" id="score">0</div></div>
+  </div>
+  <div class="progress"><i id="progress"></i></div>
+
+  <!-- START -->
+  <div class="screen" id="startScreen">
+    <div class="center-wrap">
+      <div class="panel-card">
+        <div class="hero">
+          <div class="ico"><svg viewBox="0 0 24 24" width="60" height="60" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="7" width="14" height="13" rx="2"/><path d="M9 7V4h6v3"/><path d="M9 11v5M15 11v5"/></svg></div>
+          <div><h1>BAG GLOBE</h1><p>Turkish Technology'nin akıllı bagaj takip çözümü. Banttan gelen her bagajı doğru yolcuyla eşleştir; etiketteki uçuş kodu ve varış noktası tek ipucun.</p></div>
+        </div>
+        <div class="section-h">NASIL OYNANIR?</div>
+        <div class="how">
+          <div class="step"><div class="n">01</div><h4>YOLCUYU TANI</h4><small>Her yolcunun uçuş kodunu ve varışını oku.</small></div>
+          <div class="step"><div class="n">02</div><h4>BAGAJI EŞLEŞTİR</h4><small>Banttaki bagajı kodu uyan yolcuya sürükle.</small></div>
+          <div class="step"><div class="n">03</div><h4>SÜREYE DİKKAT</h4><small>Süre bitmeden tüm bagajları ulaştır.</small></div>
+          <div class="step"><div class="n">04</div><h4>PUAN KAZAN</h4><small>Doğru eşleştirme + hız bonusu.</small></div>
+        </div>
+        <div class="section-h">BAG GLOBE NASIL ÇALIŞIR?</div>
+        <div class="flow">
+          <div class="fstep"><div class="ficon"><svg width="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0l-6.2-6.2A2 2 0 015 12V5a2 2 0 012-2h7.6a2 2 0 011.4.6l6.2 6.2a2 2 0 010 2.6z"/><circle cx="8" cy="8" r="1.4" fill="#fff"/></svg></div><div class="ft">ETİKETLEME</div><div class="fd">Her bagaja özel akıllı etiket takılır.</div></div>
+          <div class="fstep"><div class="ficon"><svg width="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7"><path d="M12 21s7-5.6 7-11a7 7 0 10-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg></div><div class="ft">TAKİP</div><div class="fd">Uçuş boyunca gerçek zamanlı izlenir.</div></div>
+          <div class="fstep"><div class="ficon"><svg width="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></div><div class="ft">AKILLI EŞLEŞTİRME</div><div class="fd">Bagajı doğru uçağa ve yolcuya yönlendirir.</div></div>
+          <div class="fstep"><div class="ficon"><svg width="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg></div><div class="ft">DOĞRU TESLİMAT</div><div class="fd">Varış noktasında doğru yolcuya ulaşır.</div></div>
+        </div>
+        <div class="does"><svg width="20" viewBox="0 0 24 24" fill="none" stroke="#ff8a8f" stroke-width="1.7" style="flex:none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="2.6"/></svg>
+          <div><b>Bag Globe ne yapıyor?</b> Bagajları check-in'den varış noktasına kadar gerçek zamanlı izler; yanlış bagajı önler, operasyonları hızlandırır ve yolcu memnuniyetini artırır.</div></div>
+        <div class="namerow">
+          <input id="playerName" type="text" placeholder="Adın (opsiyonel)" maxlength="18" autocomplete="off">
+          <button class="btn" id="startBtn">OYUNA BAŞLA →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAY -->
+  <div class="screen hidden" id="playScreen">
+    <div class="play">
+      <div>
+        <div class="belt-label">BAGAJ BANDI — bagajı sürükle ya da bagaja sonra yolcuya dokun</div>
+        <div class="belt" id="belt"></div>
+      </div>
+      <div class="pax-label">YOLCULAR</div>
+      <div class="pax-area" id="paxArea"></div>
+      <div class="flow-footer">
+        <span class="ff-lab">NASIL ÇALIŞIR</span>
+        <span class="chip"><span class="ci"><svg width="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0l-6.2-6.2A2 2 0 015 12V5a2 2 0 012-2h7.6a2 2 0 011.4.6l6.2 6.2a2 2 0 010 2.6z"/></svg></span><b>ETİKETLEME</b></span>
+        <span class="arr">›</span><span class="chip"><b>TAKİP</b></span>
+        <span class="arr">›</span><span class="chip"><b>AKILLI EŞLEŞTİRME</b></span>
+        <span class="arr">›</span><span class="chip"><b>DOĞRU TESLİMAT</b></span>
+        <span class="ff-brand"><b>Turkish Technology</b> ürünü</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- END -->
+  <div class="screen hidden" id="endScreen">
+    <div class="center-wrap">
+      <div class="panel-card">
+        <div class="hero" style="margin-bottom:4px">
+          <div class="ico" id="endIco"></div>
+          <div><h1 id="endTitle">GÖREV TAMAM</h1><p id="endMsg"></p></div>
+        </div>
+        <div class="end-grid">
+          <div>
+            <div style="font-family:var(--hud);letter-spacing:.2em;font-size:12px;color:var(--muted)">TOPLAM PUAN</div>
+            <div class="end-score" id="endScore">0</div>
+            <div class="end-stats">
+              <div><div class="v" id="endMatched" style="color:var(--green)">0/6</div><div class="l">DOĞRU EŞLEŞME</div></div>
+              <div><div class="v" id="endMiss" style="color:var(--c-red)">0</div><div class="l">HATALI DENEME</div></div>
+              <div><div class="v" id="endTime" style="color:var(--p2)">0sn</div><div class="l">KALAN SÜRE</div></div>
+            </div>
+            <div class="passport">
+              <svg width="38" height="38" viewBox="235.772 478.653 122.694 122.694" style="flex:none"><path transform="matrix(1,0,0,-1,280.9243,541.3447)" d="M0 0C5.137 19.306-.725 39.539-14.745 50.26-33.842 38.173-44.854 15.438-40.875-8.245-39.563-16.073-36.724-23.265-32.728-29.573-17.798-25.415-4.668-17.544 0 0M25.776-55.718C57.295-50.427 78.548-20.585 73.249 10.925 68.846 37.15 47.461 56.265 22.25 58.904 17.158 59.439 11.901 59.293 6.598 58.407 .313 57.353-5.549 55.308-10.888 52.477 16.891 43.055 31.828 28.733 32.862 14.059 33.372 4.996 29.16-1.555 23.626-6.898L62.907-4.153C64.018-4.077 64.367-5.371 63.02-5.757L-30.669-32.621C-21.133-45.757-6.32-54.496 10.126-56.215 15.216-56.75 20.474-56.613 25.776-55.718M22.611 62.353C53.467 59.141 77.531 33.068 77.541 1.366 77.554-32.514 50.097-59.991 16.217-60.003-17.665-60.014-45.14-32.558-45.152 1.323-45.164 35.204-17.708 62.68 16.173 62.692 18.345 62.692 20.492 62.572 22.611 62.353" fill="#ffffff"/><path transform="matrix(1,0,0,-1,240.0493,549.5891)" d="M0 0C1.312-7.829 4.151-15.022 8.147-21.329 23.077-17.171 36.207-9.299 40.875 8.245 46.012 27.55 40.15 47.783 26.13 58.504 7.033 46.417-3.979 23.682 0 0M114.124 19.17C119.423-12.341 98.17-42.183 66.651-47.473 61.349-48.368 56.091-48.506 51.001-47.97 34.555-46.251 19.74-37.512 10.206-24.376L103.895 2.487C105.242 2.874 104.893 4.166 103.782 4.09L64.501 1.347C70.035 6.688 74.247 13.241 73.737 22.302 72.703 36.978 57.766 51.299 29.987 60.722 35.326 63.553 41.188 65.598 47.473 66.651 52.776 67.538 58.033 67.683 63.123 67.148 88.336 64.51 109.721 45.394 114.124 19.17" fill="#c90c0f"/></svg>
+              <div>Tech Passport'una <b style="color:var(--p2)">Bag Globe</b> damgası eklendi. Sıradaki: <b>Turnaround AI</b></div>
+            </div>
+          </div>
+          <div class="box"><h5>SKOR TABLOSU</h5><div id="finalLb"></div></div>
+        </div>
+        <div class="namerow">
+          <button class="btn" id="againBtn">TEKRAR OYNA ↻</button>
+          <button class="btn ghost" id="resetLbBtn">Skor tablosunu sıfırla</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="flash" id="flash"><div class="fcard"><div class="ftag" id="fTag"></div><div class="fpts" id="fPts"></div></div></div>
+
+<script>
+const ROUND_TIME=80,MATCHES=6,PTS_CORRECT=120,PTS_WRONG=-40,TIME_BONUS=6;
+const PAX_POOL=[
+  {nm:"Ayşe Yılmaz",code:"TK1821",city:"Londra",dst:"LHR",c:"#0035D7"},
+  {nm:"Mehmet Kaya",code:"TK455",city:"New York",dst:"JFK",c:"#0182C9"},
+  {nm:"Elif Demir",code:"TK1865",city:"Paris",dst:"CDG",c:"#9E55A0"},
+  {nm:"Can Uysal",code:"TK241",city:"Berlin",dst:"BER",c:"#CD2028"},
+  {nm:"Zeynep Arslan",code:"TK101",city:"Amsterdam",dst:"AMS",c:"#1C1C51"},
+  {nm:"Burak Şahin",code:"TK778",city:"Madrid",dst:"MAD",c:"#3358e0"},
+  {nm:"Deniz Aydın",code:"TK1979",city:"Roma",dst:"FCO",c:"#0891b2"},
+  {nm:"Selin Koç",code:"TK1325",city:"Viyana",dst:"VIE",c:"#b23478"},
+  {nm:"Emre Çelik",code:"TK583",city:"Münih",dst:"MUC",c:"#1d4ed8"},
+  {nm:"Naz Öztürk",code:"TK2018",city:"Dubai",dst:"DXB",c:"#7c3aed"}
+];
+const SEED_LB=[{nm:"Can Uysal",sc:840},{nm:"Ayşe Yılmaz",sc:760},{nm:"Mehmet Kaya",sc:700},{nm:"Elif Demir",sc:620},{nm:"Burak Şahin",sc:520}];
+function loadLb(){try{const r=localStorage.getItem('bg_lb');if(r)return JSON.parse(r);}catch(e){}return SEED_LB.slice();}
+function saveLb(lb){try{localStorage.setItem('bg_lb',JSON.stringify(lb));}catch(e){}}
+let LB=loadLb();
+let round=[],score=0,matched=0,misses=0,timeLeft=ROUND_TIME,timer=null,playerName="Sen",selectedBag=null,locked=false;
+const $=s=>document.querySelector(s);
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+function fmt(t){return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');}
+function initials(s){return s.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();}
+function renderLb(target,hi){const rows=LB.slice().sort((a,b)=>b.sc-a.sc).slice(0,5);
+  $(target).innerHTML=rows.map((r,i)=>{const me=hi!=null&&r.sc===hi&&r.nm===playerName;
+  return`<div class="lb-row ${me?'me':''}"><div class="rk">${i+1}</div><div class="nm">${r.nm}</div><div class="sc">${r.sc}</div></div>`;}).join('');}
+function startGame(){
+  playerName=($('#playerName').value||'Sen').trim().slice(0,18)||'Sen';
+  round=shuffle(PAX_POOL).slice(0,MATCHES);
+  score=0;matched=0;misses=0;timeLeft=ROUND_TIME;selectedBag=null;locked=false;
+  $('#score').textContent='0';$('#matchCount').textContent='0/'+MATCHES;$('#timer').textContent=fmt(timeLeft);$('#progress').style.width='100%';
+  $('#startScreen').classList.add('hidden');$('#endScreen').classList.add('hidden');$('#playScreen').classList.remove('hidden');
+  renderBoard();
+  clearInterval(timer);
+  timer=setInterval(()=>{timeLeft--;$('#timer').textContent=fmt(Math.max(0,timeLeft));if(timeLeft<=0)triggerDeparture();},1000);
+}
+function renderBoard(){
+  const bags=shuffle(round);
+  $('#belt').innerHTML=bags.map(b=>`<div class="bag" data-code="${b.code}"><div class="top" style="background:${b.c}"></div><div class="body"><div class="code">${b.code}</div><div class="route">IST → ${b.dst}</div><div class="bc"></div></div></div>`).join('');
+  $('#paxArea').innerHTML=round.map(p=>`<div class="pax" data-code="${p.code}"><div class="av" style="background:${p.c}">${initials(p.nm)}</div><div class="info"><div class="nm">${p.nm}</div><div class="fl">${p.code}</div><div class="ds">IST → ${p.dst} · ${p.city}</div></div><div class="check">✓</div></div>`).join('');
+  document.querySelectorAll('.bag').forEach(enableBag);
+  document.querySelectorAll('.pax').forEach(px=>px.addEventListener('click',()=>{if(selectedBag&&!locked)attempt(selectedBag,px);}));
+}
+function attempt(bag,pax){
+  if(bag.classList.contains('gone')||pax.classList.contains('matched'))return;
+  const ok=bag.dataset.code===pax.dataset.code;
+  if(ok){
+    locked=true;bag.classList.add('gone');pax.classList.add('matched');
+    matched++;score=Math.max(0,score+PTS_CORRECT);
+    $('#matchCount').textContent=matched+'/'+MATCHES;$('#score').textContent=score;
+    $('#progress').style.width=(100*(MATCHES-matched)/MATCHES)+'%';clearSel();
+    feedback(true,'+'+PTS_CORRECT+' puan'+(matched===MATCHES?'  •  Tüm bagajlar yerinde! 🎉':''));
+    setTimeout(()=>{locked=false;if(matched>=MATCHES)triggerDeparture();},matched>=MATCHES?600:420);
+  }else{
+    misses++;score=Math.max(0,score+PTS_WRONG);$('#score').textContent=score;
+    pax.classList.add('bad');setTimeout(()=>pax.classList.remove('bad'),350);clearSel();
+    feedback(false,PTS_WRONG+' puan · kod uyuşmuyor');
+  }
+}
+function clearSel(){if(selectedBag)selectedBag.classList.remove('selected');selectedBag=null;}
+function feedback(ok,txt){const f=$('#flash');
+  $('#fTag').className='ftag '+(ok?'ok':'no');$('#fTag').textContent=ok?'DOĞRU EŞLEŞME ✓':'YANLIŞ ✕';
+  $('#fPts').textContent=txt;$('#fPts').style.color=ok?'var(--green)':'var(--c-red)';
+  f.classList.add('show');clearTimeout(f._t);f._t=setTimeout(()=>f.classList.remove('show'),700);}
+
+/* ===== DEPARTURE ANIMATION ===== */
+function triggerDeparture(){
+  clearInterval(timer);
+
+  // 1. Belt → tebrik mesajı
+  setTimeout(()=>{
+    const b=$('#belt');
+    b.innerHTML=`<div class="belt-success-msg">
+      <div class="bsm-ico">✅</div>
+      <div class="bsm-t">TÜM BAGAJLAR TESLİM EDİLDİ</div>
+      <div class="bsm-s">Yolcular kapıya ilerliyor…</div>
+    </div>`;
+    // Confetti
+    for(let i=0;i<18;i++){
+      const d=document.createElement('div');
+      d.className='confetti-dot';
+      const colors=['#9E55A0','#0182C9','#CD2028','#22c55e','#fbbf24','#0035D7'];
+      d.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*40+10}%;background:${colors[i%colors.length]};animation-delay:${Math.random()*0.4}s;animation-duration:${0.7+Math.random()*0.5}s;width:${6+Math.random()*6}px;height:${6+Math.random()*6}px;border-radius:${Math.random()>0.5?'50%':'3px'};`;
+      b.appendChild(d);
+    }
+  },320);
+
+  // 2. Her yolcu kartına valiz ikonu + departure animasyonu (staggered)
+  const cards=[...document.querySelectorAll('#paxArea .pax')];
+  cards.forEach((card,i)=>{
+    const av=card.querySelector('.av');
+    const color=av?av.style.background:'#0035D7';
+    setTimeout(()=>{
+      const icon=document.createElement('div');
+      icon.className='dep-bag-icon';
+      icon.innerHTML=`<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5" y="7.5" width="14" height="12" rx="2.5" fill="${color}" filter="drop-shadow(0 2px 6px ${color}88)"/>
+        <path d="M9.5 7.5V5A1 1 0 0 1 10.5 4h3A1 1 0 0 1 14.5 5v2.5" stroke="rgba(255,255,255,.7)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <line x1="9" y1="11" x2="9" y2="16.5" stroke="rgba(255,255,255,.5)" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="15" y1="11" x2="15" y2="16.5" stroke="rgba(255,255,255,.5)" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>`;
+      card.appendChild(icon);
+      setTimeout(()=>card.classList.add('departing'),400);
+    },i*175);
+  });
+
+  // 3. Yolcular gidince THY uçağının kalkışı
+  const departMs=cards.length*175+400+800;
+  setTimeout(()=>{
+    const b=$('#belt');
+    b.innerHTML=`<div class="belt-success-msg"><div class="bsm-ico">🛫</div><div class="bsm-t">UÇUŞ KALKIYOR</div><div class="bsm-s">Tüm bagajlar uçakta — iyi yolculuklar!</div></div>`;
+    const fly=document.createElement('div');
+    fly.className='bg-flyover';
+    fly.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 96" width="160">
+<!-- kanat (arka, açık gri) -->
+<path d="M128 56 L170 84 L188 84 L156 56 Z" fill="#b9c6da"/>
+<!-- motor -->
+<ellipse cx="150" cy="62" rx="15" ry="7" fill="#d4dde9"/>
+<ellipse cx="136" cy="62" rx="3.5" ry="7" fill="#1a2b45"/>
+<path d="M150 56 a15 7 0 0 1 0 12" fill="none" stroke="#CD2028" stroke-width="2.4"/>
+<!-- gövde (beyaz) -->
+<path d="M14 50 C14 41 30 37 80 36 L168 35 C196 35 214 41 226 49 C228 50 228 51 226 52 C214 56 196 58 168 57 L44 56 C24 56 14 55 14 50 Z" fill="#f4f8ff"/>
+<!-- cheatline (kırmızı) -->
+<path d="M20 52 C70 50 150 49 214 51 L214 54 C150 53 70 53 20 55 Z" fill="#CD2028"/>
+<!-- burun konisi (uç, açık gri) -->
+<path d="M214 49 C220 49.5 225 50.5 226 51 C225 51.5 220 52.5 214 53 Z" fill="#d4dde9"/>
+<!-- kokpit camı -->
+<path d="M200 46 C206 46 210 48 212 50 C209 50 204 49 200 49 Z" fill="#1a2b45"/>
+<!-- kuyruk dikey stabilizatör (kırmızı) -->
+<path d="M26 38 L16 8 L33 8 L48 38 Z" fill="#CD2028"/>
+<!-- kuyrukta beyaz kaz izi -->
+<path d="M27 30 C31 24 36 21 41 20 C38 25 34 29 30 33 Z" fill="#fff"/>
+<!-- yatay stabilizatör -->
+<path d="M22 44 L6 40 L6 46 L26 48 Z" fill="#e3e9f3"/>
+<!-- pencere sırası -->
+<g fill="#9fb2cc">
+<circle cx="70" cy="46" r="1.6"/><circle cx="82" cy="46" r="1.6"/><circle cx="94" cy="46" r="1.6"/><circle cx="106" cy="46" r="1.6"/><circle cx="118" cy="46" r="1.6"/><circle cx="130" cy="46" r="1.6"/><circle cx="172" cy="45" r="1.6"/><circle cx="184" cy="45" r="1.6"/>
+</g>
+</svg>`;
+    $('#playScreen').appendChild(fly);
+    setTimeout(()=>{ fly.remove(); const bonus=Math.max(0,timeLeft)*TIME_BONUS; score+=bonus; showEndScreen(); }, 2600);
+  },departMs);
+}
+
+function showEndScreen(){
+  $('#playScreen').classList.add('hidden');$('#endScreen').classList.remove('hidden');
+  $('#endScore').textContent=score;$('#endMatched').textContent=matched+'/'+MATCHES;
+  $('#endMiss').textContent=misses;$('#endTime').textContent=Math.max(0,timeLeft)+'sn';
+  let title,msg,col;const pct=matched/MATCHES;
+  if(pct>=1&&misses===0){title='KUSURSUZ TESLİMAT';msg='Tek hata yok! Tüm bagajlar doğru yolcuda.';col='var(--green)';}
+  else if(pct>=1){title='GÖREV TAMAM';msg='Tüm bagajlar yerinde. Hızını biraz daha artırabilirsin!';col='var(--p2)';}
+  else if(pct>=.5){title='SÜRE DOLDU';msg='Bagajların çoğu yerine ulaştı. Tekrar dene!';col='var(--s2)';}
+  else{title='BANT KARIŞTI';msg='Uçuş kodlarına odaklan!';col='var(--c-red)';}
+  $('#endTitle').textContent=title;$('#endTitle').style.color=col;$('#endMsg').textContent=msg;
+  $('#endIco').innerHTML=`<svg viewBox="0 0 24 24" width="60" height="60" fill="none" stroke="${col}" stroke-width="1.5"><rect x="5" y="7" width="14" height="13" rx="2"/><path d="M9 7V4h6v3"/><path d="M9 11v5M15 11v5"/></svg>`;
+  LB.push({nm:playerName,sc:score});saveLb(LB);renderLb('#finalLb',score);
+}
+
+function enableBag(el){
+  el.addEventListener('click',()=>{if(locked||el.classList.contains('gone'))return;if(el._dragged){el._dragged=false;return;}if(selectedBag===el){clearSel();return;}clearSel();selectedBag=el;el.classList.add('selected');});
+  let dragging=false,sx=0,sy=0,cx=0,cy=0;
+  function paxUnder(x,y){let hit=null;document.querySelectorAll('.pax').forEach(px=>{const r=px.getBoundingClientRect();const inside=x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;px.classList.toggle('hot',inside&&!px.classList.contains('matched'));if(inside)hit=px;});return hit;}
+  function clearHot(){document.querySelectorAll('.pax.hot').forEach(p=>p.classList.remove('hot'));}
+  el.addEventListener('pointerdown',e=>{if(locked||el.classList.contains('gone'))return;dragging=true;sx=e.clientX;sy=e.clientY;cx=0;cy=0;el._dragged=false;el.setPointerCapture(e.pointerId);el.classList.add('dragging');});
+  el.addEventListener('pointermove',e=>{if(!dragging)return;cx=e.clientX-sx;cy=e.clientY-sy;if(Math.hypot(cx,cy)>6)el._dragged=true;el.style.transform=`translate(${cx}px,${cy}px) rotate(${cx*0.02}deg)`;paxUnder(e.clientX,e.clientY);});
+  function release(e){if(!dragging)return;dragging=false;el.classList.remove('dragging');const px=paxUnder(e.clientX,e.clientY);clearHot();el.style.transform='';if(el._dragged&&px)attempt(el,px);}
+  el.addEventListener('pointerup',release);
+  el.addEventListener('pointercancel',()=>{dragging=false;el.classList.remove('dragging');el.style.transform='';clearHot();});
+}
+$('#startBtn').addEventListener('click',startGame);
+$('#playerName').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+$('#againBtn').addEventListener('click',startGame);
+$('#resetLbBtn').addEventListener('click',()=>{LB=SEED_LB.slice();saveLb(LB);renderLb('#finalLb',score);});
+</script>
+</body>
+</html>
