@@ -38,7 +38,7 @@ const HIZ_BONUS_TAVAN = 300;   // saniye
 const SEHIRLER = {
   paris: {
     ad:'Paris', kod:'CDG', renk:'#9E55A0',
-    zincir:['Fular','Kruvasan','Eyfel Kulesi','Paris Bagajı'],
+    zincir:['Bere','Kruvasan','Eyfel Kulesi','Paris Bagajı'],
     ucuslar:['TK1823','TK1827','TK1831']
   },
   newyork: {

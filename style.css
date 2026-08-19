@@ -38,8 +38,10 @@
 /* =========================================================
    BAGAJ ATÖLYESİ — hediyelikleri birleştir, bagajı doğru uçağa yükle
 
-   GÖRÜNÜM: parlak 3D oyuncak. Canlı turkuaz-mor bir gökyüzü, üstünde
+   GÖRÜNÜM: parlak çizgi film. Canlı turkuaz-mor bir gökyüzü, üstünde
    beyaz, yuvarlak, hafif kabarık kartlar; hücreler şeker gibi baloncuk.
+   Cam gibi parlayan 3B yüzeylerden KAÇINILIYOR: hediyelik görselleri
+   mat ve konturlu çizgi film tarzında, geçici kutular da öyle durmalı.
    Kurumsal renkler (Bag Globe paleti) burada ZEMİN değil AKSAN: uçak
    çizgisi, makine gövdesi, puan rakamları.
 
@@ -137,8 +139,9 @@ body{ font-family:var(--body); color:var(--text); background:#4FB8E8; user-selec
 /* Görsel gelmeden önce uçağın yerini tutan geçici kutu */
 .ucak-gecici{
   width:88%; height:calc(var(--hucre)*0.58); border-radius:calc(var(--hucre)*0.20);
-  background:linear-gradient(170deg, #7FD8FF, var(--sky) 55%, var(--royal));
-  box-shadow:inset 0 calc(var(--hucre)*0.10) 0 rgba(255,255,255,.35);
+  background:linear-gradient(170deg, #7FD8FF, var(--sky) 60%, var(--royal));
+  box-shadow:inset 0 calc(var(--hucre)*0.08) 0 rgba(255,255,255,.25),
+             0 0 0 calc(var(--hucre)*0.03) rgba(27,36,71,.30);
   display:grid; place-items:center; color:#fff; font-size:calc(var(--hucre)*0.32);
 }
 .ucak-kod{ font-family:var(--pano); font-weight:700; font-size:calc(var(--hucre)*0.23);
@@ -205,25 +208,26 @@ body{ font-family:var(--body); color:var(--text); background:#4FB8E8; user-selec
 @keyframes parcaBirles{ 0%{ transform:scale(.5); } 55%{ transform:scale(1.28); } 100%{ transform:scale(1); } }
 
 /* GEÇİCİ parça görünümü — hediyelik görselleri gelene kadar.
-   Üstten beyaz parlama + alttan koyu oturma: 3D oyuncak hissini şimdiden
-   verir ki gelen görseller yabancı durmasın. */
+   İnce koyu kontur + hafif üst aydınlık: çizgi film hissi. Eskiden cam
+   gibi parlaktı, gelecek görseller mat ve konturlu olduğu için sadeleşti. */
 .parca-gecici{
   width:100%; height:100%; border-radius:calc(var(--hucre)*0.24);
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
   color:#fff; text-align:center; line-height:1.05;
   text-shadow:0 1px 2px rgba(0,0,0,.35);
-  box-shadow:inset 0 calc(var(--hucre)*0.14) 0 rgba(255,255,255,.28),
-             inset 0 calc(var(--hucre)*-0.10) 0 rgba(0,0,0,.18),
-             0 4px 0 rgba(28,36,71,.20), 0 7px 12px rgba(28,36,71,.28);
+  box-shadow:inset 0 calc(var(--hucre)*0.10) 0 rgba(255,255,255,.18),
+             0 0 0 calc(var(--hucre)*0.03) rgba(27,36,71,.38),
+             0 3px 0 rgba(28,36,71,.16), 0 6px 10px rgba(28,36,71,.22);
 }
 .parca-gecici .pg-ad{ font-family:var(--hud); font-weight:600; font-size:calc(var(--hucre)*0.14); padding:0 2px; }
 .parca-gecici .pg-tier{ font-family:var(--hud); font-weight:700; font-size:calc(var(--hucre)*0.30); }
 
 /* Makine (bagaj bandı): ızgaranın içinde sabit bir hücre */
 .hucre.makine{
-  background:linear-gradient(170deg, #C89BF0, var(--mor) 55%, #6B3A8F);
-  box-shadow:inset 0 calc(var(--hucre)*0.14) 0 rgba(255,255,255,.30),
-             0 4px 0 rgba(28,36,71,.22), 0 8px 14px rgba(28,36,71,.30);
+  background:linear-gradient(170deg, #C89BF0, var(--mor) 60%, #7A4699);
+  box-shadow:inset 0 calc(var(--hucre)*0.10) 0 rgba(255,255,255,.20),
+             0 0 0 calc(var(--hucre)*0.03) rgba(27,36,71,.38),
+             0 3px 0 rgba(28,36,71,.18), 0 7px 12px rgba(28,36,71,.26);
   cursor:pointer; overflow:hidden;
 }
 .hucre.makine:active{ transform:scale(.95); }
@@ -240,10 +244,12 @@ body{ font-family:var(--body); color:var(--text); background:#4FB8E8; user-selec
 /* Hazır olduğunda nabız gibi atsın: çocuk "buraya bas" işaretini kaçırmasın */
 .hucre.makine.hazir{ animation:makineNabiz 1.5s ease-in-out infinite; }
 @keyframes makineNabiz{
-  0%,100%{ box-shadow:inset 0 calc(var(--hucre)*0.14) 0 rgba(255,255,255,.30),
-             0 4px 0 rgba(28,36,71,.22), 0 8px 14px rgba(28,36,71,.30), 0 0 0 0 rgba(255,216,77,.75); }
-  60%{ box-shadow:inset 0 calc(var(--hucre)*0.14) 0 rgba(255,255,255,.30),
-             0 4px 0 rgba(28,36,71,.22), 0 8px 14px rgba(28,36,71,.30), 0 0 0 calc(var(--hucre)*0.16) rgba(255,216,77,0); }
+  0%,100%{ box-shadow:inset 0 calc(var(--hucre)*0.10) 0 rgba(255,255,255,.20),
+             0 0 0 calc(var(--hucre)*0.03) rgba(27,36,71,.38),
+             0 3px 0 rgba(28,36,71,.18), 0 0 0 0 rgba(255,216,77,.8); }
+  60%{ box-shadow:inset 0 calc(var(--hucre)*0.10) 0 rgba(255,255,255,.20),
+             0 0 0 calc(var(--hucre)*0.03) rgba(27,36,71,.38),
+             0 3px 0 rgba(28,36,71,.18), 0 0 0 calc(var(--hucre)*0.18) rgba(255,216,77,0); }
 }
 
 /* ---------- SÜRÜKLENEN KOPYA ---------- */
