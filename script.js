@@ -34,27 +34,54 @@ const HIZ_BONUS_TAVAN = 300;   // saniye
 
 /* Her şehrin KENDİ zinciri var: makineden çıkan 1. basamak, iki kere
    birleşe birleşe o şehrin simgesine, en sonunda da o şehrin bagajına
-   dönüşüyor. Yeni şehir eklemek = buraya bir satır + görselleri koymak. */
+   dönüşüyor.
+
+   DOSYA ADI TABLODA YAZIYOR. Önce adı koddan üretiyorduk (item_paris_1.png)
+   ama görseller başka türlü adlandırılmış geldi ve oyunda hiç görünmediler.
+   Artık ad serbest: dosyayı assets/ içine at, buradaki "dosya" alanına yaz,
+   başka hiçbir yeri değiştirmeye gerek yok.
+
+   "renk" yalnızca görsel HENÜZ YOKKEN çizilen geçici kutunun rengi. */
 const SEHIRLER = {
   paris: {
-    ad:'Paris', kod:'CDG', renk:'#9E55A0',
-    zincir:['Bere','Kruvasan','Eyfel Kulesi','Paris Bagajı'],
-    ucuslar:['TK1823','TK1827','TK1831']
+    ad:'Paris', kod:'CDG', renk:'#C0392B',
+    ucuslar:['TK1823','TK1827','TK1831'],
+    zincir:[
+      { ad:'Bere',         dosya:'item_paris1_bere.png' },
+      { ad:'Kruvasan',     dosya:'item_paris2_croissant.png' },
+      { ad:'Eyfel Kulesi', dosya:'item_paris3_eiffel.png' },
+      { ad:'Paris Bagajı', dosya:'item_paris4_luggage.png' }
+    ]
   },
   newyork: {
-    ad:'New York', kod:'JFK', renk:'#0182C9',
-    zincir:['Güneş Gözlüğü','Hot Dog','Özgürlük Heykeli','New York Bagajı'],
-    ucuslar:['TK0003','TK0011','TK0455']
+    ad:'New York', kod:'JFK', renk:'#2E86C1',
+    ucuslar:['TK0003','TK0011','TK0455'],
+    zincir:[
+      { ad:'Güneş Gözlüğü',      dosya:'item_newyork1_sunglasses.png' },
+      { ad:'Hot Dog',            dosya:'item_newyork2_hotdog.png' },
+      { ad:'Özgürlük Heykeli',   dosya:'item_newyork3_statue.png' },
+      { ad:'New York Bagajı',    dosya:'item_newyork4_luggage.png' }
+    ]
   },
   roma: {
-    ad:'Roma', kod:'FCO', renk:'#CD2028',
-    zincir:['Şapka','Pizza Dilimi','Kolezyum','Roma Bagajı'],
-    ucuslar:['TK1861','TK1863','TK1867']
+    ad:'Roma', kod:'FCO', renk:'#D35400',
+    ucuslar:['TK1861','TK1863','TK1867'],
+    zincir:[
+      { ad:'Şapka',        dosya:'item_roma1_hat.png' },
+      { ad:'Pizza Dilimi', dosya:'item_roma2_pizza.png' },
+      { ad:'Kolezyum',     dosya:'item_roma3_colosseum.png' },
+      { ad:'Roma Bagajı',  dosya:'item_roma4_luggage.png' }
+    ]
   },
   londra: {
-    ad:'Londra', kod:'LHR', renk:'#0035D7',
-    zincir:['Şemsiye','Çift Katlı Otobüs','Big Ben','Londra Bagajı'],
-    ucuslar:['TK1979','TK1981','TK1987']
+    ad:'Londra', kod:'LHR', renk:'#1F618D',
+    ucuslar:['TK1979','TK1981','TK1987'],
+    zincir:[
+      { ad:'Şemsiye',           dosya:'item_londra1_umbrella.png' },
+      { ad:'Çift Katlı Otobüs', dosya:'item_londra2_bus.png' },
+      { ad:'Big Ben',           dosya:'item_londra3_bigben.png' },
+      { ad:'Londra Bagajı',     dosya:'item_londra4_luggage.png' }
+    ]
   }
 };
 const SEHIR_LISTE = Object.keys(SEHIRLER);
@@ -75,10 +102,11 @@ const VAR_OLAN = new Set();
 function gorselYolu(ad){ return (GOMULU && GOMULU[ad]) || ad; }
 function gorselVar(ad){ return VAR_OLAN.has(ad); }
 
-function parcaGorseli(sehir, basamak){ return 'assets/item_' + sehir + '_' + basamak + '.png'; }
+function basamakBilgisi(sehir, basamak){ return SEHIRLER[sehir].zincir[basamak-1]; }
+function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, basamak).dosya; }
 
 function beklenenGorseller(){
-  const liste = ['assets/makine.png','assets/ucak.png','assets/home_page.png','assets/end_page.png'];
+  const liste = ['assets/machine.png','assets/ucak.png','assets/home_page.png','assets/end_page.png'];
   for(const s of SEHIR_LISTE){
     for(let b=1;b<=SON_BASAMAK;b++) liste.push(parcaGorseli(s,b));
   }
@@ -98,20 +126,26 @@ function gorselleriTara(){
 
 /* Bir parçanın görünüşü: görsel varsa <img>, yoksa geçici renkli kutu. */
 function parcaIcerigi(sehir, basamak){
-  const ad = parcaGorseli(sehir, basamak);
-  if(gorselVar(ad)){
+  const bilgi = basamakBilgisi(sehir, basamak);
+  const yol = parcaGorseli(sehir, basamak);
+  if(gorselVar(yol)){
     const im = document.createElement('img');
-    im.src = gorselYolu(ad);
-    im.alt = SEHIRLER[sehir].zincir[basamak-1];
+    im.src = gorselYolu(yol);
+    im.alt = bilgi.ad;
     return im;
   }
   const kutu = document.createElement('div');
   kutu.className = 'parca-gecici';
   kutu.style.background = 'linear-gradient(150deg, ' + SEHIRLER[sehir].renk + ', ' + koyult(SEHIRLER[sehir].renk) + ')';
   kutu.innerHTML = '<span class="pg-tier">' + basamak + '</span>' +
-                   '<span class="pg-ad">' + SEHIRLER[sehir].zincir[basamak-1] + '</span>';
+                   '<span class="pg-ad">' + bilgi.ad + '</span>';
   return kutu;
 }
+
+/* Parça gerçek görselse hücrenin İÇİNDE duran bir resim gibi değil, tahtanın
+   ÜSTÜNE konmuş bir nesne gibi görünmeli: altına temas gölgesi düşer ve
+   hücreden biraz taşar. Geçici kutularda bu istenmiyor, o yüzden işaret. */
+function gorselliMi(el){ return !!el.querySelector('img'); }
 
 /* Geçici kutulara degrade verebilmek için rengi biraz koyultuyoruz —
    görseller gelince bu fonksiyon da kullanılmaz olacak. */
@@ -142,8 +176,10 @@ let makineHazir = true, makineAnI = 0, makineEl = null, dolumEl = null;
 function olculeriGuncelle(){
   const sahne = $('#sahne');
   const G = sahne.clientWidth, Y = sahne.clientHeight;
-  const enGore = (G * 0.94) / 5.6;
-  const boyGore = Y / 10;          // hud + uçaklar + ızgara toplamı ≈ 10 hücre
+  /* Izgaranın genişliği = 5 hücre + 4 boşluk (hücrenin %4,5'i) + 2 kenar
+     payı (%10) = 5.38 hücre. Hücreler sıklaşınca bu çarpan da değişti. */
+  const enGore = (G * 0.94) / 5.38;
+  const boyGore = Y / 9.6;         // hud + uçaklar + ızgara toplamı ≈ 9,6 hücre
   const h = Math.max(28, Math.floor(Math.min(enGore, boyGore)));
   document.documentElement.style.setProperty('--hucre', h + 'px');
 }
@@ -174,6 +210,7 @@ function parcaKoy(s, k, sehir, basamak){
   const el = document.createElement('div');
   el.className = 'parca';
   el.appendChild(parcaIcerigi(sehir, basamak));
+  if(gorselliMi(el)) el.classList.add('gorselli');
   veri.el = el;
   izgara[s][k] = veri;
   hucreEl[s][k].appendChild(el);
@@ -208,10 +245,10 @@ function komsuBosHucreler(s0,k0){
 /* ---------- 6) MAKİNE (BAGAJ BANDI) ---------- */
 function makineyiKur(h){
   h.classList.add('makine','hazir');
-  if(gorselVar('assets/makine.png')){
+  if(gorselVar('assets/machine.png')){
     const im = document.createElement('img');
     im.className = 'makine-gorsel';
-    im.src = gorselYolu('assets/makine.png');
+    im.src = gorselYolu('assets/machine.png');
     im.alt = 'Bagaj bandı';
     h.appendChild(im);
   }else{
@@ -290,6 +327,7 @@ function tasimayaBasla(ev){
   const g = surukleEl();
   g.innerHTML = '';
   g.appendChild(parcaIcerigi(veri.sehir, veri.basamak));
+  g.classList.toggle('gorselli', gorselliMi(g));
   g.classList.remove('gizli');
   hayaletiTasi(ev.clientX, ev.clientY);
 
