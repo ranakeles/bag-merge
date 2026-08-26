@@ -109,10 +109,10 @@ const HUCRE_BOY_YUZDE = TAHTA.adimY / TAHTA.boy * 100;
    parmağın rahat ulaştığı yere geliyor. Kenara alınırsa komşu sayısı
    üçe düşüyor ve makine sürekli "yer yok" diyor.                        */
 const MAKINE_YERI = { s:4, k:3 };
-/* Tahta 5x6'dan 7x9'a çıktı: 30 hücre yerine 63. Aynı hızda hediyelik
-   düşürünce tahta bir türlü dolmuyor ve oyun yavaş hissettiriyordu, o
-   yüzden makine hem daha sık hem daha çok veriyor. */
-const MAKINE_BEKLEME = 1200;   // ms — arka arkaya basıp matrisi tıkamasın
+/* Makinede BEKLEME YOK: her dokunuşta hediyelik düşüyor. Önce dolum süresi
+   vardı (matris tıkanmasın diye) ama çocuk bastığında hiçbir şey olmaması
+   oyunu kilitli hissettiriyordu. Tıkanmayı süre değil, tahtanın kendisi
+   sınırlıyor: yer kalmayınca makine "birleştir" uyarısı veriyor. */
 const MAKINE_ADET = 3;         // her basışta düşen hediyelik
 
 const HEDEF_SIPARIS = 6;       // bu kadar bagaj teslim edilince oyun biter
@@ -274,7 +274,7 @@ let hucreEl = [];             // aynı boyutta DOM karşılıkları
 let ucaklar = [];             // {sehir, kod, el}
 let puan = 0, tamamlanan = 0;
 let baslangic = 0, kalanSn = TUR_SURESI;
-let makineHazir = true, makineAnI = 0, makineEl = null, dolumEl = null;
+let makineEl = null;
 
 /* ---------- 4) SAHNE ÖLÇÜSÜ ----------
    Bütün ölçüler TEK bir sayıdan (hücre kenarı) türüyor. Izgara 5 hücre +
@@ -367,7 +367,7 @@ function komsuBosHucreler(s0,k0){
 
 /* ---------- 6) MAKİNE (BAGAJ BANDI) ---------- */
 function makineyiKur(h){
-  h.classList.add('makine','hazir');
+  h.classList.add('makine');
   if(gorselVar('assets/machine.png')){
     const im = document.createElement('img');
     im.className = 'makine-gorsel';
@@ -380,13 +380,8 @@ function makineyiKur(h){
     kutu.textContent = 'BAGAJ BANDI';
     h.appendChild(kutu);
   }
-  const dolum = document.createElement('div');
-  dolum.className = 'makine-dolum';
-  dolum.innerHTML = '<i></i>';
-  h.appendChild(dolum);
   h.addEventListener('click', makineyeBas);
   makineEl = h;
-  dolumEl = dolum.firstElementChild;
 }
 
 /* Makine sadece MASADAKİ siparişlerin şehirlerinden hediyelik düşürür.
@@ -398,7 +393,7 @@ function aktifSehir(){
 }
 
 function makineyeBas(){
-  if(durum!=='oyun' || !makineHazir) return;
+  if(durum!=='oyun') return;
   /* Önce komşular; komşular doluysa ızgaranın kalanına dağıt. Aksi hâlde
      makinenin çevresi dolduğu anda oyun kilitlenmiş gibi hissettiriyor. */
   let hedef = karistir(komsuBosHucreler(MAKINE_YERI.s, MAKINE_YERI.k));
@@ -409,20 +404,6 @@ function makineyeBas(){
   if(!hedef.length){ uyari(makineEl, 'Yer yok — birleştir!'); return; }
 
   hedef.slice(0, MAKINE_ADET).forEach(h => parcaKoy(h.s, h.k, aktifSehir(), 1));
-  makineHazir = false;
-  makineAnI = performance.now();
-  makineEl.classList.remove('hazir');
-}
-
-function makineyiIsle(simdi){
-  if(makineHazir) return;
-  const oran = Math.min(1, (simdi - makineAnI) / MAKINE_BEKLEME);
-  dolumEl.style.width = (oran*100) + '%';
-  if(oran >= 1){
-    makineHazir = true;
-    makineEl.classList.add('hazir');
-    dolumEl.style.width = '100%';
-  }
 }
 
 /* ---------- 7) SÜRÜKLEME ---------- */
@@ -719,7 +700,6 @@ function oyunuBaslat(){
   durum = 'oyun';
   puan = 0; tamamlanan = 0; kalanSn = TUR_SURESI;
   baslangic = performance.now();
-  makineHazir = true; makineAnI = 0;
 
   $('#basScreen').classList.add('gizli');
   $('#bitScreen').classList.add('gizli');
@@ -727,12 +707,9 @@ function oyunuBaslat(){
   izgarayiKur();
   ucaklariKur();
   hudGuncelle();
-  if(dolumEl) dolumEl.style.width = '100%';
 
   /* Boş bir matris karşılamasın: makine bir kez kendiliğinden çalışsın. */
   makineyeBas();
-  makineHazir = true;
-  makineEl.classList.add('hazir');
 }
 
 function oyunuBitir(){
@@ -751,7 +728,6 @@ function oyunuBitir(){
 
 function dongu(simdi){
   if(durum==='oyun'){
-    makineyiIsle(simdi);
     const kalan = Math.max(0, TUR_SURESI - Math.floor((simdi - baslangic)/1000));
     if(kalan !== kalanSn){
       kalanSn = kalan;
