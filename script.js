@@ -15,13 +15,40 @@
    ========================================================= */
 
 /* ---------- 1) AYARLAR + ŞEHİR ZİNCİRLERİ ---------- */
-const SUTUN = 5, SATIR = 6;
+const SUTUN = 7, SATIR = 9;
+
+/* ---- TAHTA GÖRSELİ ----
+   Izgara artık koddan çizilmiyor: tahtanın tamamı tek bir görsel
+   (assets/matrix.png) ve hücreler onun üstüne oturuyor. Aşağıdaki sayılar
+   GÖRSELDEN ÖLÇÜLDÜ (parlaklık geçişlerinden hücre kenarları bulundu):
+   görsel 1100x1429, ilk hücrenin sol üstü (38, 45), hücre adımı yatayda
+   146.14 px, dikeyde 146.44 px — 7 sütun ve 9 satır tam oturuyor.
+
+   GÖRSEL DEĞİŞİRSE BU SAYILAR DA DEĞİŞMELİ. Yoksa çocuk bir hücreye basar,
+   yandaki tepki verir. Ölçüm yöntemi: hücre sıraları boyunca parlaklık
+   farkının tepe yaptığı yerler hücre kenarlarıdır.                       */
+const TAHTA = {
+  gorsel:'assets/matrix.png',
+  en:1100, boy:1429,      // görselin piksel ölçüsü
+  x0:38, y0:45,           // ilk hücrenin sol üst köşesi
+  adimX:146.14, adimY:146.44
+};
+/* Tahtanın ekrandaki boyu hücre cinsinden: görsel, hücre adımı kadar
+   ölçeklenince bu kadar hücre eni/boyu kaplıyor. */
+const TAHTA_EN  = TAHTA.en  / TAHTA.adimX;   // ≈ 7.53 hücre
+const TAHTA_BOY = TAHTA.boy / TAHTA.adimY;   // ≈ 9.76 hücre
+/* Hücrenin görsel içindeki yüzdesi — konumlar bundan türüyor. */
+const HUCRE_EN_YUZDE  = TAHTA.adimX / TAHTA.en  * 100;
+const HUCRE_BOY_YUZDE = TAHTA.adimY / TAHTA.boy * 100;
 /* Makine ızgaranın ORTASINDA: sekiz komşusu da var, düşen hediyelikler
    parmağın rahat ulaştığı yere geliyor. Kenara alınırsa komşu sayısı
    üçe düşüyor ve makine sürekli "yer yok" diyor.                        */
-const MAKINE_YERI = { s:2, k:2 };
-const MAKINE_BEKLEME = 1500;   // ms — arka arkaya basıp matrisi tıkamasın
-const MAKINE_ADET = 2;         // her basışta düşen hediyelik
+const MAKINE_YERI = { s:4, k:3 };
+/* Tahta 5x6'dan 7x9'a çıktı: 30 hücre yerine 63. Aynı hızda hediyelik
+   düşürünce tahta bir türlü dolmuyor ve oyun yavaş hissettiriyordu, o
+   yüzden makine hem daha sık hem daha çok veriyor. */
+const MAKINE_BEKLEME = 1200;   // ms — arka arkaya basıp matrisi tıkamasın
+const MAKINE_ADET = 3;         // her basışta düşen hediyelik
 
 const HEDEF_SIPARIS = 10;      // bu kadar bagaj teslim edilince oyun biter
 const UCAK_SAYISI = 3;         // aynı anda bekleyen sipariş
@@ -106,7 +133,8 @@ function basamakBilgisi(sehir, basamak){ return SEHIRLER[sehir].zincir[basamak-1
 function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, basamak).dosya; }
 
 function beklenenGorseller(){
-  const liste = ['assets/machine.png','assets/ucak.png','assets/home_page.png','assets/end_page.png'];
+  const liste = ['assets/machine.png','assets/ucak.png','assets/home_page.png','assets/end_page.png',
+                 TAHTA.gorsel];
   for(const s of SEHIR_LISTE){
     for(let b=1;b<=SON_BASAMAK;b++) liste.push(parcaGorseli(s,b));
   }
@@ -176,12 +204,16 @@ let makineHazir = true, makineAnI = 0, makineEl = null, dolumEl = null;
 function olculeriGuncelle(){
   const sahne = $('#sahne');
   const G = sahne.clientWidth, Y = sahne.clientHeight;
-  /* Izgaranın genişliği = 5 hücre + 4 boşluk (hücrenin %4,5'i) + 2 kenar
-     payı (%10) = 5.38 hücre. Hücreler sıklaşınca bu çarpan da değişti. */
-  const enGore = (G * 0.94) / 5.38;
-  const boyGore = Y / 9.6;         // hud + uçaklar + ızgara toplamı ≈ 9,6 hücre
+  /* Tahta bir görsel olduğu için ölçüler ondan geliyor: hücre kenarı ne
+     olursa olsun görsel aynı oranda büyüyor, hücreler de üstünde kayıtlı
+     kalıyor. +2.9 ≈ üst bilgi + uçak kartları. */
+  const enGore  = (G * 0.98) / TAHTA_EN;
+  const boyGore = (Y * 0.99) / (TAHTA_BOY + 2.9);
   const h = Math.max(28, Math.floor(Math.min(enGore, boyGore)));
-  document.documentElement.style.setProperty('--hucre', h + 'px');
+  const kok = document.documentElement;
+  kok.style.setProperty('--hucre', h + 'px');
+  kok.style.setProperty('--tahta-en',  TAHTA_EN.toFixed(4));
+  kok.style.setProperty('--tahta-boy', TAHTA_BOY.toFixed(4));
 }
 
 /* ---------- 5) IZGARA VE PARÇALAR ---------- */
@@ -196,6 +228,13 @@ function izgarayiKur(){
       const h = document.createElement('div');
       h.className = 'hucre';
       h.dataset.s = s; h.dataset.k = k;
+      /* Hücre, tahta görselindeki kutucuğun tam üstüne oturuyor. Dokunma
+         alanı çizilen kutucuğun tamamı: aradaki ince boşluk da hücreye
+         dahil, parmak kenara denk gelince hamle kaybolmasın. */
+      h.style.left   = ((TAHTA.x0 + k*TAHTA.adimX) / TAHTA.en  * 100) + '%';
+      h.style.top    = ((TAHTA.y0 + s*TAHTA.adimY) / TAHTA.boy * 100) + '%';
+      h.style.width  = HUCRE_EN_YUZDE  + '%';
+      h.style.height = HUCRE_BOY_YUZDE + '%';
       if(s===MAKINE_YERI.s && k===MAKINE_YERI.k) makineyiKur(h);
       g.appendChild(h);
       hucreEl[s][k] = h;
@@ -592,8 +631,18 @@ function katmanGorseli(gorselAd, imgId, bgId, geciciId){
   $(geciciId).classList.add('gizli');
 }
 
+/* Tahta görseli geldiğinde kodun kendi çizdiği tepsi ve hücre zeminleri
+   çekilir; görsel yoksa oyun yine oynanabilir kalsın diye onlar duruyor. */
+function tahtaGorselleri(){
+  if(!gorselVar(TAHTA.gorsel)) return;
+  document.documentElement.style.setProperty('--tahta-gorsel',
+    'url(' + gorselYolu(TAHTA.gorsel) + ')');
+  document.body.classList.add('sanat-tahta');
+}
+
 function kur(){
   olculeriGuncelle();
+  tahtaGorselleri();
   window.addEventListener('resize', olculeriGuncelle);
 
   katmanGorseli('assets/home_page.png', '#basImg', '#basBg', '#basGecici');
