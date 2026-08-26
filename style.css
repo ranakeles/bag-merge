@@ -402,6 +402,9 @@ body:not(.sanat-plaka) .ucak-plaka{
 /* Makine hep hazır (bekleme kaldırıldı), o yüzden dolum çubuğu da yok.
    Nabız duruyor: tahtadaki en önemli düğme bu, çocuk gözden kaçırmasın. */
 .hucre.makine{ animation:makineNabiz 1.8s ease-in-out infinite; }
+/* Stok bitince nabız dursun: makinenin verecek bir şeyi kalmadığında hâlâ
+   "bana bas" diye çağırması çocuğu boşuna uğraştırıyor. */
+.hucre.makine.bos{ animation:none; }
 /* Her döküşte kısa bir sarsılma — hediyeliğin nereden geldiği belli olsun */
 .hucre.makine.calisti .makine-gorsel{ animation:makineCalis .26s ease-out; }
 @keyframes makineCalis{
