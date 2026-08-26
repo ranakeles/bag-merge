@@ -202,6 +202,11 @@ const SEHIR_LISTE = Object.keys(SEHIRLER);
    basamak sayısını değiştirmek tek satırlık bir iş olsun.               */
 const SON_BASAMAK = SEHIRLER.paris.zincir.length;
 
+/* Bir bagaj için kaç tane 1. basamak hediyelik gerekiyor: her basamak iki
+   parçadan oluştuğu için 2^(basamak-1). Dört basamaklı zincirde 8.
+   Basamak sayısı değişirse bu da kendiliğinden düzelir.                   */
+const TABAN_ADET = Math.pow(2, SON_BASAMAK - 1);
+
 /* ---------- 2) GÖRSEL HAVUZU ----------
    Kod HİÇBİR ŞEY ÇİZMEZ; her parça bir PNG. Ama görseller parça parça
    geliyor, oyunun o arada çalışmaz hâle gelmemesi lazım: her görsel için
@@ -283,6 +288,7 @@ let ucaklar = [];             // {sehir, kod, el}
 let puan = 0, tamamlanan = 0;
 let baslangic = 0, kalanSn = TUR_SURESI;
 let makineEl = null, kendiSaat = 0;
+let stok = [];                 // makinenin dağıtacağı hediyelikler (şehir adları)
 
 /* ---------- 4) SAHNE ÖLÇÜSÜ ----------
    Bütün ölçüler TEK bir sayıdan (hücre kenarı) türüyor. Izgara 5 hücre +
@@ -392,26 +398,43 @@ function makineyiKur(h){
   makineEl = h;
 }
 
-/* Makine sadece MASADAKİ siparişlerin şehirlerinden hediyelik düşürür.
-   Yoksa çocuk hiçbir uçağın istemediği bir zinciri büyütür ve emeği boşa
-   gider — kiosk oyununda en can sıkıcı şey bu olurdu.                   */
-function aktifSehir(){
-  const havuz = ucaklar.map(u=>u.sehir);
-  return havuz.length ? havuz[rastgele(havuz.length)] : SEHIR_LISTE[rastgele(SEHIR_LISTE.length)];
+/* MAKİNENİN STOĞU TURUN BAŞINDA SAYILIYOR.
+   Her sipariş için tam TABAN_ADET (8) hediyelik konuyor: bir Paris uçuşu
+   varsa 8 bere, iki Londra uçuşu varsa 16 şemsiye. Yani makineden çıkan
+   her şeyin karşılığı var — ne fazlası çıkıyor ne eksiği.
+
+   Önce rastgele seçiliyordu; o zaman bir şehrin uçağı kalktıktan sonra o
+   şehirden tahtada kalanlar ölü yüke dönüşüyor, hücreleri işgal ediyor ve
+   çocuğun o zincire harcadığı emek boşa gidiyordu. Sayarak dağıtınca bu
+   sorun kaynağında bitiyor.
+
+   Deste karılıyor: sırayla dağıtılsa önce sekiz bere, sonra sekiz şemsiye
+   çıkar ve tahtada tek seferde tek şehir olurdu.                          */
+function stokKur(){
+  const liste = [];
+  for(const u of ucaklar)
+    for(let i = 0; i < TABAN_ADET; i++) liste.push(u.sehir);
+  stok = karistir(liste);
 }
 
 /* İstenen sayıda hediyeliği makinenin çevresine döker; yer yoksa false.
    Önce komşular, komşular doluysa ızgaranın kalanı — aksi hâlde makinenin
    çevresi dolduğu anda oyun kilitlenmiş gibi hissettiriyor. */
 function hediyelikDusur(adet){
+  if(!stok.length) return 'stok';
   let hedef = karistir(komsuBosHucreler(MAKINE_YERI.s, MAKINE_YERI.k));
   if(hedef.length < adet){
     const kalan = karistir(bosHucreler()).filter(b => !hedef.some(h=>h.s===b.s&&h.k===b.k));
     hedef = hedef.concat(kalan);
   }
-  if(!hedef.length) return false;
-  hedef.slice(0, adet).forEach(h => parcaKoy(h.s, h.k, aktifSehir(), 1));
+  if(!hedef.length) return 'yer';
+  /* Yer ne kadarsa o kadar düşüyor; stoktan da tam o kadar eksiliyor.
+     Yer yokken stoktan çekilseydi hediyelikler sessizce buharlaşır ve
+     tur bitirilemez hâle gelirdi. */
+  const kac = Math.min(adet, hedef.length, stok.length);
+  for(let i = 0; i < kac; i++) parcaKoy(hedef[i].s, hedef[i].k, stok.pop(), 1);
   makineKipirdat();
+  makineEl.classList.toggle('bos', stok.length === 0);
   return true;
 }
 
@@ -426,7 +449,9 @@ function makineKipirdat(){
 
 function makineyeBas(){
   if(durum!=='oyun') return;
-  if(!hediyelikDusur(MAKINE_ADET)) uyari(makineEl, 'Yer yok — birleştir!');
+  const sonuc = hediyelikDusur(MAKINE_ADET);
+  if(sonuc === 'yer')   uyari(makineEl, 'Yer yok — birleştir!');
+  if(sonuc === 'stok')  uyari(makineEl, 'Hepsi çıktı — birleştir!');
   /* Elle basınca kendiliğinden düşümün sayacı da sıfırlanıyor: basışın
      hemen ardından bir tane daha düşmesi rastgele fazlalık gibi duruyor. */
   kendiSaat = performance.now();
@@ -740,6 +765,7 @@ function oyunuBaslat(){
 
   izgarayiKur();
   ucaklariKur();
+  stokKur();               // sipariş listesi belli olduktan SONRA sayılır
   hudGuncelle();
 
   /* Boş bir matris karşılamasın: makine bir kez kendiliğinden çalışsın. */
