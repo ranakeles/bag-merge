@@ -133,10 +133,10 @@ const SEHIRLER = {
     ucuslar:['0003','0011','0455'],
     havayollari:['thy'],
     zincir:[
-      { ad:'Güneş Gözlüğü',      dosya:'item_newyork1_sunglasses.png' },
-      { ad:'Hot Dog',            dosya:'item_newyork2_hotdog.png' },
-      { ad:'Özgürlük Heykeli',   dosya:'item_newyork3_statue.png' },
-      { ad:'New York Bagajı',    dosya:'item_newyork4_luggage.png' }
+      { ad:'Güneş Gözlüğü',      dosya:'item_newyork1.png' },
+      { ad:'Hot Dog',            dosya:'item_newyork2.png' },
+      { ad:'Özgürlük Heykeli',   dosya:'item_newyork3.png' },
+      { ad:'New York Bagajı',    dosya:'item_newyork4.png' }
     ]
   },
   roma: {
@@ -144,10 +144,10 @@ const SEHIRLER = {
     ucuslar:['1861','1863','1867'],
     havayollari:['thy','ajet','sunexpress'],
     zincir:[
-      { ad:'Şapka',        dosya:'item_roma1_hat.png' },
-      { ad:'Pizza Dilimi', dosya:'item_roma2_pizza.png' },
-      { ad:'Kolezyum',     dosya:'item_roma3_colosseum.png' },
-      { ad:'Roma Bagajı',  dosya:'item_roma4_luggage.png' }
+      { ad:'Şapka',        dosya:'item_rome1.png' },
+      { ad:'Pizza Dilimi', dosya:'item_rome2.png' },
+      { ad:'Kolezyum',     dosya:'item_rome3.png' },
+      { ad:'Roma Bagajı',  dosya:'item_rome4.png' }
     ]
   },
   londra: {
@@ -155,10 +155,10 @@ const SEHIRLER = {
     ucuslar:['1979','1981','1987'],
     havayollari:['thy','ajet'],
     zincir:[
-      { ad:'Şemsiye',           dosya:'item_londra1_umbrella.png' },
-      { ad:'Çift Katlı Otobüs', dosya:'item_londra2_bus.png' },
-      { ad:'Big Ben',           dosya:'item_londra3_bigben.png' },
-      { ad:'Londra Bagajı',     dosya:'item_londra4_luggage.png' }
+      { ad:'Şemsiye',           dosya:'item_london1.png' },
+      { ad:'Çift Katlı Otobüs', dosya:'item_london2.png' },
+      { ad:'Big Ben',           dosya:'item_london3.png' },
+      { ad:'Londra Bagajı',     dosya:'item_london4.png' }
     ]
   }
 };
