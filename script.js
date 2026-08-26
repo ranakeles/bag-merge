@@ -109,11 +109,19 @@ const HUCRE_BOY_YUZDE = TAHTA.adimY / TAHTA.boy * 100;
    parmağın rahat ulaştığı yere geliyor. Kenara alınırsa komşu sayısı
    üçe düşüyor ve makine sürekli "yer yok" diyor.                        */
 const MAKINE_YERI = { s:4, k:3 };
-/* Makinede BEKLEME YOK: her dokunuşta hediyelik düşüyor. Önce dolum süresi
-   vardı (matris tıkanmasın diye) ama çocuk bastığında hiçbir şey olmaması
-   oyunu kilitli hissettiriyordu. Tıkanmayı süre değil, tahtanın kendisi
-   sınırlıyor: yer kalmayınca makine "birleştir" uyarısı veriyor. */
-const MAKINE_ADET = 3;         // her basışta düşen hediyelik
+/* MAKİNE İKİ TÜRLÜ ÇALIŞIYOR:
+   1) Kendi kendine, düzenli aralıklarla birer hediyelik döküyor. Böylece
+      hiç dokunulmasa bile tahta besleniyor; çocuk sadece birleştirmeye
+      odaklansa da oyun ilerliyor.
+   2) Dokununca ANINDA, daha fazlasını döküyor. Beklemesi yok — basıp
+      hiçbir şey olmaması çocuğa bozuk düğme gibi geliyordu.
+
+   Tıkanmayı süre değil tahtanın kendisi sınırlıyor: yer kalmayınca elle
+   basışta uyarı çıkıyor, kendiliğinden düşüm ise sessizce bekliyor.
+   Bir turda kendiliğinden ~40 hediyelik düşüyor; bir bagaj 8 tane istiyor. */
+const MAKINE_ADET = 3;         // dokununca düşen hediyelik
+const MAKINE_KENDI_ADET = 1;   // kendiliğinden düşen hediyelik
+const MAKINE_KENDI_ARALIK = 2000;  // ms — kendiliğinden düşüm aralığı
 
 const HEDEF_SIPARIS = 6;       // bu kadar bagaj teslim edilince oyun biter
 /* Siparişlerin HEPSİ tezgahta duruyor; tezgah yana kaydırılıyor. Bu sayı
@@ -274,7 +282,7 @@ let hucreEl = [];             // aynı boyutta DOM karşılıkları
 let ucaklar = [];             // {sehir, kod, el}
 let puan = 0, tamamlanan = 0;
 let baslangic = 0, kalanSn = TUR_SURESI;
-let makineEl = null;
+let makineEl = null, kendiSaat = 0;
 
 /* ---------- 4) SAHNE ÖLÇÜSÜ ----------
    Bütün ölçüler TEK bir sayıdan (hücre kenarı) türüyor. Izgara 5 hücre +
@@ -392,18 +400,44 @@ function aktifSehir(){
   return havuz.length ? havuz[rastgele(havuz.length)] : SEHIR_LISTE[rastgele(SEHIR_LISTE.length)];
 }
 
-function makineyeBas(){
-  if(durum!=='oyun') return;
-  /* Önce komşular; komşular doluysa ızgaranın kalanına dağıt. Aksi hâlde
-     makinenin çevresi dolduğu anda oyun kilitlenmiş gibi hissettiriyor. */
+/* İstenen sayıda hediyeliği makinenin çevresine döker; yer yoksa false.
+   Önce komşular, komşular doluysa ızgaranın kalanı — aksi hâlde makinenin
+   çevresi dolduğu anda oyun kilitlenmiş gibi hissettiriyor. */
+function hediyelikDusur(adet){
   let hedef = karistir(komsuBosHucreler(MAKINE_YERI.s, MAKINE_YERI.k));
-  if(hedef.length < MAKINE_ADET){
+  if(hedef.length < adet){
     const kalan = karistir(bosHucreler()).filter(b => !hedef.some(h=>h.s===b.s&&h.k===b.k));
     hedef = hedef.concat(kalan);
   }
-  if(!hedef.length){ uyari(makineEl, 'Yer yok — birleştir!'); return; }
+  if(!hedef.length) return false;
+  hedef.slice(0, adet).forEach(h => parcaKoy(h.s, h.k, aktifSehir(), 1));
+  makineKipirdat();
+  return true;
+}
 
-  hedef.slice(0, MAKINE_ADET).forEach(h => parcaKoy(h.s, h.k, aktifSehir(), 1));
+/* Makine her döküşte kısa bir sarsılsın: hediyeliğin nereden geldiği belli
+   olsun, kendiliğinden düşenler de gözden kaçmasın. */
+function makineKipirdat(){
+  if(!makineEl) return;
+  makineEl.classList.remove('calisti');
+  void makineEl.offsetWidth;              // animasyon baştan başlasın
+  makineEl.classList.add('calisti');
+}
+
+function makineyeBas(){
+  if(durum!=='oyun') return;
+  if(!hediyelikDusur(MAKINE_ADET)) uyari(makineEl, 'Yer yok — birleştir!');
+  /* Elle basınca kendiliğinden düşümün sayacı da sıfırlanıyor: basışın
+     hemen ardından bir tane daha düşmesi rastgele fazlalık gibi duruyor. */
+  kendiSaat = performance.now();
+}
+
+/* Kendiliğinden düşüm. Tahta doluysa sessizce bekliyor — her iki saniyede
+   bir uyarı baloncuğu çıkarsa ekran uyarıdan görünmez oluyor. */
+function makineyiIsle(simdi){
+  if(simdi - kendiSaat < MAKINE_KENDI_ARALIK) return;
+  kendiSaat = simdi;
+  hediyelikDusur(MAKINE_KENDI_ADET);
 }
 
 /* ---------- 7) SÜRÜKLEME ---------- */
@@ -709,6 +743,7 @@ function oyunuBaslat(){
   hudGuncelle();
 
   /* Boş bir matris karşılamasın: makine bir kez kendiliğinden çalışsın. */
+  kendiSaat = performance.now();
   makineyeBas();
 }
 
@@ -728,6 +763,7 @@ function oyunuBitir(){
 
 function dongu(simdi){
   if(durum==='oyun'){
+    makineyiIsle(simdi);
     const kalan = Math.max(0, TUR_SURESI - Math.floor((simdi - baslangic)/1000));
     if(kalan !== kalanSn){
       kalanSn = kalan;
