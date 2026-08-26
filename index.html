@@ -18,6 +18,17 @@
      sahne oranı KİLİTLİ, ölçüler script.js'te sahne genişliğinden türetiliyor. -->
 <div id="sahne">
 
+  <!-- ================= MANZARA =================
+       Sahnenin üst yarısının arkasında duran İstanbul görseli. Kendi
+       oranıyla çiziliyor (esnetilmiyor); alt kenarı tahtanın arkasında
+       kalıyor, o yüzden görselin alt şeridine önemli bir şey denk
+       gelmemeli. -->
+  <img id="manzara" class="manzara" alt="" aria-hidden="true">
+  <!-- Manzaranın üstündeki sis: görsel olduğu gibi bırakılınca ön plandaki
+       tezgah ve uçaklarla aynı netlikte duruyor ve sahne düzleşiyor. Bu
+       katman onu geriye itiyor. -->
+  <div id="sis" aria-hidden="true"></div>
+
   <!-- ÜST BİLGİ: tamamlanan sipariş / puan / geçen süre.
        Şimdilik düz yazı — çerçeve ve rakam görselleri gelince buradaki
        kutular görselin üstüne oturacak (bkz. style.css .hud-* kuralları). -->
@@ -27,11 +38,18 @@
     <div class="hud-kutu"><span class="hud-etiket">SÜRE</span><span class="hud-deger" id="hudSure">00:00</span></div>
   </div>
 
-  <!-- ================= UÇAKLAR (SİPARİŞLER) =================
-       Üç park yeri. Her uçağın uçuş kodu, gittiği şehir ve istediği bagajın
-       rozeti var. Sipariş tamamlanınca uçak kalkar, yerine yenisi gelir.
+  <!-- ================= TEZGAH VE UÇAKLAR =================
+       Tezgah tek bir görsel; uçaklar onun ÜST YÜZEYİNE basıyor. Bastıkları
+       yükseklik görselden ölçüldü (script.js TEZGAH tablosu) — göz kararı
+       yerleştirilirse uçaklar havada ya da tezgaha gömülü durur.
+
+       Her park yerinde arkada uçak, önünde biniş kartı biçiminde plaka var;
+       plakanın üstünde uçağın istediği bagaj ve uçuş bilgisi yazıyor.
        İçeriği script dolduruyor. -->
-  <div id="ucaklar"></div>
+  <div id="tezgah">
+    <img id="tezgahImg" class="tezgah-gorsel" alt="" aria-hidden="true">
+    <div id="ucaklar"></div>
+  </div>
 
   <!-- ================= MERGE MATRİSİ =================
        5 sütun × 6 satır. Hücreler script'te üretiliyor; biri sabit olarak

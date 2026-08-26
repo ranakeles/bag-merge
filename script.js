@@ -27,6 +27,47 @@ const SUTUN = 7, SATIR = 9;
    GÖRSEL DEĞİŞİRSE BU SAYILAR DA DEĞİŞMELİ. Yoksa çocuk bir hücreye basar,
    yandaki tepki verir. Ölçüm yöntemi: hücre sıraları boyunca parlaklık
    farkının tepe yaptığı yerler hücre kenarlarıdır.                       */
+/* ---- TEZGAH ----
+   Uçaklar tezgahın üst yüzeyine basıyor. Yüzeyin bittiği yer GÖRSELDEN
+   ÖLÇÜLDÜ: 2172x724 görselde açık mor üst yüzey y=490'a kadar sürüyor,
+   uçakların basacağı çizgi olarak y=470 alındı (yüzeyin ön tarafı). Bu
+   sayı görsel değişirse yeniden ölçülmeli.                              */
+const TEZGAH = {
+  gorsel:'assets/tezgah.png',
+  en:2172, boy:724,
+  zeminY:470,                    // uçakların bastığı çizgi (px, üstten)
+  opakAlt:583                    // tezgahın gerçekten bittiği yer; altı şeffaf
+};
+/* Uçak yuvaları tezgahın ALTINDAN bu kadar yukarıda duruyor */
+const TEZGAH_ZEMIN = (TEZGAH.boy - TEZGAH.zeminY) / TEZGAH.boy * 100;
+/* Görselin altındaki şeffaf şerit boşuna yer kaplıyordu (görsel boyunun
+   %19,5'i). Tahtayı o kadar yukarı çekiyoruz. Yüzde marjlar KAPSAYICININ
+   GENİŞLİĞİNE göre hesaplandığı için değer görsel oranıyla çarpılıyor. */
+const TEZGAH_ALT = (1 - TEZGAH.opakAlt / TEZGAH.boy) * (TEZGAH.boy / TEZGAH.en) * 100;
+
+/* ---- PLAKA (biniş kartı) ----
+   Yazılar plakanın krem alanına yazılıyor; alanın sınırları da görselden
+   ölçüldü (1821x864 görselde x 171-1509, y 220-644).                    */
+const PLAKA = {
+  gorsel:'assets/plaka.png',
+  en:1821, boy:864,
+  alanX:9.39, alanY:25.46, alanEn:73.53, alanBoy:49.19   // krem alan, yüzde
+};
+
+const MANZARA = 'assets/bg_istanbul.png';
+
+/* ---- HAVAYOLLARI ----
+   Uçuş kodunun önü havayolundan geliyor: THY TK, AJet VF, SunExpress XQ.
+   Şehir tablosunda yalnızca uçuş NUMARASI duruyor, kodun tamamı burada
+   birleşiyor — böylece aynı sefer numarası farklı havayoluyla da çıkabilir.
+   Görseli olmayan havayolu için logosuz uçak (plane.png) kullanılıyor. */
+const HAVAYOLLARI = {
+  thy:        { ad:'Turkish Airlines', on:'TK', dosya:'assets/ucak_thy.png' },
+  ajet:       { ad:'AJet',             on:'VF', dosya:'assets/ucak_ajet.png' },
+  sunexpress: { ad:'SunExpress',       on:'XQ', dosya:'assets/ucak_sunexpress.png' }
+};
+const UCAK_YEDEK = 'assets/plane.png';
+
 const TAHTA = {
   gorsel:'assets/matrix.png',
   en:1100, boy:1429,      // görselin piksel ölçüsü
@@ -51,7 +92,9 @@ const MAKINE_BEKLEME = 1200;   // ms — arka arkaya basıp matrisi tıkamasın
 const MAKINE_ADET = 3;         // her basışta düşen hediyelik
 
 const HEDEF_SIPARIS = 10;      // bu kadar bagaj teslim edilince oyun biter
-const UCAK_SAYISI = 3;         // aynı anda bekleyen sipariş
+/* Siparişlerin HEPSİ tezgahta duruyor; tezgah yana kaydırılıyor. Bu sayı
+   aynı anda kaç tanesinin ekrana sığdığı — kaydırma adımı da bu. */
+const GORUNEN_UCAK = 3;
 
 const PUAN_SIPARIS = 150;
 const PUAN_BIRLESTIR = 10;     // × ulaşılan basamak
@@ -68,11 +111,16 @@ const HIZ_BONUS_TAVAN = 300;   // saniye
    Artık ad serbest: dosyayı assets/ içine at, buradaki "dosya" alanına yaz,
    başka hiçbir yeri değiştirmeye gerek yok.
 
+   "ucuslar" yalnızca sefer NUMARASI; başındaki harfler havayolundan gelir.
+   "havayollari" o şehre uçan şirketler — New York uzun menzil olduğu için
+   sadece THY'de.
+
    "renk" yalnızca görsel HENÜZ YOKKEN çizilen geçici kutunun rengi. */
 const SEHIRLER = {
   paris: {
     ad:'Paris', kod:'CDG', renk:'#C0392B',
-    ucuslar:['TK1823','TK1827','TK1831'],
+    ucuslar:['1823','1827','1831'],
+    havayollari:['thy','ajet'],
     zincir:[
       { ad:'Bere',         dosya:'item_paris1_bere.png' },
       { ad:'Kruvasan',     dosya:'item_paris2_croissant.png' },
@@ -82,7 +130,8 @@ const SEHIRLER = {
   },
   newyork: {
     ad:'New York', kod:'JFK', renk:'#2E86C1',
-    ucuslar:['TK0003','TK0011','TK0455'],
+    ucuslar:['0003','0011','0455'],
+    havayollari:['thy'],
     zincir:[
       { ad:'Güneş Gözlüğü',      dosya:'item_newyork1_sunglasses.png' },
       { ad:'Hot Dog',            dosya:'item_newyork2_hotdog.png' },
@@ -92,7 +141,8 @@ const SEHIRLER = {
   },
   roma: {
     ad:'Roma', kod:'FCO', renk:'#D35400',
-    ucuslar:['TK1861','TK1863','TK1867'],
+    ucuslar:['1861','1863','1867'],
+    havayollari:['thy','ajet','sunexpress'],
     zincir:[
       { ad:'Şapka',        dosya:'item_roma1_hat.png' },
       { ad:'Pizza Dilimi', dosya:'item_roma2_pizza.png' },
@@ -102,7 +152,8 @@ const SEHIRLER = {
   },
   londra: {
     ad:'Londra', kod:'LHR', renk:'#1F618D',
-    ucuslar:['TK1979','TK1981','TK1987'],
+    ucuslar:['1979','1981','1987'],
+    havayollari:['thy','ajet'],
     zincir:[
       { ad:'Şemsiye',           dosya:'item_londra1_umbrella.png' },
       { ad:'Çift Katlı Otobüs', dosya:'item_londra2_bus.png' },
@@ -133,8 +184,9 @@ function basamakBilgisi(sehir, basamak){ return SEHIRLER[sehir].zincir[basamak-1
 function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, basamak).dosya; }
 
 function beklenenGorseller(){
-  const liste = ['assets/machine.png','assets/ucak.png','assets/home_page.png','assets/end_page.png',
-                 TAHTA.gorsel];
+  const liste = ['assets/machine.png','assets/home_page.png','assets/end_page.png',
+                 TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK];
+  for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
     for(let b=1;b<=SON_BASAMAK;b++) liste.push(parcaGorseli(s,b));
   }
@@ -207,11 +259,15 @@ function olculeriGuncelle(){
   /* Tahta bir görsel olduğu için ölçüler ondan geliyor: hücre kenarı ne
      olursa olsun görsel aynı oranda büyüyor, hücreler de üstünde kayıtlı
      kalıyor. +2.9 ≈ üst bilgi + uçak kartları. */
-  const enGore  = (G * 0.98) / TAHTA_EN;
+  /* Tahta ekranın tamamını kaplamıyor: üstte manzara, tezgah ve uçaklar
+     için yer kalmalı — ama fazla küçülünce de tezgahın yanında cılız
+     kalıyor. %98 sahne bandını bitiriyor, %88 orantısız duruyordu. */
+  const enGore  = (G * 0.94) / TAHTA_EN;
   const boyGore = (Y * 0.99) / (TAHTA_BOY + 2.9);
   const h = Math.max(28, Math.floor(Math.min(enGore, boyGore)));
   const kok = document.documentElement;
   kok.style.setProperty('--hucre', h + 'px');
+  kok.style.setProperty('--gorunen', GORUNEN_UCAK);
   kok.style.setProperty('--tahta-en',  TAHTA_EN.toFixed(4));
   kok.style.setProperty('--tahta-boy', TAHTA_BOY.toFixed(4));
 }
@@ -469,59 +525,105 @@ function birlestir(s1,k1,s2,k2){
 }
 
 /* ---------- 8) UÇAKLAR (SİPARİŞLER) ---------- */
+/* Şehre uçan havayollarından biri. Görseli OLAN şirketler tercih ediliyor:
+   uçaklar parça parça üretilirken sahnede logosuz beyaz uçaklar değil,
+   hazır olan livery'ler görünsün. Hiçbirinin görseli yoksa sıradan seçim. */
+function havayoluSec(sehir){
+  const hepsi = SEHIRLER[sehir].havayollari;
+  const hazir = hepsi.filter(h => gorselVar(HAVAYOLLARI[h].dosya));
+  const havuz = hazir.length ? hazir : hepsi;
+  return havuz[rastgele(havuz.length)];
+}
+
 function ucakKarti(sehir){
   const S = SEHIRLER[sehir];
+  const hvId = havayoluSec(sehir);
+  const hv = HAVAYOLLARI[hvId];
   const el = document.createElement('div');
   el.className = 'ucak geliyor';
+  /* Giriş sınıfı kısa süre sonra kalkıyor. Sadece animationend'e
+     güvenilmiyor: animasyonlar çalışmadığında (arka plandaki sekme,
+     hareket azaltma) o olay hiç gelmiyor ve kart giriş karesinde donup
+     tezgahın üstünde asılı kalıyordu. */
+  setTimeout(() => el.classList.remove('geliyor'), 500);
 
-  if(gorselVar('assets/ucak.png')){
+  /* Uçak arkada, plaka önünde: ikisi de tezgahın yüzeyine basıyor. */
+  const ucakKutu = document.createElement('div');
+  ucakKutu.className = 'ucak-govde';
+  const ucakYolu = gorselVar(hv.dosya) ? hv.dosya : (gorselVar(UCAK_YEDEK) ? UCAK_YEDEK : null);
+  if(ucakYolu){
     const im = document.createElement('img');
-    im.className = 'ucak-gorsel'; im.src = gorselYolu('assets/ucak.png'); im.alt = '';
-    el.appendChild(im);
+    im.className = 'ucak-gorsel'; im.src = gorselYolu(ucakYolu); im.alt = hv.ad;
+    ucakKutu.appendChild(im);
   }else{
     const kutu = document.createElement('div');
     kutu.className = 'ucak-gecici'; kutu.textContent = '✈';
-    el.appendChild(kutu);
+    ucakKutu.appendChild(kutu);
   }
+  el.appendChild(ucakKutu);
 
+  /* Plaka: solda uçağın istediği bagaj, sağda uçuş kodu ve şehir.
+     Okuma bilmeyen çocuk bagajın resminden anlıyor, kod ise sahneyi
+     havaalanı gibi gösteriyor. */
+  const plaka = document.createElement('div');
+  plaka.className = 'ucak-plaka';
+  /* Plakanın boyunu görselin kendisi belirliyor; yazılar da üstüne
+     görselden ölçülmüş yüzdelerle biniyor. Görsel yoksa kutu kendi
+     zeminini çiziyor (bkz. style.css .ucak-plaka). */
+  if(gorselVar(PLAKA.gorsel)){
+    const pim = document.createElement('img');
+    pim.className = 'plaka-gorsel'; pim.src = gorselYolu(PLAKA.gorsel); pim.alt = '';
+    plaka.appendChild(pim);
+  }
+  const alan = document.createElement('div');
+  alan.className = 'plaka-alan';
+
+  const bagaj = document.createElement('div');
+  bagaj.className = 'plaka-bagaj';
+  bagaj.appendChild(parcaIcerigi(sehir, SON_BASAMAK));
+  alan.appendChild(bagaj);
+
+  const yazi = document.createElement('div');
+  yazi.className = 'plaka-yazi';
   const kod = document.createElement('div');
-  kod.className = 'ucak-kod';
-  kod.textContent = S.ucuslar[rastgele(S.ucuslar.length)];
-  el.appendChild(kod);
-
+  kod.className = 'plaka-kod';
+  kod.textContent = hv.on + S.ucuslar[rastgele(S.ucuslar.length)];
   const ad = document.createElement('div');
-  ad.className = 'ucak-sehir';
+  ad.className = 'plaka-sehir';
   ad.textContent = S.ad;
-  el.appendChild(ad);
+  yazi.appendChild(kod); yazi.appendChild(ad);
+  alan.appendChild(yazi);
 
-  /* Rozet = uçağın istediği bagajın küçük hâli. Okuma bilmeyen çocuk da
-     hangi uçağa ne götüreceğini buradan anlıyor. */
-  const rozet = document.createElement('div');
-  rozet.className = 'ucak-rozet';
-  rozet.appendChild(parcaIcerigi(sehir, SON_BASAMAK));
-  el.appendChild(rozet);
+  plaka.appendChild(alan);
+  el.appendChild(plaka);
 
-  return { sehir, kod:kod.textContent, el };
+  return { sehir, havayolu:hvId, kod:kod.textContent, el };
 }
 
-function yeniSehirSec(){
-  /* Masadaki üç sipariş farklı şehirlerden olsun: aynı şehirden iki uçak
-     varsa çocuk bagajı yanlış olana bırakıp haksız yere "yanlış" duyuyor. */
-  const kullanilan = ucaklar.map(u=>u.sehir);
-  const bos = SEHIR_LISTE.filter(s=>!kullanilan.includes(s));
-  const havuz = bos.length ? bos : SEHIR_LISTE;
-  return havuz[rastgele(havuz.length)];
+/* Turun bütün siparişleri baştan belirleniyor. Şehirler karılmış destelerden
+   sırayla alınıyor: saf rastgelelikte aynı şehir üst üste üç kez çıkıp
+   turun yarısını tek zincire çeviriyordu. */
+function siparisSehirleri(){
+  const liste = [];
+  while(liste.length < HEDEF_SIPARIS){
+    for(const s of karistir(SEHIR_LISTE)){
+      liste.push(s);
+      if(liste.length >= HEDEF_SIPARIS) break;
+    }
+  }
+  return liste;
 }
 
 function ucaklariKur(){
   const alan = $('#ucaklar');
   alan.innerHTML = '';
   ucaklar = [];
-  for(let i=0;i<UCAK_SAYISI;i++){
-    const u = ucakKarti(yeniSehirSec());
+  for(const sehir of siparisSehirleri()){
+    const u = ucakKarti(sehir);
     ucaklar.push(u);
     alan.appendChild(u.el);
   }
+  alan.scrollLeft = 0;
 }
 
 function teslimEt(t, ucakDom){
@@ -535,17 +637,11 @@ function teslimEt(t, ucakDom){
   puanEkle(PUAN_SIPARIS, ucakDom);
   hudGuncelle();
 
-  /* Uçak kalkar, yeri boş kalmasın diye hemen yenisi iner. Kart yerinde
-     değiştiriliyor (silinip eklenmiyor) ki üçlü dizilim oynamasın.      */
-  const yer = ucaklar.indexOf(u);
+  /* Uçak kalkar ve listeden çıkar: turun siparişleri baştan belli, yerine
+     yenisi gelmiyor. Şerit kendiliğinden kayarak boşluğu kapatıyor. */
+  ucaklar.splice(ucaklar.indexOf(u), 1);
   u.el.classList.add('kalkiyor');
-  const eski = u.el;
-  setTimeout(()=>{
-    if(durum!=='oyun'){ eski.remove(); return; }
-    const yeni = ucakKarti(yeniSehirSec());
-    eski.replaceWith(yeni.el);
-    ucaklar[yer] = yeni;
-  }, 700);
+  setTimeout(()=> u.el.remove(), 700);
 
   if(tamamlanan >= HEDEF_SIPARIS) setTimeout(oyunuBitir, 800);
 }
@@ -634,10 +730,30 @@ function katmanGorseli(gorselAd, imgId, bgId, geciciId){
 /* Tahta görseli geldiğinde kodun kendi çizdiği tepsi ve hücre zeminleri
    çekilir; görsel yoksa oyun yine oynanabilir kalsın diye onlar duruyor. */
 function tahtaGorselleri(){
-  if(!gorselVar(TAHTA.gorsel)) return;
-  document.documentElement.style.setProperty('--tahta-gorsel',
-    'url(' + gorselYolu(TAHTA.gorsel) + ')');
-  document.body.classList.add('sanat-tahta');
+  if(gorselVar(TAHTA.gorsel)){
+    document.documentElement.style.setProperty('--tahta-gorsel',
+      'url(' + gorselYolu(TAHTA.gorsel) + ')');
+    document.body.classList.add('sanat-tahta');
+  }
+  if(gorselVar(MANZARA)){
+    $('#manzara').src = gorselYolu(MANZARA);
+    document.body.classList.add('sanat-manzara');
+  }
+  if(gorselVar(TEZGAH.gorsel)){
+    $('#tezgahImg').src = gorselYolu(TEZGAH.gorsel);
+    document.body.classList.add('sanat-tezgah');
+    /* Uçak yuvaları tezgahın yüzeyine otursun: yükseklik görselden ölçüldü */
+    document.documentElement.style.setProperty('--tezgah-zemin', TEZGAH_ZEMIN.toFixed(2) + '%');
+    document.documentElement.style.setProperty('--tezgah-alt', (-TEZGAH_ALT).toFixed(2) + '%');
+  }
+  if(gorselVar(PLAKA.gorsel)){
+    const kok = document.documentElement;
+    kok.style.setProperty('--plaka-x', PLAKA.alanX + '%');
+    kok.style.setProperty('--plaka-y', PLAKA.alanY + '%');
+    kok.style.setProperty('--plaka-en', PLAKA.alanEn + '%');
+    kok.style.setProperty('--plaka-boy', PLAKA.alanBoy + '%');
+    document.body.classList.add('sanat-plaka');
+  }
 }
 
 function kur(){

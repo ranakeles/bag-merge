@@ -88,9 +88,12 @@ body{ font-family:var(--body); color:var(--text); background:#9BDCF2; user-selec
 }
 
 /* ---------- ÜST BİLGİ ---------- */
+/* HUD sahnenin akışında DEĞİL, manzaranın üstünde yüzüyor: üst bölge dar,
+   HUD yer kaplasaydı uçaklar tezgahın üstüne sığmazdı. */
 #hud{
-  width:100%; flex:none; display:flex; justify-content:space-between; align-items:center;
-  gap:calc(var(--hucre)*0.14); padding:calc(var(--hucre)*0.22) calc(var(--hucre)*0.26) calc(var(--hucre)*0.14);
+  position:absolute; top:0; left:0; z-index:6;
+  width:100%; display:flex; justify-content:space-between; align-items:center;
+  gap:calc(var(--hucre)*0.14); padding:calc(var(--hucre)*0.20) calc(var(--hucre)*0.26);
 }
 .hud-kutu{
   flex:1; display:flex; flex-direction:column; align-items:center; gap:1px;
@@ -102,61 +105,163 @@ body{ font-family:var(--body); color:var(--text); background:#9BDCF2; user-selec
 .hud-etiket{ font-family:var(--hud); font-size:calc(var(--hucre)*0.15); letter-spacing:.14em; color:var(--muted); }
 .hud-deger{ font-family:var(--hud); font-weight:700; font-size:calc(var(--hucre)*0.34); line-height:1; color:var(--vurgu); }
 
-/* ---------- UÇAKLAR ---------- */
+/* ---------- MANZARA + TEZGAH ----------
+   Manzara sahnenin üstünde, KENDİ ORANIYLA duruyor (esnetilmiyor); alt
+   şeridi tezgahın ve tahtanın arkasında kalıyor. Tezgah onun önünde,
+   uçaklar da tezgahın üst yüzeyine basıyor — bastıkları çizgi görselden
+   ölçüldü, --tezgah-zemin ile geliyor. */
+.manzara{
+  position:absolute; left:0; z-index:0;
+  width:100%; height:auto; pointer-events:none;
+  /* Görsel biraz YUKARI kaydırılıyor. Kendi oranıyla çizilince silüet
+     (Galata, cami, köprü) tam uçak sırasının arkasına denk geliyor ve
+     ekranda yalnızca gökyüzü ile deniz kalıyordu. */
+  top:calc(var(--hucre) * -0.85);
+}
+.manzara:not([src]){ display:none; }
+/* Manzaranın alt kenarı tahtaya doğru yumuşasın: keskin bir kesik çizgi
+   sahneyi iki ayrı resme bölüyordu. */
+.sanat-manzara .manzara{
+  -webkit-mask-image:linear-gradient(180deg, #000 72%, transparent 100%);
+          mask-image:linear-gradient(180deg, #000 72%, transparent 100%);
+  /* ARKA PLAN OLDUĞU BELLİ OLSUN: hafif bulanıklık ve düşük doygunluk.
+     Tam netken tezgah, uçak ve plakalarla aynı düzlemde duruyor, sahnenin
+     derinliği kayboluyordu. */
+  filter:blur(2.5px) saturate(.78) contrast(.92) brightness(1.06);
+  transform:scale(1.02);        /* bulanıklığın kenarda soldurduğu şerit kapansın */
+}
+
+/* Manzaranın üstüne serilen sis. Uzaktaki şeyin üstünde hava vardır; bu
+   katman hem netliği daha da kırıyor hem de ön plandaki parlak mor tezgahla
+   arasındaki rengi yumuşatıyor. Ön plan (z-index 2) bunun ÜSTÜNDE. */
+#sis{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(180deg,
+    rgba(236,247,255,.30) 0%,
+    rgba(226,242,255,.42) 45%,
+    rgba(224,240,255,.52) 100%);
+}
+#tezgah, #izgara, #surukle, #baloncuklar{ position:relative; z-index:2; }
+/* HUD her şeyin üstünde kalmalı: bu satır yukarıdaki z-index'i geri
+   almasın diye ayrı yazılıyor (aynı özgüllükte, sonra geliyor). */
+#hud{ position:absolute; z-index:6; }
+
+#tezgah{
+  width:100%; flex:none; position:relative; margin-top:auto;
+  /* Görselin altındaki şeffaf şerit kadar aşağı taşsın: yoksa tezgahla
+     tahta arasında sebepsiz bir boşluk kalıyor. */
+  margin-bottom:var(--tezgah-alt, 0);
+}
+.tezgah-gorsel{ display:block; width:100%; height:auto; pointer-events:none; }
+.tezgah-gorsel:not([src]){ display:none; }
+
+/* SİPARİŞ ŞERİDİ
+   Turun bütün siparişleri tezgahta duruyor ve şerit yana kaydırılıyor;
+   aynı anda --gorunen kadarı ekrana sığıyor.
+
+   Kutunun ALT PAYI (padding-bottom) plakanın taşan kısmı kadar: yatay
+   kaydırma açıkken tarayıcı dikey taşmayı kırpıyor, plaka o pay olmadan
+   alttan kesiliyordu. Üstteki pay da seçili kartın büyüme payı. */
 #ucaklar{
-  width:100%; flex:none; display:flex; justify-content:center; align-items:stretch;
-  gap:calc(var(--hucre)*0.16); padding:0 calc(var(--hucre)*0.26) calc(var(--hucre)*0.22);
+  position:absolute; left:0; right:0;
+  bottom:calc(var(--tezgah-zemin, 34%) - var(--hucre)*0.55);
+  padding:calc(var(--hucre)*0.16) 0 calc(var(--hucre)*0.55);
+  display:flex; align-items:flex-end;
+  overflow-x:auto; overflow-y:hidden;
+  scroll-snap-type:x proximity;
+  touch-action:pan-x;                 /* dikey kaydırma sahneyi oynatmasın */
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
 }
+#ucaklar::-webkit-scrollbar{ display:none; }
+/* Tezgah görseli yokken uçaklar normal bir sıra olarak dursun */
+body:not(.sanat-tezgah) #ucaklar{
+  position:static; padding:0 calc(var(--hucre)*0.26) calc(var(--hucre)*0.22);
+}
+/* Yuvanın ALT KENARI tezgahın yüzey çizgisi: uçak oraya basıyor.
+   Genişlik SABİT (esnek değil): şeritte kaç sipariş olursa olsun kartlar
+   aynı boyda kalsın, on sipariş varken hepsi ezilmesin. */
 .ucak{
-  flex:1 1 0; min-width:0; position:relative;
-  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-  gap:calc(var(--hucre)*0.04);
-  padding:calc(var(--hucre)*0.14) calc(var(--hucre)*0.08) calc(var(--hucre)*0.12);
-  border-radius:calc(var(--hucre)*0.28);
-  background:var(--kart);
-  box-shadow:var(--kart-golge);
-  transition:transform .16s, box-shadow .16s, background .16s;
+  flex:0 0 calc(100% / var(--gorunen, 3)); min-width:0; position:relative;
+  scroll-snap-align:center;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+  padding-bottom:calc(var(--hucre)*0.06);
+  transition:transform .16s, filter .16s;
 }
-/* Bagaj uçağın üstüne geldiğinde: doğruysa yeşil, yanlışsa kırmızı.
+/* Bagaj uçağın üstüne geldiğinde: doğruysa yeşil, yanlışsa kırmızı halka.
    Çocuk parmağını bırakmadan hedefin doğru olup olmadığını görsün. */
-.ucak.hedef{ background:#E9FBEF; transform:translateY(-6px) scale(1.04);
-  box-shadow:0 0 0 4px #38C172, 0 10px 0 rgba(30,45,80,.12), 0 18px 28px rgba(30,45,80,.22); }
-.ucak.hedef-yanlis{ background:#FFEEEE; box-shadow:0 0 0 4px #D64545, var(--kart-golge); }
+.ucak.hedef{ transform:translateY(-6px) scale(1.05);
+  filter:drop-shadow(0 0 6px #38C172) drop-shadow(0 0 14px rgba(56,193,114,.8)); }
+.ucak.hedef-yanlis{ filter:drop-shadow(0 0 6px #D64545) drop-shadow(0 0 12px rgba(214,69,69,.7)); }
 .ucak.kalkiyor{ animation:ucakKalk .75s cubic-bezier(.4,0,.9,.2) forwards; }
-.ucak.geliyor{ animation:ucakGel .45s cubic-bezier(.2,.9,.3,1.2) backwards; }
+/* "backwards" YOK: animasyon herhangi bir sebeple çalışmazsa (arka plandaki
+   sekme, hareket azaltma ayarı) kart giriş karesinde donup tezgahın üstünde
+   asılı kalıyordu. Animasyon oynamazsa kart doğrudan yerinde belirsin. */
+.ucak.geliyor{ animation:ucakGel .45s cubic-bezier(.2,.9,.3,1.2); }
 @keyframes ucakKalk{
   0%{ transform:translate(0,0) scale(1); opacity:1; }
   20%{ transform:translate(0,6px) scale(.97); }
-  100%{ transform:translate(0,-160%) scale(.7); opacity:0; }
+  100%{ transform:translate(0,-220%) scale(.7); opacity:0; }
 }
 @keyframes ucakGel{
-  from{ transform:translateY(60%) scale(.8); opacity:0; }
+  from{ transform:translateY(40%) scale(.8); opacity:0; }
   to{ transform:translateY(0) scale(1); opacity:1; }
 }
-.ucak-gorsel{ width:104%; height:calc(var(--hucre)*0.84); object-fit:contain; pointer-events:none;
-  filter:drop-shadow(0 calc(var(--hucre)*0.04) calc(var(--hucre)*0.05) rgba(25,35,65,.30)); }
-/* Görsel gelmeden önce uçağın yerini tutan geçici kutu */
+
+/* Uçak arkada, plaka önünde */
+.ucak-govde{ width:100%; display:flex; justify-content:center; }
+/* Uçak plakadan BÜYÜK olmalı: küçükken plaka onu neredeyse tamamen
+   örtüyor ve tezgahta sadece biniş kartları görünüyordu. */
+.ucak-gorsel{ width:96%; height:auto; max-height:calc(var(--hucre)*2.00); object-fit:contain;
+  pointer-events:none;
+  filter:drop-shadow(0 calc(var(--hucre)*0.05) calc(var(--hucre)*0.05) rgba(25,35,65,.35)); }
+/* Uçak görseli gelene kadar yerini tutan kutu */
 .ucak-gecici{
-  width:88%; height:calc(var(--hucre)*0.56); border-radius:calc(var(--hucre)*0.18);
-  background:linear-gradient(170deg, #BFE6F7, #7FBCE0 60%, #4E88B5);
-  display:grid; place-items:center; color:#fff; font-size:calc(var(--hucre)*0.30);
+  width:78%; height:calc(var(--hucre)*0.85); border-radius:calc(var(--hucre)*0.18);
+  background:linear-gradient(170deg, #EAF6FF, #BFDCF0 60%, #8FB7D4);
+  display:grid; place-items:center; color:#33506E; font-size:calc(var(--hucre)*0.42);
+  box-shadow:0 3px 0 rgba(30,45,80,.16), 0 7px 12px rgba(30,45,80,.24);
 }
-.ucak-kod{ font-family:var(--pano); font-weight:700; font-size:calc(var(--hucre)*0.23);
-  letter-spacing:.04em; color:var(--text); }
-.ucak-sehir{ font-family:var(--hud); font-weight:500; font-size:calc(var(--hucre)*0.19); color:var(--muted); }
-/* İstenen bagajın küçük rozeti: çocuk okuma bilmese de neyi üreteceğini görür */
-.ucak-rozet{
-  position:absolute; right:calc(var(--hucre)*-0.08); top:calc(var(--hucre)*-0.10);
-  width:calc(var(--hucre)*0.58); height:calc(var(--hucre)*0.58);
-  border-radius:50%; background:#fff;
-  display:grid; place-items:center; overflow:hidden;
-  box-shadow:0 3px 0 rgba(30,45,80,.12), 0 7px 12px rgba(30,45,80,.22);
+
+/* ---------- PLAKA (biniş kartı) ----------
+   Boyu görselin kendisinden geliyor; yazı alanı da görselden ÖLÇÜLMÜŞ
+   yüzdelerle onun üstüne biniyor (script.js PLAKA tablosu). Uçağın alt
+   kısmını biraz örtüyor ki önünde duruyormuş gibi görünsün. */
+/* Plaka uçağın ÖNÜNDE duruyor, yani ona göre biraz daha AŞAĞIDA: yakın
+   duran şey ekranda alta düşer. Akıştan çıkarıldı, yoksa uçağı yukarı
+   itiyor ve uçak tezgaha basmak yerine havada duruyordu. */
+.ucak-plaka{
+  position:absolute; left:7%; width:86%; z-index:3;
+  bottom:calc(var(--hucre)*-0.30);
+  filter:drop-shadow(0 calc(var(--hucre)*0.04) calc(var(--hucre)*0.05) rgba(25,35,65,.40));
 }
-.ucak-rozet img{ width:84%; height:84%; object-fit:contain; }
-/* Rozetin içindeki GEÇİCİ kutuya ad sığmıyor, taşıyordu: sadece rakam. */
-.ucak-rozet .parca-gecici{ width:100%; height:100%; border-radius:50%; }
-.ucak-rozet .parca-gecici .pg-ad{ display:none; }
-.ucak-rozet .parca-gecici .pg-tier{ font-size:calc(var(--hucre)*0.26); }
+.plaka-gorsel{ display:block; width:100%; height:auto; pointer-events:none; }
+.plaka-alan{
+  display:flex; align-items:center; gap:4%;
+}
+/* Görsel varsa yazı alanı krem bölgenin tam üstüne oturur */
+.sanat-plaka .plaka-alan{
+  position:absolute;
+  left:var(--plaka-x); top:var(--plaka-y);
+  width:var(--plaka-en); height:var(--plaka-boy);
+}
+/* Görsel yoksa plaka kendi zeminini çizsin */
+body:not(.sanat-plaka) .ucak-plaka{
+  background:var(--kart); border-radius:calc(var(--hucre)*0.18);
+  padding:calc(var(--hucre)*0.08) calc(var(--hucre)*0.10);
+  box-shadow:var(--kart-golge);
+}
+.plaka-bagaj{ flex:0 0 26%; height:100%; display:grid; place-items:center; }
+.plaka-bagaj img{ width:100%; height:100%; object-fit:contain; }
+.plaka-bagaj .parca-gecici{ width:100%; height:100%; border-radius:22%; }
+.plaka-bagaj .parca-gecici .pg-ad{ display:none; }
+.plaka-yazi{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column;
+  align-items:flex-start; justify-content:center; line-height:1.05; }
+.plaka-kod{ font-family:var(--pano); font-weight:700; color:#1B3B6B;
+  font-size:calc(var(--hucre)*0.26); letter-spacing:.02em; }
+.plaka-sehir{ font-family:var(--hud); font-weight:600; color:#5B6E92;
+  font-size:calc(var(--hucre)*0.20);
+  max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
 /* ---------- MERGE MATRİSİ ----------
    Beyaz bir tepsi; hücreler onun içine gömülü, sönük ve BİRBİRİNE YAKIN. */
@@ -175,8 +280,10 @@ body{ font-family:var(--body); color:var(--text); background:#9BDCF2; user-selec
   background-size:100% 100%; background-repeat:no-repeat;
   box-shadow:0 6px 0 rgba(30,45,80,.08), 0 14px 26px rgba(30,45,80,.18),
              inset 0 2px 0 rgba(255,255,255,.9);
-  /* Uçakların altında kalan boşluğun ORTASINA otursun */
-  margin:auto 0;
+  /* Artan boşluk ALTA değil ÜSTE gitsin: tahta ve tezgah aşağı iner,
+     manzaraya ve uçaklara yukarıda yer kalır. Boşluk eşit paylaştırılınca
+     üst bölge sıkışıyor, altta ise işe yaramayan bir şerit duruyordu. */
+  margin:0 0 calc(var(--hucre)*0.30);
 }
 .hucre{
   position:absolute; border-radius:calc(var(--hucre)*0.18);
