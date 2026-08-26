@@ -453,8 +453,17 @@ body:not(.sanat-plaka) .ucak-plaka{
 /* Arkada bulanık kopya: ekran oranı görselden farklıysa yanlar boş kalmasın */
 .katman-bg{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
   filter:blur(26px) brightness(.9); transform:scale(1.1); }
-/* Asıl tasarım: hiçbir yeri kırpılmadan tam görünür */
-.katman-img{ position:relative; max-width:100%; max-height:100%; object-fit:contain; }
+/* Asıl tasarım: hiçbir yeri kırpılmadan tam görünür.
+
+   MUTLAK konumlandırılıyor, ızgara akışında DEĞİL. Akışta bırakılınca
+   max-height:100% hiçbir şeyi kısıtlamıyordu: ızgara satırı görselin doğal
+   boyuna (1672 px) kadar büyüyor, yüzde de o büyümüş satıra göre
+   hesaplanıyor. Genişliği pencereden dar olan ekranlarda sorun görünmüyordu
+   çünkü max-width devreye giriyordu; geniş pencerede görselin altı
+   kırpılıyordu. Mutlak konumda kutu pencereye sabit, contain de kendisi
+   sığdırıyor. */
+.katman-img{ position:absolute; left:0; top:0; width:100%; height:100%;
+  object-fit:contain; }
 .katman-img:not([src]), .katman-bg:not([src]){ display:none; }
 /* Tüm ekran dokunmatik: çocuk nereye basarsa bassın devam eder */
 .katman-hit{ position:absolute; inset:0; background:none; border:0; cursor:pointer; }
@@ -464,13 +473,18 @@ body:not(.sanat-plaka) .ucak-plaka{
    yerleştirildiği için kutu ile görselin birebir üst üste durması şart.
    object-fit:contain kullanılsaydı görsel kutunun içinde ortalanır, kenarda
    pay bırakır ve bütün ölçüler kayardı. */
+/* Sahne, görselin ekranda kapladığı alanın BİREBİR aynısı olmalı: rakam
+   kutuları görselden ölçülmüş yüzdelerle yerleştiriliyor. Bu yüzden kutu
+   pencereye göre değil, görselin oranına göre hesaplanıyor — hangi kenar
+   önce doluyorsa o sınırlıyor. aspect-ratio + height:100% birleşimi ızgara
+   içinde güvenilir değildi (bkz. .katman-img). */
 #bitSahne{
-  position:relative;
-  aspect-ratio:var(--bitis-oran, 0.5628);
-  max-width:100%; max-height:100%;
-  height:100%;
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:min(100%, calc(100vh * var(--bitis-oran, 0.5628)));
+  height:min(100%, calc(100vw / var(--bitis-oran, 0.5628)));
 }
-#bitSahne .katman-img{ width:100%; height:100%; object-fit:fill; }
+#bitSahne .katman-img{ position:absolute; inset:0;
+  width:100%; height:100%; object-fit:fill; }
 body:not(.sanat-bitis) #bitSahne{ display:none; }
 
 .bit-deger{
