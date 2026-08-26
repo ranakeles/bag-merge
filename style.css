@@ -104,6 +104,43 @@ body{ font-family:var(--body); color:var(--text); background:#9BDCF2; user-selec
 }
 .hud-etiket{ font-family:var(--hud); font-size:calc(var(--hucre)*0.15); letter-spacing:.14em; color:var(--muted); }
 .hud-deger{ font-family:var(--hud); font-weight:700; font-size:calc(var(--hucre)*0.34); line-height:1; color:var(--vurgu); }
+.hud-gorsel{ display:none; }
+
+/* ---- ÜST BİLGİ, GÖRSELLİ HÂLİ ----
+   Kutu sadece bir çerçeve; içindeki görsel KASASI kutuyu dolduracak kadar
+   büyütülüp negatif konumla kaydırılıyor (ölçüler script.js'teki HUD
+   tablosundan). Kırpma YOK: sipariş panelinde bavul kasanın üstüne taşıyor,
+   kırpılırsa tepesi kesiliyor. */
+.sanat-hud .hud-kutu{
+  position:relative; overflow:visible;
+  /* Genişlik AÇIKÇA veriliyor. flex:1 ile bırakılınca tarayıcı önce
+     yüksekliği (içerik boş olduğu için) hesaplayıp genişliği ondan
+     türetiyor ve paneller olması gerekenin üçte ikisi kadar kalıyordu. */
+  flex:0 0 calc((100% - var(--hucre)*0.20) / 3);
+  aspect-ratio:var(--hud-oran, 3.45);
+  padding:0; border-radius:0; background:none; box-shadow:none;
+  display:block;
+}
+/* Görselli hâlde kutular kenara daha yakın: panel oranı çok yatık, kenar
+   payı büyük kalırsa paneller cılız duruyor. */
+.sanat-hud #hud{ gap:calc(var(--hucre)*0.10); padding:calc(var(--hucre)*0.18) calc(var(--hucre)*0.16); }
+.sanat-hud .hud-gorsel{ display:block; position:absolute; pointer-events:none; }
+.sanat-hud .hud-etiket{ display:none; }        /* simge zaten anlatıyor */
+/* Son saniyeler: sayaç kırmızıya döner ve panel nabız atar. */
+.hud-kutu.az-kaldi .hud-deger{ color:#C0392B; }
+.hud-kutu.az-kaldi{ animation:sureNabiz .9s ease-in-out infinite; }
+@keyframes sureNabiz{
+  0%,100%{ transform:scale(1); }
+  50%{ transform:scale(1.06); }
+}
+
+.sanat-hud .hud-deger{
+  position:absolute; display:grid; place-items:center;
+  color:#243a63; font-size:calc(var(--hucre)*0.30);
+  /* Rakamlar krem alana sığsın: uzun sayıda ("01:05") küçülsün diye
+     alanın kendisi kutu, yazı da ortalanmış. */
+  white-space:nowrap;
+}
 
 /* ---------- MANZARA + TEZGAH ----------
    Manzara sahnenin üstünde, KENDİ ORANIYLA duruyor (esnetilmiyor); alt

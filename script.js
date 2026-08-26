@@ -56,6 +56,30 @@ const PLAKA = {
 
 const MANZARA = 'assets/bg_istanbul.png';
 
+/* ---- ÜST BİLGİ PANELLERİ ----
+   Üç panel de tek tek ÖLÇÜLDÜ. İki ölçü lazım:
+   - "cerceve": mor-mavi kasanın sınırları. Panelin ekranda kaplayacağı yer
+     bu; görsellerin etrafındaki şeffaf pay her birinde farklı, kasaya göre
+     hizalanmazsa üç panel farklı boyda duruyor.
+   - "alan": sayının yazılacağı krem yüzey.
+
+   Kasa oranları da birbirinden biraz farklı (3.19 / 3.55 / 3.62). Üçü yan
+   yana duracağı için ORTAK bir orana (HUD_ORAN) esnetiliyorlar; fark en
+   fazla %8 ve yuvarlak bir kasada fark edilmiyor. Sıranın düzgün olması
+   panel başına birkaç pikselden önemli.                                  */
+const HUD = {
+  siparis:{ gorsel:'assets/hud_siparis.png', en:1866, boy:843,
+            cerceve:{x:77, y:153, en:1712, boy:537},
+            alan:{x:162, y:233, en:1529, boy:363} },
+  puan:   { gorsel:'assets/hud_puan.png',    en:2172, boy:724,
+            cerceve:{x:39, y:60,  en:2093, boy:589},
+            alan:{x:497, y:157, en:1497, boy:371} },
+  sure:   { gorsel:'assets/hud_sure.png',    en:2172, boy:724,
+            cerceve:{x:33, y:64,  en:2105, boy:582},
+            alan:{x:312, y:153, en:1685, boy:375} }
+};
+const HUD_ORAN = 3.45;   // panelin en/boy oranı (üç kasanın ortalaması)
+
 /* ---- HAVAYOLLARI ----
    Uçuş kodunun önü havayolundan geliyor: THY TK, AJet VF, SunExpress XQ.
    Şehir tablosunda yalnızca uçuş NUMARASI duruyor, kodun tamamı burada
@@ -91,16 +115,19 @@ const MAKINE_YERI = { s:4, k:3 };
 const MAKINE_BEKLEME = 1200;   // ms — arka arkaya basıp matrisi tıkamasın
 const MAKINE_ADET = 3;         // her basışta düşen hediyelik
 
-const HEDEF_SIPARIS = 10;      // bu kadar bagaj teslim edilince oyun biter
+const HEDEF_SIPARIS = 6;       // bu kadar bagaj teslim edilince oyun biter
 /* Siparişlerin HEPSİ tezgahta duruyor; tezgah yana kaydırılıyor. Bu sayı
    aynı anda kaç tanesinin ekrana sığdığı — kaydırma adımı da bu. */
 const GORUNEN_UCAK = 3;
 
 const PUAN_SIPARIS = 150;
 const PUAN_BIRLESTIR = 10;     // × ulaşılan basamak
-/* Süre canı yakmıyor, sadece bitişte bonusa dönüşüyor: çocuk acele etmek
-   ZORUNDA olmasın ama hızlı oynayan da ödüllendirilsin.                 */
-const HIZ_BONUS_TAVAN = 300;   // saniye
+/* SÜRE GERİ SAYIYOR. Tur bu süreyle sınırlı: altı siparişi yetiştirebilirsen
+   kazanıyorsun, süre biterse tur orada kapanıyor. Kioskta sıra beklendiği
+   için turun kesin bir sonu olmalı.                                      */
+const TUR_SURESI = 80;         // saniye (1:20)
+const PUAN_KALAN_SANIYE = 5;   // bitişte artan her saniye bu kadar puan
+const AZ_KALDI = 15;           // bu saniyenin altında sayaç uyarıya geçer
 
 /* Her şehrin KENDİ zinciri var: makineden çıkan 1. basamak, iki kere
    birleşe birleşe o şehrin simgesine, en sonunda da o şehrin bagajına
@@ -133,10 +160,10 @@ const SEHIRLER = {
     ucuslar:['0003','0011','0455'],
     havayollari:['thy'],
     zincir:[
-      { ad:'Güneş Gözlüğü',      dosya:'item_newyork1_sunglasses.png' },
-      { ad:'Hot Dog',            dosya:'item_newyork2_hotdog.png' },
-      { ad:'Özgürlük Heykeli',   dosya:'item_newyork3_statue.png' },
-      { ad:'New York Bagajı',    dosya:'item_newyork4_luggage.png' }
+      { ad:'Güneş Gözlüğü',      dosya:'item_newyork1.png' },
+      { ad:'Hot Dog',            dosya:'item_newyork2.png' },
+      { ad:'Özgürlük Heykeli',   dosya:'item_newyork3.png' },
+      { ad:'New York Bagajı',    dosya:'item_newyork4.png' }
     ]
   },
   roma: {
@@ -144,10 +171,10 @@ const SEHIRLER = {
     ucuslar:['1861','1863','1867'],
     havayollari:['thy','ajet','sunexpress'],
     zincir:[
-      { ad:'Şapka',        dosya:'item_roma1_hat.png' },
-      { ad:'Pizza Dilimi', dosya:'item_roma2_pizza.png' },
-      { ad:'Kolezyum',     dosya:'item_roma3_colosseum.png' },
-      { ad:'Roma Bagajı',  dosya:'item_roma4_luggage.png' }
+      { ad:'Şapka',        dosya:'item_rome1.png' },
+      { ad:'Pizza Dilimi', dosya:'item_rome2.png' },
+      { ad:'Kolezyum',     dosya:'item_rome3.png' },
+      { ad:'Roma Bagajı',  dosya:'item_rome4.png' }
     ]
   },
   londra: {
@@ -155,10 +182,10 @@ const SEHIRLER = {
     ucuslar:['1979','1981','1987'],
     havayollari:['thy','ajet'],
     zincir:[
-      { ad:'Şemsiye',           dosya:'item_londra1_umbrella.png' },
-      { ad:'Çift Katlı Otobüs', dosya:'item_londra2_bus.png' },
-      { ad:'Big Ben',           dosya:'item_londra3_bigben.png' },
-      { ad:'Londra Bagajı',     dosya:'item_londra4_luggage.png' }
+      { ad:'Şemsiye',           dosya:'item_london1.png' },
+      { ad:'Çift Katlı Otobüs', dosya:'item_london2.png' },
+      { ad:'Big Ben',           dosya:'item_london3.png' },
+      { ad:'Londra Bagajı',     dosya:'item_london4.png' }
     ]
   }
 };
@@ -186,6 +213,7 @@ function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, 
 function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/home_page.png','assets/end_page.png',
                  TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK];
+  for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
     for(let b=1;b<=SON_BASAMAK;b++) liste.push(parcaGorseli(s,b));
@@ -240,12 +268,12 @@ const $ = s => document.querySelector(s);
 const rastgele = n => Math.floor(Math.random()*n);
 function karistir(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=rastgele(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-let durum = 'bas';            // bas | oyun | bitti
+let durum = 'bas';            // bas | oyun | bitiyor | bitti
 let izgara = [];              // izgara[s][k] = null | {sehir, basamak, el}
 let hucreEl = [];             // aynı boyutta DOM karşılıkları
 let ucaklar = [];             // {sehir, kod, el}
 let puan = 0, tamamlanan = 0;
-let baslangic = 0, gecenSn = 0;
+let baslangic = 0, kalanSn = TUR_SURESI;
 let makineHazir = true, makineAnI = 0, makineEl = null, dolumEl = null;
 
 /* ---------- 4) SAHNE ÖLÇÜSÜ ----------
@@ -643,7 +671,12 @@ function teslimEt(t, ucakDom){
   u.el.classList.add('kalkiyor');
   setTimeout(()=> u.el.remove(), 700);
 
-  if(tamamlanan >= HEDEF_SIPARIS) setTimeout(oyunuBitir, 800);
+  if(tamamlanan >= HEDEF_SIPARIS){
+    /* Sayaç HEMEN dursun: uçağın kalkış animasyonu sürerken saniyeler
+       işlemeye devam edip kazanılan bonusu yiyordu. */
+    durum = 'bitiyor';
+    setTimeout(oyunuBitir, 800);
+  }
 }
 
 /* ---------- 9) AKIŞ ---------- */
@@ -675,12 +708,16 @@ function sureYazi(sn){
 function hudGuncelle(){
   $('#hudSiparis').textContent = tamamlanan + '/' + HEDEF_SIPARIS;
   $('#hudPuan').textContent = puan;
-  $('#hudSure').textContent = sureYazi(gecenSn);
+  $('#hudSure').textContent = sureYazi(kalanSn);
+  /* Son saniyelerde sayaç kırmızıya dönüp nabız atıyor: çocuk saati
+     okumasa da acele etmesi gerektiğini görüyor. */
+  const kutu = $('#hudSure').closest('.hud-kutu');
+  if(kutu) kutu.classList.toggle('az-kaldi', durum === 'oyun' && kalanSn <= AZ_KALDI);
 }
 
 function oyunuBaslat(){
   durum = 'oyun';
-  puan = 0; tamamlanan = 0; gecenSn = 0;
+  puan = 0; tamamlanan = 0; kalanSn = TUR_SURESI;
   baslangic = performance.now();
   makineHazir = true; makineAnI = 0;
 
@@ -699,11 +736,15 @@ function oyunuBaslat(){
 }
 
 function oyunuBitir(){
+  if(durum === 'bitti') return;          // hem süre bitişi hem son teslimat çağırabilir
   durum = 'bitti';
-  const bonus = Math.max(0, HIZ_BONUS_TAVAN - gecenSn) * 2;
-  puan += bonus;
-  $('#bitSiparis').textContent = tamamlanan;
-  $('#bitSure').textContent = sureYazi(gecenSn);
+  /* Artan süre puana dönüşüyor: erken bitirmenin ödülü bu. Süre dolduysa
+     kalan sıfır, bonus da yok. */
+  puan += kalanSn * PUAN_KALAN_SANIYE;
+  const basarili = tamamlanan >= HEDEF_SIPARIS;
+  $('#bitBaslik').textContent = basarili ? 'TEBRİKLER' : 'SÜRE DOLDU';
+  $('#bitSiparis').textContent = tamamlanan + '/' + HEDEF_SIPARIS;
+  $('#bitSure').textContent = sureYazi(kalanSn);
   $('#bitPuan').textContent = puan;
   $('#bitScreen').classList.remove('gizli');
 }
@@ -711,8 +752,12 @@ function oyunuBitir(){
 function dongu(simdi){
   if(durum==='oyun'){
     makineyiIsle(simdi);
-    const sn = Math.floor((simdi - baslangic)/1000);
-    if(sn !== gecenSn){ gecenSn = sn; hudGuncelle(); }
+    const kalan = Math.max(0, TUR_SURESI - Math.floor((simdi - baslangic)/1000));
+    if(kalan !== kalanSn){
+      kalanSn = kalan;
+      hudGuncelle();
+      if(kalanSn === 0) oyunuBitir();
+    }
   }
   requestAnimationFrame(dongu);
 }
@@ -729,7 +774,42 @@ function katmanGorseli(gorselAd, imgId, bgId, geciciId){
 
 /* Tahta görseli geldiğinde kodun kendi çizdiği tepsi ve hücre zeminleri
    çekilir; görsel yoksa oyun yine oynanabilir kalsın diye onlar duruyor. */
+/* Panelin görselini ve sayı alanını yerine oturtur.
+
+   Görsel, KASASI kutuyu tam dolduracak şekilde ölçekleniyor: bunun için
+   kutudan taşacak kadar büyütülüp negatif konumla kaydırılıyor (şeffaf pay
+   dışarıda kalıyor, taşan simge görünür kalsın diye kırpma yok). Sayı alanı
+   da aynı ölçekle hesaplanıp kutunun yüzdesi olarak yazılıyor.            */
+function hudPaneliKur(kutu, p){
+  const gorselEn = p.en / p.cerceve.en * 100;          // kutunun yüzdesi
+  const gorselBoy = p.boy / p.cerceve.boy * 100;
+  const gorselSol = -p.cerceve.x / p.cerceve.en * 100;
+  const gorselUst = -p.cerceve.y / p.cerceve.boy * 100;
+
+  const im = kutu.querySelector('.hud-gorsel');
+  im.src = gorselYolu(p.gorsel);
+  im.style.left = gorselSol + '%';  im.style.top    = gorselUst + '%';
+  im.style.width = gorselEn + '%';  im.style.height = gorselBoy + '%';
+
+  const deger = kutu.querySelector('.hud-deger');
+  deger.style.left   = (gorselSol + p.alan.x   / p.en  * gorselEn)  + '%';
+  deger.style.top    = (gorselUst + p.alan.y   / p.boy * gorselBoy) + '%';
+  deger.style.width  = (p.alan.en  / p.en  * gorselEn)  + '%';
+  deger.style.height = (p.alan.boy / p.boy * gorselBoy) + '%';
+}
+
+function hudGorselleri(){
+  const kutular = document.querySelectorAll('.hud-kutu');
+  let hepsiVar = true;
+  kutular.forEach(kutu => { if(!gorselVar(HUD[kutu.dataset.hud].gorsel)) hepsiVar = false; });
+  if(!hepsiVar) return;      // eksikse hiçbiri kullanılmasın, sıra bozulmasın
+  kutular.forEach(kutu => hudPaneliKur(kutu, HUD[kutu.dataset.hud]));
+  document.documentElement.style.setProperty('--hud-oran', HUD_ORAN);
+  document.body.classList.add('sanat-hud');
+}
+
 function tahtaGorselleri(){
+  hudGorselleri();
   if(gorselVar(TAHTA.gorsel)){
     document.documentElement.style.setProperty('--tahta-gorsel',
       'url(' + gorselYolu(TAHTA.gorsel) + ')');
