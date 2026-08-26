@@ -27,6 +27,35 @@ const SUTUN = 7, SATIR = 9;
    GÖRSEL DEĞİŞİRSE BU SAYILAR DA DEĞİŞMELİ. Yoksa çocuk bir hücreye basar,
    yandaki tepki verir. Ölçüm yöntemi: hücre sıraları boyunca parlaklık
    farkının tepe yaptığı yerler hücre kenarlarıdır.                       */
+/* ---- TEZGAH ----
+   Uçaklar tezgahın üst yüzeyine basıyor. Yüzeyin bittiği yer GÖRSELDEN
+   ÖLÇÜLDÜ: 2172x724 görselde açık mor üst yüzey y=490'a kadar sürüyor,
+   uçakların basacağı çizgi olarak y=470 alındı (yüzeyin ön tarafı). Bu
+   sayı görsel değişirse yeniden ölçülmeli.                              */
+const TEZGAH = {
+  gorsel:'assets/tezgah.png',
+  en:2172, boy:724,
+  zeminY:470,                    // uçakların bastığı çizgi (px, üstten)
+  opakAlt:583                    // tezgahın gerçekten bittiği yer; altı şeffaf
+};
+/* Uçak yuvaları tezgahın ALTINDAN bu kadar yukarıda duruyor */
+const TEZGAH_ZEMIN = (TEZGAH.boy - TEZGAH.zeminY) / TEZGAH.boy * 100;
+/* Görselin altındaki şeffaf şerit boşuna yer kaplıyordu (görsel boyunun
+   %19,5'i). Tahtayı o kadar yukarı çekiyoruz. Yüzde marjlar KAPSAYICININ
+   GENİŞLİĞİNE göre hesaplandığı için değer görsel oranıyla çarpılıyor. */
+const TEZGAH_ALT = (1 - TEZGAH.opakAlt / TEZGAH.boy) * (TEZGAH.boy / TEZGAH.en) * 100;
+
+/* ---- PLAKA (biniş kartı) ----
+   Yazılar plakanın krem alanına yazılıyor; alanın sınırları da görselden
+   ölçüldü (1821x864 görselde x 171-1509, y 220-644).                    */
+const PLAKA = {
+  gorsel:'assets/plaka.png',
+  en:1821, boy:864,
+  alanX:9.39, alanY:25.46, alanEn:73.53, alanBoy:49.19   // krem alan, yüzde
+};
+
+const MANZARA = 'assets/bg_istanbul.png';
+
 const TAHTA = {
   gorsel:'assets/matrix.png',
   en:1100, boy:1429,      // görselin piksel ölçüsü
@@ -134,7 +163,7 @@ function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, 
 
 function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/ucak.png','assets/home_page.png','assets/end_page.png',
-                 TAHTA.gorsel];
+                 TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA];
   for(const s of SEHIR_LISTE){
     for(let b=1;b<=SON_BASAMAK;b++) liste.push(parcaGorseli(s,b));
   }
@@ -207,7 +236,10 @@ function olculeriGuncelle(){
   /* Tahta bir görsel olduğu için ölçüler ondan geliyor: hücre kenarı ne
      olursa olsun görsel aynı oranda büyüyor, hücreler de üstünde kayıtlı
      kalıyor. +2.9 ≈ üst bilgi + uçak kartları. */
-  const enGore  = (G * 0.98) / TAHTA_EN;
+  /* Tahta ekranın tamamını kaplamıyor: üstte manzara ve tezgah için yer
+     kalmalı. %98'ken sahne bandı bir avuç piksele düşüyor ve İstanbul
+     görselinin şehir kısmı tezgahın arkasında kayboluyordu. */
+  const enGore  = (G * 0.92) / TAHTA_EN;
   const boyGore = (Y * 0.99) / (TAHTA_BOY + 2.9);
   const h = Math.max(28, Math.floor(Math.min(enGore, boyGore)));
   const kok = document.documentElement;
@@ -474,32 +506,54 @@ function ucakKarti(sehir){
   const el = document.createElement('div');
   el.className = 'ucak geliyor';
 
+  /* Uçak arkada, plaka önünde: ikisi de tezgahın yüzeyine basıyor. */
+  const ucakKutu = document.createElement('div');
+  ucakKutu.className = 'ucak-govde';
   if(gorselVar('assets/ucak.png')){
     const im = document.createElement('img');
     im.className = 'ucak-gorsel'; im.src = gorselYolu('assets/ucak.png'); im.alt = '';
-    el.appendChild(im);
+    ucakKutu.appendChild(im);
   }else{
     const kutu = document.createElement('div');
     kutu.className = 'ucak-gecici'; kutu.textContent = '✈';
-    el.appendChild(kutu);
+    ucakKutu.appendChild(kutu);
   }
+  el.appendChild(ucakKutu);
 
+  /* Plaka: solda uçağın istediği bagaj, sağda uçuş kodu ve şehir.
+     Okuma bilmeyen çocuk bagajın resminden anlıyor, kod ise sahneyi
+     havaalanı gibi gösteriyor. */
+  const plaka = document.createElement('div');
+  plaka.className = 'ucak-plaka';
+  /* Plakanın boyunu görselin kendisi belirliyor; yazılar da üstüne
+     görselden ölçülmüş yüzdelerle biniyor. Görsel yoksa kutu kendi
+     zeminini çiziyor (bkz. style.css .ucak-plaka). */
+  if(gorselVar(PLAKA.gorsel)){
+    const pim = document.createElement('img');
+    pim.className = 'plaka-gorsel'; pim.src = gorselYolu(PLAKA.gorsel); pim.alt = '';
+    plaka.appendChild(pim);
+  }
+  const alan = document.createElement('div');
+  alan.className = 'plaka-alan';
+
+  const bagaj = document.createElement('div');
+  bagaj.className = 'plaka-bagaj';
+  bagaj.appendChild(parcaIcerigi(sehir, SON_BASAMAK));
+  alan.appendChild(bagaj);
+
+  const yazi = document.createElement('div');
+  yazi.className = 'plaka-yazi';
   const kod = document.createElement('div');
-  kod.className = 'ucak-kod';
+  kod.className = 'plaka-kod';
   kod.textContent = S.ucuslar[rastgele(S.ucuslar.length)];
-  el.appendChild(kod);
-
   const ad = document.createElement('div');
-  ad.className = 'ucak-sehir';
+  ad.className = 'plaka-sehir';
   ad.textContent = S.ad;
-  el.appendChild(ad);
+  yazi.appendChild(kod); yazi.appendChild(ad);
+  alan.appendChild(yazi);
 
-  /* Rozet = uçağın istediği bagajın küçük hâli. Okuma bilmeyen çocuk da
-     hangi uçağa ne götüreceğini buradan anlıyor. */
-  const rozet = document.createElement('div');
-  rozet.className = 'ucak-rozet';
-  rozet.appendChild(parcaIcerigi(sehir, SON_BASAMAK));
-  el.appendChild(rozet);
+  plaka.appendChild(alan);
+  el.appendChild(plaka);
 
   return { sehir, kod:kod.textContent, el };
 }
@@ -634,10 +688,30 @@ function katmanGorseli(gorselAd, imgId, bgId, geciciId){
 /* Tahta görseli geldiğinde kodun kendi çizdiği tepsi ve hücre zeminleri
    çekilir; görsel yoksa oyun yine oynanabilir kalsın diye onlar duruyor. */
 function tahtaGorselleri(){
-  if(!gorselVar(TAHTA.gorsel)) return;
-  document.documentElement.style.setProperty('--tahta-gorsel',
-    'url(' + gorselYolu(TAHTA.gorsel) + ')');
-  document.body.classList.add('sanat-tahta');
+  if(gorselVar(TAHTA.gorsel)){
+    document.documentElement.style.setProperty('--tahta-gorsel',
+      'url(' + gorselYolu(TAHTA.gorsel) + ')');
+    document.body.classList.add('sanat-tahta');
+  }
+  if(gorselVar(MANZARA)){
+    $('#manzara').src = gorselYolu(MANZARA);
+    document.body.classList.add('sanat-manzara');
+  }
+  if(gorselVar(TEZGAH.gorsel)){
+    $('#tezgahImg').src = gorselYolu(TEZGAH.gorsel);
+    document.body.classList.add('sanat-tezgah');
+    /* Uçak yuvaları tezgahın yüzeyine otursun: yükseklik görselden ölçüldü */
+    document.documentElement.style.setProperty('--tezgah-zemin', TEZGAH_ZEMIN.toFixed(2) + '%');
+    document.documentElement.style.setProperty('--tezgah-alt', (-TEZGAH_ALT).toFixed(2) + '%');
+  }
+  if(gorselVar(PLAKA.gorsel)){
+    const kok = document.documentElement;
+    kok.style.setProperty('--plaka-x', PLAKA.alanX + '%');
+    kok.style.setProperty('--plaka-y', PLAKA.alanY + '%');
+    kok.style.setProperty('--plaka-en', PLAKA.alanEn + '%');
+    kok.style.setProperty('--plaka-boy', PLAKA.alanBoy + '%');
+    document.body.classList.add('sanat-plaka');
+  }
 }
 
 function kur(){
