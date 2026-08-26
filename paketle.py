@@ -92,6 +92,13 @@ def main():
     css = yollari_goem(oku("style.css"), tablo)
     js = oku("script.js")          # JS'teki yollar tabloyla çözülüyor, değiştirilmiyor
 
+    # SIRA ÖNEMLİ: HTML'in kendi "assets/..." yolları ÖNCE değiştiriliyor.
+    # Sonra yapılırsa sayfaya gömülen arama tablosunun ANAHTARLARI da
+    # ("assets/x.png": "data:...") birer yol sanılıp data URI ile
+    # değiştiriliyor ve her görsel pakete İKİ KEZ giriyor; paket 40 MB
+    # yerine 100 MB çıkıyordu.
+    html = yollari_goem(html, tablo)
+
     # <link rel="stylesheet" href="style.css"> -> <style>...</style>
     link = '<link rel="stylesheet" href="style.css">'
     if link not in html:
@@ -104,9 +111,6 @@ def main():
         raise SystemExit("HATA: index.html içinde script bağlantısı bulunamadı.")
     html = html.replace(etiket, "<script>\n%s\n</script>\n<script>\n%s\n</script>"
                         % (js_tablosu(tablo), js))
-
-    # HTML'in kendi içinde kalan yollar (varsa)
-    html = yollari_goem(html, tablo)
 
     with open(CIKTI, "w", encoding="utf-8") as f:
         f.write(html)
