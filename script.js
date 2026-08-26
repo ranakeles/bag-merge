@@ -57,24 +57,36 @@ const PLAKA = {
 const MANZARA = 'assets/bg_istanbul.png';
 
 /* ---- BİTİŞ EKRANI ----
-   İki ayrı tasarım var: hepsi teslim edildiyse biri, süre dolduysa öteki.
-   Rakamların yeri GÖRSELDEN ÖLÇÜLDÜ — 941x1672 görselde üstteki krem
-   şeridin içinde dört sütun (ayıraçlar x=296, 469, 643) ve ikonların
-   altında y=769'dan başlayan boş bant. Skor tablosu paneli de ölçüldü.
+   İki ayrı tasarım: hepsi teslim edildiyse "TÜM BAGAJLAR TESLİM EDİLDİ",
+   süre dolduysa "BANT KARIŞTI". İkisi de 941x1672.
 
-   İki tasarımın yerleşimi AYNI varsayılıyor. Süre dolan hâli geldiğinde
-   ölçüsü doğrulanmalı; farklıysa bu tabloya kendi alanları yazılır.      */
+   HER İKİSİNİN ÖLÇÜSÜ AYRI. Aynı yerleşimde olduklarını varsaymıştım ama
+   değiller: süre dolan tasarımda üstteki şerit hem daha aşağıda hem daha
+   dar (sol kenarı 68 değil 124). O yüzden alanlar tasarım başına yazılıyor.
+   Görsel değişirse yeniden ölçülmeli — sütun ayıraçları ve ikonların
+   altındaki boş bant, parlaklık geçişlerinden bulunuyor.                 */
 const BITIS = {
-  basarili:  'assets/end_page_success.png',
-  sureDoldu: 'assets/end_page_timeout.png',
   en:941, boy:1672,
-  alanlar:{
-    bitPuan:   { x:68,  y:769, en:229, boy:68 },
-    bitHatali: { x:297, y:769, en:173, boy:68 },
-    bitDogru:  { x:470, y:769, en:174, boy:68 },
-    bitSure:   { x:644, y:769, en:167, boy:68 }
+  basarili:{
+    gorsel:'assets/end_page_success.png',
+    alanlar:{
+      bitPuan:   { x:68,  y:769, en:229, boy:68 },
+      bitHatali: { x:297, y:769, en:173, boy:68 },
+      bitDogru:  { x:470, y:769, en:174, boy:68 },
+      bitSure:   { x:644, y:769, en:167, boy:68 }
+    },
+    tablo:{ x:199, y:930, en:539, boy:417 }
   },
-  tablo: { x:199, y:930, en:539, boy:417 }
+  sureDoldu:{
+    gorsel:'assets/end_page_fail.png',
+    alanlar:{
+      bitPuan:   { x:124, y:832, en:171, boy:71 },
+      bitHatali: { x:295, y:832, en:173, boy:71 },
+      bitDogru:  { x:468, y:832, en:175, boy:71 },
+      bitSure:   { x:643, y:832, en:167, boy:71 }
+    },
+    tablo:{ x:199, y:1000, en:538, boy:427 }
+  }
 };
 
 /* ---- ÜST BİLGİ PANELLERİ ----
@@ -247,7 +259,7 @@ function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, 
 function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/home_page.png',
                  TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK,
-                 BITIS.basarili, BITIS.sureDoldu];
+                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel];
   for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
@@ -805,7 +817,8 @@ function oyunuBaslat(){
 /* Bitiş görselini seçip rakam kutularını onun üstüne oturtur. Görsel yoksa
    geçici panel devrede kalıyor — süre dolan hâlin tasarımı henüz gelmedi. */
 function bitisGorseliniKur(basarili){
-  const ad = basarili ? BITIS.basarili : BITIS.sureDoldu;
+  const tasarim = basarili ? BITIS.basarili : BITIS.sureDoldu;
+  const ad = tasarim.gorsel;
   if(!gorselVar(ad)){
     document.body.classList.remove('sanat-bitis');
     $('#bitGecici').classList.remove('gizli');
@@ -825,8 +838,8 @@ function bitisGorseliniKur(basarili){
     el.style.width  = (a.en  / BITIS.en  * 100) + '%';
     el.style.height = (a.boy / BITIS.boy * 100) + '%';
   };
-  for(const [id, alan] of Object.entries(BITIS.alanlar)) yerlestir($('#' + id), alan);
-  yerlestir($('#bitTablo'), BITIS.tablo);
+  for(const [id, alan] of Object.entries(tasarim.alanlar)) yerlestir($('#' + id), alan);
+  yerlestir($('#bitTablo'), tasarim.tablo);
   return true;
 }
 
@@ -867,7 +880,7 @@ function oyunuBitir(){
 
   $('#bitScreen').classList.remove('gizli');
   /* Ölçüm ancak ekran görünürken doğru: gizliyken kutuların boyu sıfır. */
-  Object.keys(BITIS.alanlar).forEach(id => yaziyiSigdir($('#' + id)));
+  Object.keys(BITIS.basarili.alanlar).forEach(id => yaziyiSigdir($('#' + id)));
 }
 
 /* Bitiş ekranındaki buton "ANA SAYFA" diyor: tura doğrudan başlamak yerine
