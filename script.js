@@ -56,6 +56,39 @@ const PLAKA = {
 
 const MANZARA = 'assets/bg_istanbul.png';
 
+/* ---- BİTİŞ EKRANI ----
+   İki ayrı tasarım: hepsi teslim edildiyse "TÜM BAGAJLAR TESLİM EDİLDİ",
+   süre dolduysa "BANT KARIŞTI". İkisi de 941x1672.
+
+   HER İKİSİNİN ÖLÇÜSÜ AYRI. Aynı yerleşimde olduklarını varsaymıştım ama
+   değiller: süre dolan tasarımda üstteki şerit hem daha aşağıda hem daha
+   dar (sol kenarı 68 değil 124). O yüzden alanlar tasarım başına yazılıyor.
+   Görsel değişirse yeniden ölçülmeli — sütun ayıraçları ve ikonların
+   altındaki boş bant, parlaklık geçişlerinden bulunuyor.                 */
+const BITIS = {
+  en:941, boy:1672,
+  basarili:{
+    gorsel:'assets/end_page_success.png',
+    alanlar:{
+      bitPuan:   { x:68,  y:769, en:229, boy:68 },
+      bitHatali: { x:297, y:769, en:173, boy:68 },
+      bitDogru:  { x:470, y:769, en:174, boy:68 },
+      bitSure:   { x:644, y:769, en:167, boy:68 }
+    },
+    tablo:{ x:199, y:930, en:539, boy:417 }
+  },
+  sureDoldu:{
+    gorsel:'assets/end_page_fail.png',
+    alanlar:{
+      bitPuan:   { x:124, y:832, en:171, boy:71 },
+      bitHatali: { x:295, y:832, en:173, boy:71 },
+      bitDogru:  { x:468, y:832, en:175, boy:71 },
+      bitSure:   { x:643, y:832, en:167, boy:71 }
+    },
+    tablo:{ x:199, y:1000, en:538, boy:427 }
+  }
+};
+
 /* ---- ÜST BİLGİ PANELLERİ ----
    Üç panel de tek tek ÖLÇÜLDÜ. İki ölçü lazım:
    - "cerceve": mor-mavi kasanın sınırları. Panelin ekranda kaplayacağı yer
@@ -224,8 +257,9 @@ function basamakBilgisi(sehir, basamak){ return SEHIRLER[sehir].zincir[basamak-1
 function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, basamak).dosya; }
 
 function beklenenGorseller(){
-  const liste = ['assets/machine.png','assets/home_page.png','assets/end_page.png',
-                 TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK];
+  const liste = ['assets/machine.png','assets/home_page.png',
+                 TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK,
+                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel];
   for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
@@ -285,7 +319,7 @@ let durum = 'bas';            // bas | oyun | bitiyor | bitti
 let izgara = [];              // izgara[s][k] = null | {sehir, basamak, el}
 let hucreEl = [];             // aynı boyutta DOM karşılıkları
 let ucaklar = [];             // {sehir, kod, el}
-let puan = 0, tamamlanan = 0;
+let puan = 0, tamamlanan = 0, hatali = 0;
 let baslangic = 0, kalanSn = TUR_SURESI;
 let makineEl = null, kendiSaat = 0;
 let stok = [];                 // makinenin dağıtacağı hediyelikler (şehir adları)
@@ -698,7 +732,14 @@ function teslimEt(t, ucakDom){
   const u = ucaklar.find(x=>x.el===ucakDom);
   if(!u) return;
   if(t.basamak !== SON_BASAMAK){ uyari(ucakDom, 'Önce bagaj yap'); return; }
-  if(u.sehir !== t.sehir){ uyari(ucakDom, 'Bu uçak ' + SEHIRLER[u.sehir].ad + '\'e gidiyor'); return; }
+  if(u.sehir !== t.sehir){
+    /* Hazır bir bagajın yanlış uçağa götürülmesi "hatalı deneme". Bagaj
+       olmayan bir parçayı uçağa sürüklemek sayılmıyor: o hata değil,
+       çocuğun oyunu keşfetmesi. */
+    hatali++;
+    uyari(ucakDom, 'Bu uçak ' + SEHIRLER[u.sehir].ad + '\'e gidiyor');
+    return;
+  }
 
   parcaSil(t.s, t.k);
   tamamlanan++;
@@ -757,7 +798,7 @@ function hudGuncelle(){
 
 function oyunuBaslat(){
   durum = 'oyun';
-  puan = 0; tamamlanan = 0; kalanSn = TUR_SURESI;
+  puan = 0; tamamlanan = 0; hatali = 0; kalanSn = TUR_SURESI;
   baslangic = performance.now();
 
   $('#basScreen').classList.add('gizli');
@@ -773,6 +814,47 @@ function oyunuBaslat(){
   makineyeBas();
 }
 
+/* Bitiş görselini seçip rakam kutularını onun üstüne oturtur. Görsel yoksa
+   geçici panel devrede kalıyor — süre dolan hâlin tasarımı henüz gelmedi. */
+function bitisGorseliniKur(basarili){
+  const tasarim = basarili ? BITIS.basarili : BITIS.sureDoldu;
+  const ad = tasarim.gorsel;
+  if(!gorselVar(ad)){
+    document.body.classList.remove('sanat-bitis');
+    $('#bitGecici').classList.remove('gizli');
+    return false;
+  }
+  const yol = gorselYolu(ad);
+  $('#bitImg').src = yol;
+  $('#bitBg').src  = yol;
+  $('#bitGecici').classList.add('gizli');
+  document.body.classList.add('sanat-bitis');
+
+  const kok = document.documentElement;
+  kok.style.setProperty('--bitis-oran', (BITIS.en / BITIS.boy).toFixed(5));
+  const yerlestir = (el, a) => {
+    el.style.left   = (a.x   / BITIS.en  * 100) + '%';
+    el.style.top    = (a.y   / BITIS.boy * 100) + '%';
+    el.style.width  = (a.en  / BITIS.en  * 100) + '%';
+    el.style.height = (a.boy / BITIS.boy * 100) + '%';
+  };
+  for(const [id, alan] of Object.entries(tasarim.alanlar)) yerlestir($('#' + id), alan);
+  yerlestir($('#bitTablo'), tasarim.tablo);
+  return true;
+}
+
+/* Rakamı kutusuna sığdırır. Sabit bir punto işe yaramıyor: sütunlar farklı
+   genişlikte ve içerik de değişken — "6" ile "00:47" aynı kutuya sığmıyor.
+   Önce kutu boyuna göre bir punto veriliyor, taşıyorsa oranla küçültülüyor. */
+function yaziyiSigdir(el){
+  const kutu = el.getBoundingClientRect();
+  if(!kutu.height) return;
+  let boy = kutu.height * 0.80;
+  el.style.fontSize = boy + 'px';
+  const tasma = el.scrollWidth / el.clientWidth;
+  if(tasma > 1) el.style.fontSize = (boy / tasma * 0.94) + 'px';
+}
+
 function oyunuBitir(){
   if(durum === 'bitti') return;          // hem süre bitişi hem son teslimat çağırabilir
   durum = 'bitti';
@@ -780,11 +862,34 @@ function oyunuBitir(){
      kalan sıfır, bonus da yok. */
   puan += kalanSn * PUAN_KALAN_SANIYE;
   const basarili = tamamlanan >= HEDEF_SIPARIS;
+
+  bitisGorseliniKur(basarili);
+
+  /* Görseldeki dört sütun: toplam puan, hatalı deneme, doğru eşleşme,
+     kalan süre. */
+  $('#bitPuan').textContent   = puan;
+  $('#bitHatali').textContent = hatali;
+  $('#bitDogru').textContent  = tamamlanan;
+  $('#bitSure').textContent   = sureYazi(kalanSn);
+
+  /* Görsel yokken görünen yedek panel */
   $('#bitBaslik').textContent = basarili ? 'TEBRİKLER' : 'SÜRE DOLDU';
   $('#bitSiparis').textContent = tamamlanan + '/' + HEDEF_SIPARIS;
-  $('#bitSure').textContent = sureYazi(kalanSn);
-  $('#bitPuan').textContent = puan;
+  $('#bitSureYedek').textContent = sureYazi(kalanSn);
+  $('#bitPuanYedek').textContent = puan;
+
   $('#bitScreen').classList.remove('gizli');
+  /* Ölçüm ancak ekran görünürken doğru: gizliyken kutuların boyu sıfır. */
+  Object.keys(BITIS.basarili.alanlar).forEach(id => yaziyiSigdir($('#' + id)));
+}
+
+/* Bitiş ekranındaki buton "ANA SAYFA" diyor: tura doğrudan başlamak yerine
+   başlangıç ekranına dönüyor. Kioskta doğru olan da bu — sıradaki çocuk
+   oyunu baştan, nasıl oynanır anlatımıyla karşılıyor. */
+function anaSayfayaDon(){
+  durum = 'bas';
+  $('#bitScreen').classList.add('gizli');
+  $('#basScreen').classList.remove('gizli');
 }
 
 function dongu(simdi){
@@ -880,11 +985,10 @@ function kur(){
   window.addEventListener('resize', olculeriGuncelle);
 
   katmanGorseli('assets/home_page.png', '#basImg', '#basBg', '#basGecici');
-  katmanGorseli('assets/end_page.png',  '#bitImg', '#bitBg', '#bitGecici');
 
   $('#izgara').addEventListener('pointerdown', tasimayaBasla);
   $('#basBtn').addEventListener('click', oyunuBaslat);
-  $('#bitBtn').addEventListener('click', oyunuBaslat);
+  $('#bitBtn').addEventListener('click', anaSayfayaDon);
 
   izgarayiKur();       // arka planda duran boş matris (başlangıç ekranının altında)
   requestAnimationFrame(dongu);

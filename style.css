@@ -459,6 +459,31 @@ body:not(.sanat-plaka) .ucak-plaka{
 /* Tüm ekran dokunmatik: çocuk nereye basarsa bassın devam eder */
 .katman-hit{ position:absolute; inset:0; background:none; border:0; cursor:pointer; }
 
+/* ---------- BİTİŞ EKRANI ----------
+   Sahne görselle AYNI ORANDA: rakam kutuları görselden ölçülmüş yüzdelerle
+   yerleştirildiği için kutu ile görselin birebir üst üste durması şart.
+   object-fit:contain kullanılsaydı görsel kutunun içinde ortalanır, kenarda
+   pay bırakır ve bütün ölçüler kayardı. */
+#bitSahne{
+  position:relative;
+  aspect-ratio:var(--bitis-oran, 0.5628);
+  max-width:100%; max-height:100%;
+  height:100%;
+}
+#bitSahne .katman-img{ width:100%; height:100%; object-fit:fill; }
+body:not(.sanat-bitis) #bitSahne{ display:none; }
+
+.bit-deger{
+  position:absolute; display:grid; place-items:center;
+  font-family:var(--hud); font-weight:700; color:#243a63;
+  /* Punto script.js'te kutuya göre hesaplanıyor (bkz. yaziyiSigdir);
+     buradaki yalnızca ölçüm yapılamazsa devreye giren yedek. */
+  font-size:min(3.4vh, 6vw);
+  line-height:1; white-space:nowrap; overflow:hidden;
+}
+/* Skor tablosu paneli: yeri ölçüldü, içeriği henüz yok. */
+.bit-tablo{ position:absolute; }
+
 /* GEÇİCİ başlangıç/bitiş panelleri — tasarım görselleri gelince silinecek */
 .gecici-panel{
   position:relative; text-align:center; padding:34px 30px 28px; border-radius:30px;

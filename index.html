@@ -95,14 +95,24 @@
 <!-- ================= BİTİŞ ================= -->
 <div id="bitScreen" class="katman gizli">
   <img id="bitBg"  class="katman-bg"  alt="" aria-hidden="true">
-  <img id="bitImg" class="katman-img" alt="">
+  <!-- Tasarımın tamamı görselde; kod yalnızca boş kutuları dolduruyor.
+       Kutuların yeri görselden ÖLÇÜLDÜ (script.js BITIS tablosu), o yüzden
+       görselle aynı orana kilitli bir sahnenin içine konuyorlar. -->
+  <div id="bitSahne">
+    <img id="bitImg" class="katman-img" alt="">
+    <div class="bit-deger" id="bitPuan">0</div>
+    <div class="bit-deger" id="bitHatali">0</div>
+    <div class="bit-deger" id="bitDogru">0</div>
+    <div class="bit-deger" id="bitSure">00:00</div>
+    <div class="bit-tablo" id="bitTablo"></div>
+  </div>
   <div class="gecici-panel" id="bitGecici">
     <!-- Başlık sonuca göre değişiyor: altı sipariş yetiştiyse tebrik,
          süre dolduysa "süre doldu". Script dolduruyor. -->
     <h1 id="bitBaslik">TEBRİKLER</h1>
     <p class="bit-satir">Tamamlanan sipariş: <b id="bitSiparis">0/6</b></p>
-    <p class="bit-satir">Kalan süre: <b id="bitSure">00:00</b></p>
-    <p class="bit-puan"><b id="bitPuan">0</b> puan</p>
+    <p class="bit-satir">Kalan süre: <b id="bitSureYedek">00:00</b></p>
+    <p class="bit-puan"><b id="bitPuanYedek">0</b> puan</p>
     <span class="gecici-not">geçici ekran — tasarım görseli gelince kalkacak</span>
   </div>
   <button id="bitBtn" class="katman-hit" aria-label="Tekrar oyna"></button>
