@@ -92,7 +92,9 @@ const MAKINE_BEKLEME = 1200;   // ms — arka arkaya basıp matrisi tıkamasın
 const MAKINE_ADET = 3;         // her basışta düşen hediyelik
 
 const HEDEF_SIPARIS = 10;      // bu kadar bagaj teslim edilince oyun biter
-const UCAK_SAYISI = 3;         // aynı anda bekleyen sipariş
+/* Siparişlerin HEPSİ tezgahta duruyor; tezgah yana kaydırılıyor. Bu sayı
+   aynı anda kaç tanesinin ekrana sığdığı — kaydırma adımı da bu. */
+const GORUNEN_UCAK = 3;
 
 const PUAN_SIPARIS = 150;
 const PUAN_BIRLESTIR = 10;     // × ulaşılan basamak
@@ -258,13 +260,14 @@ function olculeriGuncelle(){
      olursa olsun görsel aynı oranda büyüyor, hücreler de üstünde kayıtlı
      kalıyor. +2.9 ≈ üst bilgi + uçak kartları. */
   /* Tahta ekranın tamamını kaplamıyor: üstte manzara, tezgah ve uçaklar
-     için yer kalmalı. %98'de sahne bandı bir avuç piksele iniyor, %92'de
-     de uçak sırası skor çubuğuna değecek kadar yukarı çıkıyordu. */
-  const enGore  = (G * 0.88) / TAHTA_EN;
+     için yer kalmalı — ama fazla küçülünce de tezgahın yanında cılız
+     kalıyor. %98 sahne bandını bitiriyor, %88 orantısız duruyordu. */
+  const enGore  = (G * 0.94) / TAHTA_EN;
   const boyGore = (Y * 0.99) / (TAHTA_BOY + 2.9);
   const h = Math.max(28, Math.floor(Math.min(enGore, boyGore)));
   const kok = document.documentElement;
   kok.style.setProperty('--hucre', h + 'px');
+  kok.style.setProperty('--gorunen', GORUNEN_UCAK);
   kok.style.setProperty('--tahta-en',  TAHTA_EN.toFixed(4));
   kok.style.setProperty('--tahta-boy', TAHTA_BOY.toFixed(4));
 }
@@ -597,24 +600,30 @@ function ucakKarti(sehir){
   return { sehir, havayolu:hvId, kod:kod.textContent, el };
 }
 
-function yeniSehirSec(){
-  /* Masadaki üç sipariş farklı şehirlerden olsun: aynı şehirden iki uçak
-     varsa çocuk bagajı yanlış olana bırakıp haksız yere "yanlış" duyuyor. */
-  const kullanilan = ucaklar.map(u=>u.sehir);
-  const bos = SEHIR_LISTE.filter(s=>!kullanilan.includes(s));
-  const havuz = bos.length ? bos : SEHIR_LISTE;
-  return havuz[rastgele(havuz.length)];
+/* Turun bütün siparişleri baştan belirleniyor. Şehirler karılmış destelerden
+   sırayla alınıyor: saf rastgelelikte aynı şehir üst üste üç kez çıkıp
+   turun yarısını tek zincire çeviriyordu. */
+function siparisSehirleri(){
+  const liste = [];
+  while(liste.length < HEDEF_SIPARIS){
+    for(const s of karistir(SEHIR_LISTE)){
+      liste.push(s);
+      if(liste.length >= HEDEF_SIPARIS) break;
+    }
+  }
+  return liste;
 }
 
 function ucaklariKur(){
   const alan = $('#ucaklar');
   alan.innerHTML = '';
   ucaklar = [];
-  for(let i=0;i<UCAK_SAYISI;i++){
-    const u = ucakKarti(yeniSehirSec());
+  for(const sehir of siparisSehirleri()){
+    const u = ucakKarti(sehir);
     ucaklar.push(u);
     alan.appendChild(u.el);
   }
+  alan.scrollLeft = 0;
 }
 
 function teslimEt(t, ucakDom){
@@ -628,17 +637,11 @@ function teslimEt(t, ucakDom){
   puanEkle(PUAN_SIPARIS, ucakDom);
   hudGuncelle();
 
-  /* Uçak kalkar, yeri boş kalmasın diye hemen yenisi iner. Kart yerinde
-     değiştiriliyor (silinip eklenmiyor) ki üçlü dizilim oynamasın.      */
-  const yer = ucaklar.indexOf(u);
+  /* Uçak kalkar ve listeden çıkar: turun siparişleri baştan belli, yerine
+     yenisi gelmiyor. Şerit kendiliğinden kayarak boşluğu kapatıyor. */
+  ucaklar.splice(ucaklar.indexOf(u), 1);
   u.el.classList.add('kalkiyor');
-  const eski = u.el;
-  setTimeout(()=>{
-    if(durum!=='oyun'){ eski.remove(); return; }
-    const yeni = ucakKarti(yeniSehirSec());
-    eski.replaceWith(yeni.el);
-    ucaklar[yer] = yeni;
-  }, 700);
+  setTimeout(()=> u.el.remove(), 700);
 
   if(tamamlanan >= HEDEF_SIPARIS) setTimeout(oyunuBitir, 800);
 }
