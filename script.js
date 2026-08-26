@@ -122,9 +122,12 @@ const GORUNEN_UCAK = 3;
 
 const PUAN_SIPARIS = 150;
 const PUAN_BIRLESTIR = 10;     // × ulaşılan basamak
-/* Süre canı yakmıyor, sadece bitişte bonusa dönüşüyor: çocuk acele etmek
-   ZORUNDA olmasın ama hızlı oynayan da ödüllendirilsin.                 */
-const HIZ_BONUS_TAVAN = 300;   // saniye
+/* SÜRE GERİ SAYIYOR. Tur bu süreyle sınırlı: altı siparişi yetiştirebilirsen
+   kazanıyorsun, süre biterse tur orada kapanıyor. Kioskta sıra beklendiği
+   için turun kesin bir sonu olmalı.                                      */
+const TUR_SURESI = 80;         // saniye (1:20)
+const PUAN_KALAN_SANIYE = 5;   // bitişte artan her saniye bu kadar puan
+const AZ_KALDI = 15;           // bu saniyenin altında sayaç uyarıya geçer
 
 /* Her şehrin KENDİ zinciri var: makineden çıkan 1. basamak, iki kere
    birleşe birleşe o şehrin simgesine, en sonunda da o şehrin bagajına
@@ -265,12 +268,12 @@ const $ = s => document.querySelector(s);
 const rastgele = n => Math.floor(Math.random()*n);
 function karistir(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=rastgele(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-let durum = 'bas';            // bas | oyun | bitti
+let durum = 'bas';            // bas | oyun | bitiyor | bitti
 let izgara = [];              // izgara[s][k] = null | {sehir, basamak, el}
 let hucreEl = [];             // aynı boyutta DOM karşılıkları
 let ucaklar = [];             // {sehir, kod, el}
 let puan = 0, tamamlanan = 0;
-let baslangic = 0, gecenSn = 0;
+let baslangic = 0, kalanSn = TUR_SURESI;
 let makineHazir = true, makineAnI = 0, makineEl = null, dolumEl = null;
 
 /* ---------- 4) SAHNE ÖLÇÜSÜ ----------
@@ -668,7 +671,12 @@ function teslimEt(t, ucakDom){
   u.el.classList.add('kalkiyor');
   setTimeout(()=> u.el.remove(), 700);
 
-  if(tamamlanan >= HEDEF_SIPARIS) setTimeout(oyunuBitir, 800);
+  if(tamamlanan >= HEDEF_SIPARIS){
+    /* Sayaç HEMEN dursun: uçağın kalkış animasyonu sürerken saniyeler
+       işlemeye devam edip kazanılan bonusu yiyordu. */
+    durum = 'bitiyor';
+    setTimeout(oyunuBitir, 800);
+  }
 }
 
 /* ---------- 9) AKIŞ ---------- */
@@ -700,12 +708,16 @@ function sureYazi(sn){
 function hudGuncelle(){
   $('#hudSiparis').textContent = tamamlanan + '/' + HEDEF_SIPARIS;
   $('#hudPuan').textContent = puan;
-  $('#hudSure').textContent = sureYazi(gecenSn);
+  $('#hudSure').textContent = sureYazi(kalanSn);
+  /* Son saniyelerde sayaç kırmızıya dönüp nabız atıyor: çocuk saati
+     okumasa da acele etmesi gerektiğini görüyor. */
+  const kutu = $('#hudSure').closest('.hud-kutu');
+  if(kutu) kutu.classList.toggle('az-kaldi', durum === 'oyun' && kalanSn <= AZ_KALDI);
 }
 
 function oyunuBaslat(){
   durum = 'oyun';
-  puan = 0; tamamlanan = 0; gecenSn = 0;
+  puan = 0; tamamlanan = 0; kalanSn = TUR_SURESI;
   baslangic = performance.now();
   makineHazir = true; makineAnI = 0;
 
@@ -724,11 +736,15 @@ function oyunuBaslat(){
 }
 
 function oyunuBitir(){
+  if(durum === 'bitti') return;          // hem süre bitişi hem son teslimat çağırabilir
   durum = 'bitti';
-  const bonus = Math.max(0, HIZ_BONUS_TAVAN - gecenSn) * 2;
-  puan += bonus;
-  $('#bitSiparis').textContent = tamamlanan;
-  $('#bitSure').textContent = sureYazi(gecenSn);
+  /* Artan süre puana dönüşüyor: erken bitirmenin ödülü bu. Süre dolduysa
+     kalan sıfır, bonus da yok. */
+  puan += kalanSn * PUAN_KALAN_SANIYE;
+  const basarili = tamamlanan >= HEDEF_SIPARIS;
+  $('#bitBaslik').textContent = basarili ? 'TEBRİKLER' : 'SÜRE DOLDU';
+  $('#bitSiparis').textContent = tamamlanan + '/' + HEDEF_SIPARIS;
+  $('#bitSure').textContent = sureYazi(kalanSn);
   $('#bitPuan').textContent = puan;
   $('#bitScreen').classList.remove('gizli');
 }
@@ -736,8 +752,12 @@ function oyunuBitir(){
 function dongu(simdi){
   if(durum==='oyun'){
     makineyiIsle(simdi);
-    const sn = Math.floor((simdi - baslangic)/1000);
-    if(sn !== gecenSn){ gecenSn = sn; hudGuncelle(); }
+    const kalan = Math.max(0, TUR_SURESI - Math.floor((simdi - baslangic)/1000));
+    if(kalan !== kalanSn){
+      kalanSn = kalan;
+      hudGuncelle();
+      if(kalanSn === 0) oyunuBitir();
+    }
   }
   requestAnimationFrame(dongu);
 }

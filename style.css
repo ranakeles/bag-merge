@@ -126,6 +126,14 @@ body{ font-family:var(--body); color:var(--text); background:#9BDCF2; user-selec
 .sanat-hud #hud{ gap:calc(var(--hucre)*0.10); padding:calc(var(--hucre)*0.18) calc(var(--hucre)*0.16); }
 .sanat-hud .hud-gorsel{ display:block; position:absolute; pointer-events:none; }
 .sanat-hud .hud-etiket{ display:none; }        /* simge zaten anlatıyor */
+/* Son saniyeler: sayaç kırmızıya döner ve panel nabız atar. */
+.hud-kutu.az-kaldi .hud-deger{ color:#C0392B; }
+.hud-kutu.az-kaldi{ animation:sureNabiz .9s ease-in-out infinite; }
+@keyframes sureNabiz{
+  0%,100%{ transform:scale(1); }
+  50%{ transform:scale(1.06); }
+}
+
 .sanat-hud .hud-deger{
   position:absolute; display:grid; place-items:center;
   color:#243a63; font-size:calc(var(--hucre)*0.30);

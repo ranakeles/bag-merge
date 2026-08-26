@@ -45,7 +45,7 @@
     </div>
     <div class="hud-kutu" data-hud="sure">
       <img class="hud-gorsel" alt="" aria-hidden="true">
-      <span class="hud-etiket">SÜRE</span><span class="hud-deger" id="hudSure">00:00</span>
+      <span class="hud-etiket">SÜRE</span><span class="hud-deger" id="hudSure">01:20</span>
     </div>
   </div>
 
@@ -97,9 +97,11 @@
   <img id="bitBg"  class="katman-bg"  alt="" aria-hidden="true">
   <img id="bitImg" class="katman-img" alt="">
   <div class="gecici-panel" id="bitGecici">
-    <h1>TEBRİKLER</h1>
-    <p class="bit-satir">Tamamlanan sipariş: <b id="bitSiparis">0</b></p>
-    <p class="bit-satir">Süre: <b id="bitSure">00:00</b></p>
+    <!-- Başlık sonuca göre değişiyor: altı sipariş yetiştiyse tebrik,
+         süre dolduysa "süre doldu". Script dolduruyor. -->
+    <h1 id="bitBaslik">TEBRİKLER</h1>
+    <p class="bit-satir">Tamamlanan sipariş: <b id="bitSiparis">0/6</b></p>
+    <p class="bit-satir">Kalan süre: <b id="bitSure">00:00</b></p>
     <p class="bit-puan"><b id="bitPuan">0</b> puan</p>
     <span class="gecici-not">geçici ekran — tasarım görseli gelince kalkacak</span>
   </div>
