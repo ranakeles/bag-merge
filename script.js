@@ -91,7 +91,7 @@ const MAKINE_YERI = { s:4, k:3 };
 const MAKINE_BEKLEME = 1200;   // ms — arka arkaya basıp matrisi tıkamasın
 const MAKINE_ADET = 3;         // her basışta düşen hediyelik
 
-const HEDEF_SIPARIS = 10;      // bu kadar bagaj teslim edilince oyun biter
+const HEDEF_SIPARIS = 6;       // bu kadar bagaj teslim edilince oyun biter
 /* Siparişlerin HEPSİ tezgahta duruyor; tezgah yana kaydırılıyor. Bu sayı
    aynı anda kaç tanesinin ekrana sığdığı — kaydırma adımı da bu. */
 const GORUNEN_UCAK = 3;
