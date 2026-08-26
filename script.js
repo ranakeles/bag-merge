@@ -133,7 +133,7 @@ const PUAN_BIRLESTIR = 10;     // × ulaşılan basamak
 /* SÜRE GERİ SAYIYOR. Tur bu süreyle sınırlı: altı siparişi yetiştirebilirsen
    kazanıyorsun, süre biterse tur orada kapanıyor. Kioskta sıra beklendiği
    için turun kesin bir sonu olmalı.                                      */
-const TUR_SURESI = 80;         // saniye (1:20)
+const TUR_SURESI = 120;        // saniye (2:00)
 const PUAN_KALAN_SANIYE = 5;   // bitişte artan her saniye bu kadar puan
 const AZ_KALDI = 15;           // bu saniyenin altında sayaç uyarıya geçer
 
