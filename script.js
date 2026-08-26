@@ -56,6 +56,30 @@ const PLAKA = {
 
 const MANZARA = 'assets/bg_istanbul.png';
 
+/* ---- ÜST BİLGİ PANELLERİ ----
+   Üç panel de tek tek ÖLÇÜLDÜ. İki ölçü lazım:
+   - "cerceve": mor-mavi kasanın sınırları. Panelin ekranda kaplayacağı yer
+     bu; görsellerin etrafındaki şeffaf pay her birinde farklı, kasaya göre
+     hizalanmazsa üç panel farklı boyda duruyor.
+   - "alan": sayının yazılacağı krem yüzey.
+
+   Kasa oranları da birbirinden biraz farklı (3.19 / 3.55 / 3.62). Üçü yan
+   yana duracağı için ORTAK bir orana (HUD_ORAN) esnetiliyorlar; fark en
+   fazla %8 ve yuvarlak bir kasada fark edilmiyor. Sıranın düzgün olması
+   panel başına birkaç pikselden önemli.                                  */
+const HUD = {
+  siparis:{ gorsel:'assets/hud_siparis.png', en:1866, boy:843,
+            cerceve:{x:77, y:153, en:1712, boy:537},
+            alan:{x:162, y:233, en:1529, boy:363} },
+  puan:   { gorsel:'assets/hud_puan.png',    en:2172, boy:724,
+            cerceve:{x:39, y:60,  en:2093, boy:589},
+            alan:{x:497, y:157, en:1497, boy:371} },
+  sure:   { gorsel:'assets/hud_sure.png',    en:2172, boy:724,
+            cerceve:{x:33, y:64,  en:2105, boy:582},
+            alan:{x:312, y:153, en:1685, boy:375} }
+};
+const HUD_ORAN = 3.45;   // panelin en/boy oranı (üç kasanın ortalaması)
+
 /* ---- HAVAYOLLARI ----
    Uçuş kodunun önü havayolundan geliyor: THY TK, AJet VF, SunExpress XQ.
    Şehir tablosunda yalnızca uçuş NUMARASI duruyor, kodun tamamı burada
@@ -186,6 +210,7 @@ function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, 
 function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/home_page.png','assets/end_page.png',
                  TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK];
+  for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
     for(let b=1;b<=SON_BASAMAK;b++) liste.push(parcaGorseli(s,b));
@@ -729,7 +754,42 @@ function katmanGorseli(gorselAd, imgId, bgId, geciciId){
 
 /* Tahta görseli geldiğinde kodun kendi çizdiği tepsi ve hücre zeminleri
    çekilir; görsel yoksa oyun yine oynanabilir kalsın diye onlar duruyor. */
+/* Panelin görselini ve sayı alanını yerine oturtur.
+
+   Görsel, KASASI kutuyu tam dolduracak şekilde ölçekleniyor: bunun için
+   kutudan taşacak kadar büyütülüp negatif konumla kaydırılıyor (şeffaf pay
+   dışarıda kalıyor, taşan simge görünür kalsın diye kırpma yok). Sayı alanı
+   da aynı ölçekle hesaplanıp kutunun yüzdesi olarak yazılıyor.            */
+function hudPaneliKur(kutu, p){
+  const gorselEn = p.en / p.cerceve.en * 100;          // kutunun yüzdesi
+  const gorselBoy = p.boy / p.cerceve.boy * 100;
+  const gorselSol = -p.cerceve.x / p.cerceve.en * 100;
+  const gorselUst = -p.cerceve.y / p.cerceve.boy * 100;
+
+  const im = kutu.querySelector('.hud-gorsel');
+  im.src = gorselYolu(p.gorsel);
+  im.style.left = gorselSol + '%';  im.style.top    = gorselUst + '%';
+  im.style.width = gorselEn + '%';  im.style.height = gorselBoy + '%';
+
+  const deger = kutu.querySelector('.hud-deger');
+  deger.style.left   = (gorselSol + p.alan.x   / p.en  * gorselEn)  + '%';
+  deger.style.top    = (gorselUst + p.alan.y   / p.boy * gorselBoy) + '%';
+  deger.style.width  = (p.alan.en  / p.en  * gorselEn)  + '%';
+  deger.style.height = (p.alan.boy / p.boy * gorselBoy) + '%';
+}
+
+function hudGorselleri(){
+  const kutular = document.querySelectorAll('.hud-kutu');
+  let hepsiVar = true;
+  kutular.forEach(kutu => { if(!gorselVar(HUD[kutu.dataset.hud].gorsel)) hepsiVar = false; });
+  if(!hepsiVar) return;      // eksikse hiçbiri kullanılmasın, sıra bozulmasın
+  kutular.forEach(kutu => hudPaneliKur(kutu, HUD[kutu.dataset.hud]));
+  document.documentElement.style.setProperty('--hud-oran', HUD_ORAN);
+  document.body.classList.add('sanat-hud');
+}
+
 function tahtaGorselleri(){
+  hudGorselleri();
   if(gorselVar(TAHTA.gorsel)){
     document.documentElement.style.setProperty('--tahta-gorsel',
       'url(' + gorselYolu(TAHTA.gorsel) + ')');
