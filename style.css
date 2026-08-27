@@ -489,10 +489,14 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
 
 .bit-deger{
   position:absolute; display:grid; place-items:center;
-  font-family:var(--hud); font-weight:700; color:#243a63;
+  /* Fredoka değil Nunito: görseldeki "TOPLAM PUAN" gibi etiketler keskin ve
+     ağır bir yazıyla çizilmiş, Fredoka'nın yuvarlak balon harfleri onların
+     yanında yabancı duruyordu. */
+  font-family:var(--body); font-weight:800; letter-spacing:.01em;
+  color:#243a63;
   /* Punto script.js'te kutuya göre hesaplanıyor (bkz. yaziyiSigdir);
      buradaki yalnızca ölçüm yapılamazsa devreye giren yedek. */
-  font-size:min(3.4vh, 6vw);
+  font-size:min(2.4vh, 4.2vw);
   line-height:1; white-space:nowrap; overflow:hidden;
 }
 /* Skor tablosu paneli: yeri ölçüldü, içeriği henüz yok. */

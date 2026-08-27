@@ -849,10 +849,14 @@ function bitisGorseliniKur(basarili){
 function yaziyiSigdir(el){
   const kutu = el.getBoundingClientRect();
   if(!kutu.height) return;
-  let boy = kutu.height * 0.80;
+  /* Kutunun tamamını doldurmuyor: rakam sütuna sıkışmış görünmesin diye
+     hem boyca hem ence pay bırakılıyor. Önce %80'di ve dört haneli puan
+     ile "00:52" sütunun kenarlarına dayanıyordu. */
+  let boy = kutu.height * 0.56;
   el.style.fontSize = boy + 'px';
-  const tasma = el.scrollWidth / el.clientWidth;
-  if(tasma > 1) el.style.fontSize = (boy / tasma * 0.94) + 'px';
+  const kullanilabilir = el.clientWidth * 0.80;      // yanlardan pay
+  const tasma = el.scrollWidth / kullanilabilir;
+  if(tasma > 1) el.style.fontSize = (boy / tasma) + 'px';
 }
 
 function oyunuBitir(){
