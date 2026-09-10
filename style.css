@@ -540,6 +540,37 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
   transform:translateY(-.04em);
 }
 
+/* ---------- GÖRSELDEN DİZİLEN HARFLER ----------
+   Rakamlarla aynı mantık, iki farkla:
+
+   1) Ölçü birimi KEP YÜKSEKLİĞİ. Bir yazı tipinde 1em harfin kendisinden
+      büyüktür (satır boşluğunu da kapsar); buradaki 1em düz bir harfin
+      tepesinden tabanına olan mesafe. Aradaki farkı kapatmak için kutu
+      .72em'e küçültülüyor — böylece harf şeridine geçen yazılar, yazı
+      tipiyle dizilirken hangi puntodaysa yaklaşık orada kalıyor.
+
+   2) Hizalama ÜSTTEN. Harflerin boyları eşit değil (Ğ'nin şapkası yukarı,
+      Ç'nin kuyruğu aşağı taşar), ortalanırlarsa taban çizgileri kayardı.
+      Her harf kutunun üstünden kendi payı kadar aşağıda başlıyor (payı
+      script.js hesaplıyor), taban çizgisi böyle tutuyor.                */
+.harf{
+  display:inline-flex; align-items:flex-start; justify-content:center;
+  font-size:.72em; line-height:1; white-space:nowrap;
+}
+.harf-glif{ display:inline-block; flex:none; background-repeat:no-repeat; }
+.harf-bos{ display:inline-block; flex:none; }
+/* Şeritte olmayan karakter (Q, W, X, rakam, noktalama): yazıyla, ama
+   çevresindeki harflere olabildiğince benzetilerek — krem dolgu, mor
+   kontur, aynı kep yüksekliği. Kutunun boyu script.js'ten geliyor. */
+.harf-yazi{
+  display:inline-flex; align-items:center; justify-content:center;
+  flex:none; font-style:normal;
+}
+.harf-yazi > span{
+  font-family:var(--hud); font-weight:600; font-size:1.36em; line-height:1;
+  color:#FFF8EC; -webkit-text-stroke:.055em #4A2FA8; paint-order:stroke fill;
+}
+
 /* ---------- İSİM GİRİŞİ ----------
    Sahne bitiş ekranıyla aynı mantıkta: görselin kapladığı alanın birebir
    aynısı, çünkü tuşların dokunma alanları onun yüzdesi olarak konuyor. */

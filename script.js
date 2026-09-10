@@ -103,6 +103,126 @@ const SIMGE = {
   }
 };
 
+/* ---- HARFLER ----
+   Ekran yazıları da rakamlar gibi ÇİZİLİ: assets/alphabet3.png üzerinde
+   Türk alfabesinin 29 büyük harfi var. Web yazı tipi, oyunun kalın konturlu
+   çizimlerinin yanında yabancı kalıyordu.
+
+   Kutular şeridin PİKSELLERİNDEN ölçüldü: saydam olmayan alanlar bağlı
+   parçalara ayrıldı (İ'nin noktası, Ö/Ü'nün noktaları ve Ğ'nin şapkası
+   harfin gövdesine bağlı geliyor, o yüzden her harf tek parça), parçalar
+   satırlara bölünüp soldan sağa harflerle eşleştirildi. Şerit değişirse
+   yeniden ölçülmeli.
+
+   TABAN ve KEP satır satır tutuluyor çünkü üçüncü satır (Ş T U Ü V Y Z)
+   diğer ikisinden yaklaşık %5 küçük çizilmiş. Her harf kendi satırının kep
+   yüksekliğine göre ölçekleniyor, böylece hepsi aynı boyda çıkıyor ve taban
+   çizgileri hizalanıyor.
+
+   Şeritte Q, W ve X YOK — Türk alfabesinde yer almıyorlar. Klavyede
+   bulundukları için yazılabiliyorlar; o üç harf yazıyla düşüyor.        */
+const ALFABE = {
+  gorsel:'assets/alphabet3.png',
+  en:2172, boy:724,
+
+  /* Aşağıdaki paylar KEP YÜKSEKLİĞİ birimindedir (1em = düz bir harfin
+     boyu). Kutu, en uzun çıkıntıyı (Ğ'nin şapkası, 1.20) ve en derin
+     kuyruğu (Ç, 0.12) içine alacak kadar geniş tutuldu.                */
+  ustPay:1.24,     // kutunun üstünden taban çizgisine
+  boyPay:1.38,     // kutunun toplam yüksekliği
+  bosluk:0.30,     // boşluk karakterinin genişliği
+  aralik:0.05,     // harf arası
+  satirlar:[
+    { taban:249, kap:200, harfler:[
+      {h:'A', x:  42, y:  50, en:171, boy:198}, {h:'B', x: 263, y:  50, en:149, boy:198}, {h:'C', x: 449, y:  47, en:150, boy:204},
+      {h:'Ç', x: 636, y:  46, en:146, boy:226}, {h:'D', x: 819, y:  49, en:153, boy:199}, {h:'E', x:1005, y:  49, en:132, boy:200},
+      {h:'F', x:1182, y:  48, en:130, boy:203}, {h:'G', x:1342, y:  46, en:162, boy:205}, {h:'Ğ', x:1532, y:   9, en:161, boy:245},
+      {h:'H', x:1738, y:  48, en:160, boy:203}, {h:'I', x:1929, y:  48, en: 82, boy:203}
+    ]},
+    { taban:491, kap:200, harfler:[
+      {h:'İ', x:  61, y: 268, en: 84, boy:223}, {h:'J', x: 199, y: 291, en:147, boy:200}, {h:'K', x: 390, y: 291, en:161, boy:200},
+      {h:'L', x: 598, y: 292, en:133, boy:197}, {h:'M', x: 772, y: 291, en:193, boy:200}, {h:'N', x:1006, y: 292, en:163, boy:198},
+      {h:'O', x:1202, y: 291, en:174, boy:200}, {h:'Ö', x:1399, y: 266, en:170, boy:227}, {h:'P', x:1609, y: 292, en:152, boy:199},
+      {h:'R', x:1798, y: 291, en:157, boy:200}, {h:'S', x:1990, y: 290, en:144, boy:202}
+    ]},
+    { taban:705, kap:189, harfler:[
+      {h:'Ş', x: 378, y: 513, en:141, boy:211}, {h:'T', x: 556, y: 516, en:157, boy:189}, {h:'U', x: 754, y: 515, en:163, boy:191},
+      {h:'Ü', x: 963, y: 504, en:160, boy:203}, {h:'V', x:1168, y: 516, en:176, boy:189}, {h:'Y', x:1388, y: 516, en:167, boy:189},
+      {h:'Z', x:1598, y: 516, en:158, boy:185}
+    ]},
+  ]
+};
+
+/* Harf -> kutu. Satır bilgisi (taban, kep) her harfin yanına kopyalanıyor
+   ki dizerken satırı ayrıca aramak gerekmesin. */
+const HARF = (() => {
+  const t = {};
+  for(const sat of ALFABE.satirlar)
+    for(const h of sat.harfler)
+      t[h.h] = { x:h.x, y:h.y, en:h.en, boy:h.boy, taban:sat.taban, kap:sat.kap };
+  return t;
+})();
+
+/* Bir yazıyı kabın içine harf harf dizer. Şerit yoksa ya da harf şeritte
+   yoksa (Q/W/X, rakam, noktalama) o karakter yazıyla geçer.
+
+   Kabın kendi yerleşimi bozulmasın diye harfler doğrudan kaba değil,
+   içine konan tek bir .harf kutusuna diziliyor. */
+function harfYaz(el, metin){
+  if(!el) return;
+  metin = String(metin).toLocaleUpperCase('tr');
+  el.textContent = '';
+  if(!gorselVar(ALFABE.gorsel)){ el.textContent = metin; return; }
+
+  const yol = gorselYolu(ALFABE.gorsel);
+  const kap = document.createElement('span');
+  kap.className = 'harf';
+  kap.style.height = ALFABE.boyPay + 'em';
+  kap.style.gap    = ALFABE.aralik + 'em';
+
+  for(const ch of metin){
+    const k = HARF[ch];
+
+    if(!k){
+      const b = document.createElement('i');
+      if(ch === ' '){
+        b.className = 'harf-bos';
+        b.style.width = ALFABE.bosluk + 'em';
+      }else{
+        /* Şeritte olmayan karakter. Kutusu tam KEP alanı kadar; içindeki
+           yazı o kutuya ortalanıyor, böylece komşu harflerle aynı boyda ve
+           aynı taban çizgisinde duruyor. Punto ayarını kutu değil içteki
+           span taşıyor: yükseklik kutunun em'ine, punto kendi em'ine göre
+           hesaplanıyor, ikisi tek elemanda birbirini bozardı. */
+        b.className = 'harf-yazi';
+        b.style.height    = '1em';
+        b.style.marginTop = (ALFABE.ustPay - 1) + 'em';
+        const ic = document.createElement('span');
+        ic.textContent = ch;
+        b.appendChild(ic);
+      }
+      kap.appendChild(b);
+      continue;
+    }
+
+    /* Ölçek: harfin KENDİ SATIRININ kep yüksekliği 1em'e getiriliyor. */
+    const o = k.kap;
+    const g = document.createElement('i');
+    g.className = 'harf-glif';
+    g.style.width  = (k.en  / o) + 'em';
+    g.style.height = (k.boy / o) + 'em';
+    /* Taban çizgisi hizası: harf, kutunun üstünden kendi tepesi kadar
+       aşağıda başlar. Ç'nin kuyruğu tabanın altına taşar, Ğ'nin şapkası
+       kepin üstüne çıkar; ikisi de bu payla kendiliğinden yerine oturur. */
+    g.style.marginTop = (ALFABE.ustPay - (k.taban - k.y) / o) + 'em';
+    g.style.backgroundImage    = 'url(' + yol + ')';
+    g.style.backgroundSize     = (ALFABE.en / o) + 'em ' + (ALFABE.boy / o) + 'em';
+    g.style.backgroundPosition = (-k.x / o) + 'em ' + (-k.y / o) + 'em';
+    kap.appendChild(g);
+  }
+  el.appendChild(kap);
+}
+
 /* Bir sayıyı kabın içine karakter karakter dizer: rakamlar RAKAM
    şeridinden, "/" ve ":" SIMGE şeridinden. Hiçbiri yazı tipiyle gelmiyor.
    Şerit yüklenemezse ilgili karakter yazıya düşer. */
@@ -397,7 +517,7 @@ function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, 
 function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/home_page.png',
                  TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK,
-                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel, RAKAM.gorsel, SIMGE.gorsel];
+                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel, RAKAM.gorsel, SIMGE.gorsel, ALFABE.gorsel];
   for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
@@ -919,6 +1039,8 @@ function isimEkraniniKur(){
   isimYerlestir($('#isimBaslik'), ISIM.baslik);
   isimYerlestir($('#isimYazi'), ISIM.kutu);
   isimYerlestir($('#isimButon'), ISIM.buton);
+  harfYaz($('#isimBaslik'), 'ADINI YAZ');
+  harfYaz($('#isimButon'),  'BAŞLA');
 
   const tus = (alan, etiket, isle) => {
     const b = document.createElement('button');
