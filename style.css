@@ -555,23 +555,6 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
   animation:imlecYanip 1s step-end infinite; }
 @keyframes imlecYanip{ 50%{ opacity:0; } }
 
-/* GEÇİCİ: görselde Ş tuşu yok, bu tuşu kod çiziyor. Ş'li bir görsel
-   gelince hem bu kural hem script.js'teki EKSIK_TUS silinecek. Biçim
-   komşularından alındı: aynı köşe yuvarlaklığı, mor yüz, mavi kasa. */
-.eksik-tus{
-  position:absolute; display:grid; place-items:center;
-  border-radius:22%;
-  background:linear-gradient(180deg, #9a63e8, #7b46d6 55%, #6a37c4);
-  box-shadow:0 0 0 .07em #3f63e8, 0 .09em 0 #2c46b8,
-             0 .13em .11em rgba(20,30,70,.32),
-             inset 0 .10em 0 rgba(255,255,255,.28);
-  color:#fff; font-family:var(--body); font-weight:800;
-  font-size:min(3.7vh, 6.4vw); line-height:1;
-  text-shadow:0 .04em .04em rgba(40,20,90,.45);
-  cursor:pointer;
-}
-.eksik-tus:active{ filter:brightness(1.15); }
-
 /* Tuşların üstündeki görünmez dokunma alanları */
 .tus-hit{ position:absolute; background:none; border:0; padding:0;
   cursor:pointer; -webkit-tap-highlight-color:transparent; }
