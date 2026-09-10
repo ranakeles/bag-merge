@@ -56,6 +56,67 @@ const PLAKA = {
 
 const MANZARA = 'assets/bg_istanbul.png';
 
+/* ---- RAKAMLAR ----
+   Sayılar yazı tipiyle değil GÖRSELDEN diziliyor: 0-9 tek bir şeritte
+   çizili, kod her rakamı oradan kesip yan yana koyuyor. Web yazı tipi
+   oyunun kalın, konturlu, gölgeli çizimlerinin yanında düz kalıyordu.
+   (Siber Koşu'da da skor rakamları böyle yapılmıştı.)
+
+   Kutular şeridin PİKSELLERİNDEN ölçüldü: saydam olmayan alanlar taranıp
+   iki satıra ayrıldı, her rakamın sınırları tek tek çıkarıldı. Şerit
+   değişirse yeniden ölçülmeli.
+
+   Rakam kutuları 1em YÜKSEKLİĞE göre ölçekleniyor; genişlik rakamın kendi
+   oranından geliyor, yani "1" dar, "0" geniş kalıyor.                     */
+const RAKAM = {
+  gorsel:'assets/score_numbers.png',
+  en:1774, boy:887,
+  kutular:[
+    { x:  71, y: 53, en:317, boy:373 },   // 0
+    { x: 422, y: 54, en:235, boy:368 },   // 1
+    { x: 727, y: 53, en:302, boy:364 },   // 2
+    { x:1066, y: 53, en:294, boy:373 },   // 3
+    { x:1387, y: 54, en:321, boy:368 },   // 4
+    { x:  66, y:462, en:297, boy:367 },   // 5
+    { x: 399, y:459, en:305, boy:369 },   // 6
+    { x: 737, y:463, en:297, boy:363 },   // 7
+    { x:1062, y:459, en:304, boy:370 },   // 8
+    { x:1416, y:459, en:300, boy:369 }    // 9
+  ]
+};
+
+/* Bir sayıyı kabın içine rakam rakam dizer. Rakam olmayan karakterler
+   (":" ve "/") şeritte yok, onlar yazıyla geçiyor — sayının kendisi değil
+   ayıraç oldukları için göze batmıyor. */
+function sayiYaz(el, metin){
+  if(!el) return;
+  metin = String(metin);
+  if(!gorselVar(RAKAM.gorsel)){ el.textContent = metin; return; }
+  const yol = gorselYolu(RAKAM.gorsel);
+  el.textContent = '';
+  el.classList.add('sayi');
+  for(const ch of metin){
+    const i = ch.charCodeAt(0) - 48;
+    if(i < 0 || i > 9){
+      const ay = document.createElement('i');
+      ay.className = 'sayi-ayrac';
+      ay.textContent = ch;
+      el.appendChild(ay);
+      continue;
+    }
+    const k = RAKAM.kutular[i];
+    const r = document.createElement('i');
+    r.className = 'sayi-rakam';
+    /* Ölçek: rakamın kendi boyu 1em'e getiriliyor, şerit de aynı oranda. */
+    const o = k.boy;
+    r.style.width           = (k.en / o) + 'em';
+    r.style.backgroundImage = 'url(' + yol + ')';
+    r.style.backgroundSize  = (RAKAM.en / o) + 'em ' + (RAKAM.boy / o) + 'em';
+    r.style.backgroundPosition = (-k.x / o) + 'em ' + (-k.y / o) + 'em';
+    el.appendChild(r);
+  }
+}
+
 /* ---- İSİM GİRİŞİ ----
    Tasarımın tamamı assets/enter_name3.png içinde — klavye dahil. Aşağıdaki
    koordinatlar 941x1672'lik görselin PİKSELLERİNDEN ölçüldü: tuşların açık
@@ -307,7 +368,7 @@ function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, 
 function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/home_page.png',
                  TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK,
-                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel];
+                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel, RAKAM.gorsel];
   for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
@@ -929,8 +990,9 @@ function skorTablosunuCiz(liste, vurgulaAd, vurgulaPuan){
     }
     satir.innerHTML = '<span class="skor-sira">' + (i+1) + '</span>' +
                       '<span class="skor-ad"></span>' +
-                      '<span class="skor-puan">' + k.puan + '</span>';
+                      '<span class="skor-puan"></span>';
     satir.querySelector('.skor-ad').textContent = k.ad;
+    sayiYaz(satir.querySelector('.skor-puan'), k.puan);
     kap.appendChild(satir);
   });
 }
@@ -962,9 +1024,9 @@ function sureYazi(sn){
 }
 
 function hudGuncelle(){
-  $('#hudSiparis').textContent = tamamlanan + '/' + HEDEF_SIPARIS;
-  $('#hudPuan').textContent = puan;
-  $('#hudSure').textContent = sureYazi(kalanSn);
+  sayiYaz($('#hudSiparis'), tamamlanan + '/' + HEDEF_SIPARIS);
+  sayiYaz($('#hudPuan'), puan);
+  sayiYaz($('#hudSure'), sureYazi(kalanSn));
   /* Son saniyelerde sayaç kırmızıya dönüp nabız atıyor: çocuk saati
      okumasa da acele etmesi gerektiğini görüyor. */
   const kutu = $('#hudSure').closest('.hud-kutu');
@@ -1046,10 +1108,10 @@ function oyunuBitir(){
 
   /* Görseldeki dört sütun: toplam puan, hatalı deneme, doğru eşleşme,
      kalan süre. */
-  $('#bitPuan').textContent   = puan;
-  $('#bitHatali').textContent = hatali;
-  $('#bitDogru').textContent  = tamamlanan;
-  $('#bitSure').textContent   = sureYazi(kalanSn);
+  sayiYaz($('#bitPuan'),   puan);
+  sayiYaz($('#bitHatali'), hatali);
+  sayiYaz($('#bitDogru'),  tamamlanan);
+  sayiYaz($('#bitSure'),   sureYazi(kalanSn));
 
   /* Görsel yokken görünen yedek panel */
   $('#bitBaslik').textContent = basarili ? 'TEBRİKLER' : 'SÜRE DOLDU';

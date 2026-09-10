@@ -135,7 +135,7 @@ body{ font-family:var(--body); color:var(--text); background:#9BDCF2; user-selec
 }
 
 .sanat-hud .hud-deger{
-  position:absolute; display:grid; place-items:center;
+  position:absolute; display:flex; align-items:center; justify-content:center;
   color:#243a63; font-size:calc(var(--hucre)*0.30);
   /* Rakamlar krem alana sığsın: uzun sayıda ("01:05") küçülsün diye
      alanın kendisi kutu, yazı da ortalanmış. */
@@ -488,7 +488,7 @@ body:not(.sanat-plaka) .ucak-plaka{
 body:not(.sanat-bitis) #bitSahne{ display:none; }
 
 .bit-deger{
-  position:absolute; display:grid; place-items:center;
+  position:absolute; display:flex; align-items:center; justify-content:center;
   /* Fredoka değil Nunito: görseldeki "TOPLAM PUAN" gibi etiketler keskin ve
      ağır bir yazıyla çizilmiş, Fredoka'nın yuvarlak balon harfleri onların
      yanında yabancı duruyordu. */
@@ -501,6 +501,25 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
 }
 /* Skor tablosu paneli: yeri ölçüldü, içeriği henüz yok. */
 .bit-tablo{ position:absolute; }
+
+/* ---------- GÖRSELDEN DİZİLEN RAKAMLAR ----------
+   Her rakam, şeritten kesilmiş bir kutu. Yükseklik 1em, genişlik rakamın
+   kendi oranı — böylece punto değişince sayı da birlikte ölçekleniyor ve
+   "1" ile "0" farklı genişlikte kalıyor. */
+.sayi{ display:inline-flex; align-items:center; justify-content:center;
+  gap:.04em; line-height:1; }
+.sayi-rakam{
+  display:inline-block; height:1em; flex:none;
+  background-repeat:no-repeat;
+}
+/* ":" ve "/" şeritte yok; ayıraç olarak yazıyla geçiyorlar. Rakamlardan
+   küçük ve soluk: sayının kendisi öne çıksın. */
+.sayi-ayrac{
+  display:inline-block; font-style:normal; font-family:var(--body);
+  font-weight:800; font-size:.72em; opacity:.9; padding:0 .05em;
+  color:#5b3ec9;
+  transform:translateY(-.04em);
+}
 
 /* ---------- İSİM GİRİŞİ ----------
    Sahne bitiş ekranıyla aynı mantıkta: görselin kapladığı alanın birebir
