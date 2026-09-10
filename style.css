@@ -529,8 +529,10 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
   display:inline-block; height:1em; flex:none;
   background-repeat:no-repeat;
 }
-/* ":" ve "/" şeritte yok; ayıraç olarak yazıyla geçiyorlar. Rakamlardan
-   küçük ve soluk: sayının kendisi öne çıksın. */
+/* "/" ve ":" de artık şeritten geliyor (score_symbols.png) ve aynı kutuyu
+   kullanıyor; boyları kod tarafından veriliyor, .sayi'nin align-items
+   ortalaması onları rakamların arasına oturtuyor.
+   Aşağıdaki yazı ayıracı yalnızca şerit yüklenemezse devreye giriyor. */
 .sayi-ayrac{
   display:inline-block; font-style:normal; font-family:var(--body);
   font-weight:800; font-size:.72em; opacity:.9; padding:0 .05em;

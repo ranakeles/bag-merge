@@ -85,9 +85,27 @@ const RAKAM = {
   ]
 };
 
-/* Bir sayıyı kabın içine rakam rakam dizer. Rakam olmayan karakterler
-   (":" ve "/") şeritte yok, onlar yazıyla geçiyor — sayının kendisi değil
-   ayıraç oldukları için göze batmıyor. */
+/* ---- AYIRAÇLAR ----
+   "/" ve ":" da rakamlarla aynı elden çıkma: score_symbols.png. Daha önce
+   yazı tipiyle geçiyorlardı ve iki çizili rakamın arasında yabancı duruyordu.
+
+   Kutular şeridin PİKSELLERİNDEN ölçüldü. Şerit değişirse yeniden ölçülmeli.
+
+   "yukseklik" em cinsinden: rakamlar 1em, ayıraçlar onlardan kısa. Şerit
+   üzerinde iki simge farklı ölçekte çizilmiş, o yüzden oranları oradan
+   almıyoruz — yazı gibi görünsünler diye burada elle veriliyor.           */
+const SIMGE = {
+  gorsel:'assets/score_symbols.png',
+  en:1774, boy:887,
+  kutular:{
+    '/': { x: 446, y:102, en:467, boy:737, yukseklik:1.02 },
+    ':': { x:1048, y:182, en:309, boy:655, yukseklik:0.72 }
+  }
+};
+
+/* Bir sayıyı kabın içine karakter karakter dizer: rakamlar RAKAM
+   şeridinden, "/" ve ":" SIMGE şeridinden. Hiçbiri yazı tipiyle gelmiyor.
+   Şerit yüklenemezse ilgili karakter yazıya düşer. */
 function sayiYaz(el, metin){
   if(!el) return;
   metin = String(metin);
@@ -97,21 +115,38 @@ function sayiYaz(el, metin){
   el.classList.add('sayi');
   for(const ch of metin){
     const i = ch.charCodeAt(0) - 48;
-    if(i < 0 || i > 9){
+    const simge = (i < 0 || i > 9) ? SIMGE.kutular[ch] : null;
+
+    if(!simge && (i < 0 || i > 9)){
+      /* Ne rakam ne de çizili bir ayıraç: yazıyla geçsin. */
       const ay = document.createElement('i');
       ay.className = 'sayi-ayrac';
       ay.textContent = ch;
       el.appendChild(ay);
       continue;
     }
-    const k = RAKAM.kutular[i];
+
+    const serit = simge ? SIMGE : RAKAM;
+    const k     = simge || RAKAM.kutular[i];
+    if(simge && !gorselVar(SIMGE.gorsel)){
+      const ay = document.createElement('i');
+      ay.className = 'sayi-ayrac';
+      ay.textContent = ch;
+      el.appendChild(ay);
+      continue;
+    }
+
     const r = document.createElement('i');
     r.className = 'sayi-rakam';
-    /* Ölçek: rakamın kendi boyu 1em'e getiriliyor, şerit de aynı oranda. */
-    const o = k.boy;
+    /* Ölçek: karakterin kendi boyu "yukseklik" em'e getiriliyor (rakamlarda
+       1em), şerit de aynı oranda büyüyor. Genişlik kendi oranından geliyor,
+       yani "1" dar, "0" geniş kalıyor. */
+    const yk = k.yukseklik || 1;
+    const o  = k.boy / yk;
+    r.style.height          = yk + 'em';
     r.style.width           = (k.en / o) + 'em';
-    r.style.backgroundImage = 'url(' + yol + ')';
-    r.style.backgroundSize  = (RAKAM.en / o) + 'em ' + (RAKAM.boy / o) + 'em';
+    r.style.backgroundImage = 'url(' + (simge ? gorselYolu(SIMGE.gorsel) : yol) + ')';
+    r.style.backgroundSize  = (serit.en / o) + 'em ' + (serit.boy / o) + 'em';
     r.style.backgroundPosition = (-k.x / o) + 'em ' + (-k.y / o) + 'em';
     el.appendChild(r);
   }
@@ -362,7 +397,7 @@ function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, 
 function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/home_page.png',
                  TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK,
-                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel, RAKAM.gorsel];
+                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel, RAKAM.gorsel, SIMGE.gorsel];
   for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
