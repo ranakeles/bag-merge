@@ -90,6 +90,17 @@ const ISIM = {
   sil:    { x:812, y:1181, en:109, boy:77 },   // ⌫
   bosluk: { x:110, y:1292, en:718, boy:92 }
 };
+/* GEÇİCİ — GÖRSELDE Ş TUŞU YOK.
+   Üç ayrı üretimde de ikinci sıradan bir harf düştü ve bu sonuncusunda
+   düşen Ş oldu. AYŞE, IŞIL, BEŞİR gibi isimler yazılamıyor; oyun bu hâliyle
+   çocukların önüne çıkamaz. O yüzden eksik tuşu kod çiziyor ve boşluk
+   çubuğunun sağındaki boş alana koyuyor.
+
+   Ş'li bir görsel geldiğinde: burayı null yap, style.css'teki .eksik-tus
+   kuralını sil, ISIM tablosundaki ikinci satıra Ş'yi ekle. Başka hiçbir
+   yerde iz bırakmıyor.                                                    */
+const EKSIK_TUS = { harf:'Ş', x:850, y:1302, en:69, boy:72 };   // ölçü 3. satırın tuşlarıyla aynı
+
 const AD_MIN = 2, AD_MAX = 12;   // 12'den uzun isim skor tablosuna sığmıyor
 let yazilanAd = '';
 
@@ -834,6 +845,17 @@ function isimEkraniniKur(){
   tus(ISIM.sil,    'Sil',    adSil);
   tus(ISIM.bosluk, 'Boşluk', ()=> adYaz(' '));
   tus(ISIM.buton,  'Başla',  isimOnayla);
+
+  /* Görselde olmayan tuş — görünmez dokunma alanı değil, görünür bir tuş */
+  if(EKSIK_TUS){
+    const e = document.createElement('button');
+    e.className = 'eksik-tus'; e.type = 'button';
+    e.textContent = EKSIK_TUS.harf;
+    e.setAttribute('aria-label', EKSIK_TUS.harf);
+    isimYerlestir(e, EKSIK_TUS);
+    e.addEventListener('click', ()=> adYaz(EKSIK_TUS.harf));
+    sahne.appendChild(e);
+  }
   return true;
 }
 
