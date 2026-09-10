@@ -540,37 +540,6 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
   transform:translateY(-.04em);
 }
 
-/* ---------- GÖRSELDEN DİZİLEN HARFLER ----------
-   Rakamlarla aynı mantık, iki farkla:
-
-   1) Ölçü birimi KEP YÜKSEKLİĞİ. Bir yazı tipinde 1em harfin kendisinden
-      büyüktür (satır boşluğunu da kapsar); buradaki 1em düz bir harfin
-      tepesinden tabanına olan mesafe. Aradaki farkı kapatmak için kutu
-      .72em'e küçültülüyor — böylece harf şeridine geçen yazılar, yazı
-      tipiyle dizilirken hangi puntodaysa yaklaşık orada kalıyor.
-
-   2) Hizalama ÜSTTEN. Harflerin boyları eşit değil (Ğ'nin şapkası yukarı,
-      Ç'nin kuyruğu aşağı taşar), ortalanırlarsa taban çizgileri kayardı.
-      Her harf kutunun üstünden kendi payı kadar aşağıda başlıyor (payı
-      script.js hesaplıyor), taban çizgisi böyle tutuyor.                */
-.harf{
-  display:inline-flex; align-items:flex-start; justify-content:center;
-  font-size:.72em; line-height:1; white-space:nowrap;
-}
-.harf-glif{ display:inline-block; flex:none; background-repeat:no-repeat; }
-.harf-bos{ display:inline-block; flex:none; }
-/* Şeritte olmayan karakter (Q, W, X, rakam, noktalama): yazıyla, ama
-   çevresindeki harflere olabildiğince benzetilerek — krem dolgu, mor
-   kontur, aynı kep yüksekliği. Kutunun boyu script.js'ten geliyor. */
-.harf-yazi{
-  display:inline-flex; align-items:center; justify-content:center;
-  flex:none; font-style:normal;
-}
-.harf-yazi > span{
-  font-family:var(--hud); font-weight:600; font-size:1.36em; line-height:1;
-  color:#FFF8EC; -webkit-text-stroke:.055em #4A2FA8; paint-order:stroke fill;
-}
-
 /* ---------- İSİM GİRİŞİ ----------
    Sahne bitiş ekranıyla aynı mantıkta: görselin kapladığı alanın birebir
    aynısı, çünkü tuşların dokunma alanları onun yüzdesi olarak konuyor. */
@@ -583,11 +552,10 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
   width:100%; height:100%; object-fit:fill; }
 
 /* Görselin üstündeki yazılar */
-.isim-baslik, .isim-yazi, .isim-buton{
+.isim-yazi, .isim-buton{
   position:absolute; display:grid; place-items:center;
   line-height:1; white-space:nowrap;
 }
-.isim-baslik{ font-size:min(3.6vh, 6.3vw); }
 /* İmleç yazılan harfin HEMEN ARDINDA olmalı. Izgara yerleşiminde metin ve
    imleç iki ayrı sütuna düşüyor, her biri kendi sütununda ortalanıyor ve
    imleç yazıdan kopuk, satırın solunda kalıyordu. Satır olarak dizilince
@@ -599,9 +567,25 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
   display:flex; align-items:center; justify-content:center; gap:.04em;
   color:#4A2FA8; -webkit-text-stroke:0;
   text-shadow:0 .04em 0 rgba(255,255,255,.9); }
-.isim-buton{ font-size:min(3.4vh, 5.9vw); transition:opacity .15s; }
+/* Buton görselin İÇİNDE çizili, o yüzden sönükleştirmek için üstüne örtü
+   konuyor. Köşe yuvarlaklığı butonunkiyle aynı olsun diye yüzde verildi:
+   431x155'lik butonun köşe yarıçapı ~40 px.
+
+   Örtü altındaki rengi BOYAMIYOR, soluyor: üstüne beyaz sürmek altını
+   krem bir lekeye çeviriyordu. Doygunluğu düşürmek butonu tanıdık
+   bırakıyor, sadece "şimdi değil" diyor. */
+.isim-buton{
+  pointer-events:none; border-radius:9%/26%;
+  backdrop-filter:none; transition:backdrop-filter .15s, background .15s;
+  background:rgba(245,246,250,0);
+}
 /* Yeterli harf yok: buton sönük ve dokunması işe yaramıyor */
-.isim-buton.sonuk{ opacity:.45; }
+.isim-buton.sonuk{
+  backdrop-filter:grayscale(.75) brightness(1.06);
+  -webkit-backdrop-filter:grayscale(.75) brightness(1.06);
+  /* backdrop-filter yoksa hiç değilse hafif bir perde kalsın */
+  background:rgba(245,246,250,.28);
+}
 
 /* Yazarken yanıp sönen imleç */
 .imlec{ display:inline-block; width:.10em; height:.95em; background:#5B3EC9;

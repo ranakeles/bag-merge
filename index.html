@@ -95,16 +95,16 @@
 <!-- ================= İSİM GİRİŞİ =================
      OYNA'ya basınca açılır, oyun bundan sonra başlar. Tasarımın tamamı
      görselde — klavye dahil. Kod yalnızca görünmez dokunma alanlarını,
-     yazılan ismi ve iki yazıyı yerleştiriyor; yerleri görselden ÖLÇÜLDÜ
+     yalnızca yazılan ismi yerleştiriyor; yeri görselden ÖLÇÜLDÜ
      (script.js ISIM tablosu). -->
 <div id="isimScreen" class="katman gizli">
   <img id="isimBg" class="katman-bg" alt="" aria-hidden="true">
   <div id="isimSahne">
     <img id="isimImg" class="katman-img" alt="">
-    <div class="isim-baslik oyun-yazi" id="isimBaslik">ADINI YAZ</div>
     <div class="isim-yazi oyun-yazi" id="isimYazi"><span id="isimMetin"></span><i class="imlec"></i></div>
-    <!-- Yeterli harf girilene kadar sönük durur -->
-    <div class="isim-buton oyun-yazi" id="isimButon">BAŞLA</div>
+    <!-- "BAŞLA" görselde çizili; bu kutu yalnızca yeterli harf girilene
+         kadar butonun üstünde duran sönük örtü -->
+    <div class="isim-buton" id="isimButon"></div>
     <!-- Tuşların üstündeki görünmez dokunma alanları script'te üretilir -->
   </div>
 </div>
