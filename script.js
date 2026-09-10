@@ -56,6 +56,54 @@ const PLAKA = {
 
 const MANZARA = 'assets/bg_istanbul.png';
 
+/* ---- İSİM GİRİŞİ ----
+   Tasarımın tamamı assets/enter_name3.png içinde — klavye dahil. Aşağıdaki
+   koordinatlar 941x1672'lik görselin PİKSELLERİNDEN ölçüldü: tuşların açık
+   mor yüzleri tarandı, satır satır ayrıldı ve harflerle eşleştirildi. Kod
+   bunların üstüne görünmez düğmeler koyuyor.
+
+   GÖRSEL DEĞİŞİRSE BU TABLO YENİDEN ÖLÇÜLMELİ.
+
+   NOT: Bu görselde Ş TUŞU YOK. İkinci sıra on tuş: A S D F G H J K L İ.
+   Tablo görselde ne varsa onu yansıtıyor; Ş'li bir görsel gelirse buraya
+   tek satır eklenecek.                                                     */
+const ISIM = {
+  gorsel:'assets/enter_name3.png',
+  en:941, boy:1672,
+  baslik:{ x:144, y:207,  en:648, boy:134 },   // şeridin yüzü — "ADINI YAZ"
+  kutu:  { x:84,  y:821,  en:773, boy:87  },   // yazılan ismin krem alanı
+  buton: { x:259, y:1447, en:421, boy:131 },   // altın buton — "BAŞLA"
+  /* Dokunma alanı çizilen tuştan biraz geniş: parmak kenara denk gelince
+     harf kaybolmasın. Tuşlar arası boşluk ~19 px, bu pay güvenli. */
+  tusPayi:6,
+  satirlar:[
+    { y:970,  boy:66, tuslar:[
+      ['Q',26,59],['W',103,59],['E',180,58],['R',256,59],['T',332,58],['Y',407,57],
+      ['U',480,59],['I',555,58],['O',629,58],['P',704,57],['Ğ',778,59],['Ü',855,58] ] },
+    { y:1074, boy:71, tuslar:[
+      ['A',48,67],['S',134,65],['D',218,66],['F',303,65],['G',388,67],
+      ['H',473,67],['J',559,68],['K',645,67],['L',731,67],['İ',817,66] ] },
+    { y:1186, boy:72, tuslar:[
+      ['Z',44,69],['X',134,68],['C',222,69],['V',312,70],['B',401,68],
+      ['N',490,68],['M',577,67],['Ö',663,63],['Ç',745,63] ] }
+  ],
+  sil:    { x:812, y:1181, en:109, boy:77 },   // ⌫
+  bosluk: { x:110, y:1292, en:718, boy:92 }
+};
+/* GEÇİCİ — GÖRSELDE Ş TUŞU YOK.
+   Üç ayrı üretimde de ikinci sıradan bir harf düştü ve bu sonuncusunda
+   düşen Ş oldu. AYŞE, IŞIL, BEŞİR gibi isimler yazılamıyor; oyun bu hâliyle
+   çocukların önüne çıkamaz. O yüzden eksik tuşu kod çiziyor ve boşluk
+   çubuğunun sağındaki boş alana koyuyor.
+
+   Ş'li bir görsel geldiğinde: burayı null yap, style.css'teki .eksik-tus
+   kuralını sil, ISIM tablosundaki ikinci satıra Ş'yi ekle. Başka hiçbir
+   yerde iz bırakmıyor.                                                    */
+const EKSIK_TUS = { harf:'Ş', x:850, y:1302, en:69, boy:72 };   // ölçü 3. satırın tuşlarıyla aynı
+
+const AD_MIN = 2, AD_MAX = 12;   // 12'den uzun isim skor tablosuna sığmıyor
+let yazilanAd = '';
+
 /* ---- BİTİŞ EKRANI ----
    İki ayrı tasarım: hepsi teslim edildiyse "TÜM BAGAJLAR TESLİM EDİLDİ",
    süre dolduysa "BANT KARIŞTI". İkisi de 941x1672.
@@ -259,7 +307,7 @@ function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, 
 function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/home_page.png',
                  TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK,
-                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel];
+                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel];
   for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
@@ -315,7 +363,7 @@ const $ = s => document.querySelector(s);
 const rastgele = n => Math.floor(Math.random()*n);
 function karistir(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=rastgele(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-let durum = 'bas';            // bas | oyun | bitiyor | bitti
+let durum = 'bas';            // bas | isim | oyun | bitiyor | bitti
 let izgara = [];              // izgara[s][k] = null | {sehir, basamak, el}
 let hucreEl = [];             // aynı boyutta DOM karşılıkları
 let ucaklar = [];             // {sehir, kod, el}
@@ -760,6 +808,133 @@ function teslimEt(t, ucakDom){
   }
 }
 
+/* ---------- İSİM GİRİŞİ ---------- */
+/* Görselin üstüne oturan her şey aynı yardımcıyla yerleştiriliyor: kutunun
+   yüzdesi, görselin piksel ölçüsünden hesaplanıyor. */
+function isimYerlestir(el, a){
+  el.style.left   = (a.x   / ISIM.en  * 100) + '%';
+  el.style.top    = (a.y   / ISIM.boy * 100) + '%';
+  el.style.width  = (a.en  / ISIM.en  * 100) + '%';
+  el.style.height = (a.boy / ISIM.boy * 100) + '%';
+}
+
+function isimEkraniniKur(){
+  if(!gorselVar(ISIM.gorsel)) return false;
+  const sahne = $('#isimSahne');
+  if(sahne.querySelector('.tus-hit')) return true;      // bir kez kurulur
+
+  const yol = gorselYolu(ISIM.gorsel);
+  $('#isimImg').src = yol;
+  $('#isimBg').src  = yol;
+  isimYerlestir($('#isimBaslik'), ISIM.baslik);
+  isimYerlestir($('#isimYazi'), ISIM.kutu);
+  isimYerlestir($('#isimButon'), ISIM.buton);
+
+  const tus = (alan, etiket, isle) => {
+    const b = document.createElement('button');
+    b.className = 'tus-hit'; b.type = 'button';
+    isimYerlestir(b, alan);
+    b.setAttribute('aria-label', etiket);
+    b.addEventListener('click', isle);
+    sahne.appendChild(b);
+  };
+  const p = ISIM.tusPayi;
+  for(const satir of ISIM.satirlar)
+    for(const [harf, x, en] of satir.tuslar)
+      tus({ x:x-p, y:satir.y-p, en:en+2*p, boy:satir.boy+2*p }, harf, ()=> adYaz(harf));
+  tus(ISIM.sil,    'Sil',    adSil);
+  tus(ISIM.bosluk, 'Boşluk', ()=> adYaz(' '));
+  tus(ISIM.buton,  'Başla',  isimOnayla);
+
+  /* Görselde olmayan tuş — görünmez dokunma alanı değil, görünür bir tuş */
+  if(EKSIK_TUS){
+    const e = document.createElement('button');
+    e.className = 'eksik-tus'; e.type = 'button';
+    e.textContent = EKSIK_TUS.harf;
+    e.setAttribute('aria-label', EKSIK_TUS.harf);
+    isimYerlestir(e, EKSIK_TUS);
+    e.addEventListener('click', ()=> adYaz(EKSIK_TUS.harf));
+    sahne.appendChild(e);
+  }
+  return true;
+}
+
+function adGuncelle(){
+  $('#isimMetin').textContent = yazilanAd;
+  /* Yeterli harf girilmeden buton sönük: çocuk boş isimle başlayıp skor
+     tablosunda kendini bulamasın. */
+  $('#isimButon').classList.toggle('sonuk', yazilanAd.trim().length < AD_MIN);
+}
+function adYaz(harf){
+  if(yazilanAd.length >= AD_MAX) return;
+  /* Baştan ya da arka arkaya boşluk kabul edilmiyor */
+  if(harf === ' ' && (!yazilanAd || yazilanAd.endsWith(' '))) return;
+  yazilanAd += harf; adGuncelle();
+}
+function adSil(){ yazilanAd = yazilanAd.slice(0, -1); adGuncelle(); }
+
+function isimEkraniniAc(){
+  durum = 'isim';
+  yazilanAd = '';
+  adGuncelle();
+  $('#basScreen').classList.add('gizli');
+  $('#bitScreen').classList.add('gizli');
+  if(isimEkraniniKur()) $('#isimScreen').classList.remove('gizli');
+  else oyunuBaslat();          // görsel yoksa isim adımını atla
+}
+
+function isimOnayla(){
+  if(yazilanAd.trim().length < AD_MIN) return;
+  $('#isimScreen').classList.add('gizli');
+  oyunuBaslat();
+}
+
+/* Geliştirirken fiziksel klavyeyle de yazılabilsin; kioskta klavye yok. */
+function isimTusu(e){
+  if(durum !== 'isim') return;
+  if(e.key === 'Backspace'){ adSil(); e.preventDefault(); return; }
+  if(e.key === 'Enter'){ isimOnayla(); return; }
+  if(e.key.length === 1) adYaz(e.key.toLocaleUpperCase('tr'));
+}
+
+/* ---------- SKOR TABLOSU ---------- */
+/* Oyuncular tarayıcıda saklanıyor. Anahtar sürümlü: tablonun yapısı
+   değişirse anahtar artırılır ve eski kayıt görmezden gelinir. */
+const SKOR_ANAHTAR = 'bm_skor1';
+const SKOR_SATIR = 5;          // panele sığan satır sayısı
+
+function skorlariOku(){
+  try{ const r = localStorage.getItem(SKOR_ANAHTAR); if(r) return JSON.parse(r); }catch(e){}
+  return [];
+}
+function skorEkle(ad, p){
+  const liste = skorlariOku();
+  liste.push({ ad, puan:p });
+  liste.sort((a,b)=> b.puan - a.puan);
+  const kirpik = liste.slice(0, 20);
+  try{ localStorage.setItem(SKOR_ANAHTAR, JSON.stringify(kirpik)); }catch(e){}
+  return kirpik;
+}
+function skorTablosunuCiz(liste, vurgulaAd, vurgulaPuan){
+  const kap = $('#bitTablo');
+  kap.innerHTML = '';
+  let vuruldu = false;
+  liste.slice(0, SKOR_SATIR).forEach((k, i) => {
+    const satir = document.createElement('div');
+    satir.className = 'skor-satir';
+    /* Bu turun kaydı bir kez işaretleniyor: aynı ad ve puan tabloda birden
+       fazla olabilir, hepsi vurgulanırsa hangisinin bu tur olduğu kaybolur. */
+    if(!vuruldu && k.ad === vurgulaAd && k.puan === vurgulaPuan){
+      satir.classList.add('benim'); vuruldu = true;
+    }
+    satir.innerHTML = '<span class="skor-sira">' + (i+1) + '</span>' +
+                      '<span class="skor-ad"></span>' +
+                      '<span class="skor-puan">' + k.puan + '</span>';
+    satir.querySelector('.skor-ad').textContent = k.ad;
+    kap.appendChild(satir);
+  });
+}
+
 /* ---------- 9) AKIŞ ---------- */
 function puanEkle(p, yakinEl){
   puan += p;
@@ -882,6 +1057,7 @@ function oyunuBitir(){
   $('#bitSureYedek').textContent = sureYazi(kalanSn);
   $('#bitPuanYedek').textContent = puan;
 
+  skorTablosunuCiz(skorEkle(yazilanAd || 'OYUNCU', puan), yazilanAd, puan);
   $('#bitScreen').classList.remove('gizli');
   /* Ölçüm ancak ekran görünürken doğru: gizliyken kutuların boyu sıfır. */
   Object.keys(BITIS.basarili.alanlar).forEach(id => yaziyiSigdir($('#' + id)));
@@ -991,7 +1167,8 @@ function kur(){
   katmanGorseli('assets/home_page.png', '#basImg', '#basBg', '#basGecici');
 
   $('#izgara').addEventListener('pointerdown', tasimayaBasla);
-  $('#basBtn').addEventListener('click', oyunuBaslat);
+  $('#basBtn').addEventListener('click', isimEkraniniAc);
+  window.addEventListener('keydown', isimTusu);
   $('#bitBtn').addEventListener('click', anaSayfayaDon);
 
   izgarayiKur();       // arka planda duran boş matris (başlangıç ekranının altında)
