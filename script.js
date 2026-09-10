@@ -85,9 +85,27 @@ const RAKAM = {
   ]
 };
 
-/* Bir sayıyı kabın içine rakam rakam dizer. Rakam olmayan karakterler
-   (":" ve "/") şeritte yok, onlar yazıyla geçiyor — sayının kendisi değil
-   ayıraç oldukları için göze batmıyor. */
+/* ---- AYIRAÇLAR ----
+   "/" ve ":" da rakamlarla aynı elden çıkma: score_symbols.png. Daha önce
+   yazı tipiyle geçiyorlardı ve iki çizili rakamın arasında yabancı duruyordu.
+
+   Kutular şeridin PİKSELLERİNDEN ölçüldü. Şerit değişirse yeniden ölçülmeli.
+
+   "yukseklik" em cinsinden: rakamlar 1em, ayıraçlar onlardan kısa. Şerit
+   üzerinde iki simge farklı ölçekte çizilmiş, o yüzden oranları oradan
+   almıyoruz — yazı gibi görünsünler diye burada elle veriliyor.           */
+const SIMGE = {
+  gorsel:'assets/score_symbols.png',
+  en:1774, boy:887,
+  kutular:{
+    '/': { x: 446, y:102, en:467, boy:737, yukseklik:1.02 },
+    ':': { x:1048, y:182, en:309, boy:655, yukseklik:0.72 }
+  }
+};
+
+/* Bir sayıyı kabın içine karakter karakter dizer: rakamlar RAKAM
+   şeridinden, "/" ve ":" SIMGE şeridinden. Hiçbiri yazı tipiyle gelmiyor.
+   Şerit yüklenemezse ilgili karakter yazıya düşer. */
 function sayiYaz(el, metin){
   if(!el) return;
   metin = String(metin);
@@ -97,31 +115,52 @@ function sayiYaz(el, metin){
   el.classList.add('sayi');
   for(const ch of metin){
     const i = ch.charCodeAt(0) - 48;
-    if(i < 0 || i > 9){
+    const simge = (i < 0 || i > 9) ? SIMGE.kutular[ch] : null;
+
+    if(!simge && (i < 0 || i > 9)){
+      /* Ne rakam ne de çizili bir ayıraç: yazıyla geçsin. */
       const ay = document.createElement('i');
       ay.className = 'sayi-ayrac';
       ay.textContent = ch;
       el.appendChild(ay);
       continue;
     }
-    const k = RAKAM.kutular[i];
+
+    const serit = simge ? SIMGE : RAKAM;
+    const k     = simge || RAKAM.kutular[i];
+    if(simge && !gorselVar(SIMGE.gorsel)){
+      const ay = document.createElement('i');
+      ay.className = 'sayi-ayrac';
+      ay.textContent = ch;
+      el.appendChild(ay);
+      continue;
+    }
+
     const r = document.createElement('i');
     r.className = 'sayi-rakam';
-    /* Ölçek: rakamın kendi boyu 1em'e getiriliyor, şerit de aynı oranda. */
-    const o = k.boy;
+    /* Ölçek: karakterin kendi boyu "yukseklik" em'e getiriliyor (rakamlarda
+       1em), şerit de aynı oranda büyüyor. Genişlik kendi oranından geliyor,
+       yani "1" dar, "0" geniş kalıyor. */
+    const yk = k.yukseklik || 1;
+    const o  = k.boy / yk;
+    r.style.height          = yk + 'em';
     r.style.width           = (k.en / o) + 'em';
-    r.style.backgroundImage = 'url(' + yol + ')';
-    r.style.backgroundSize  = (RAKAM.en / o) + 'em ' + (RAKAM.boy / o) + 'em';
+    r.style.backgroundImage = 'url(' + (simge ? gorselYolu(SIMGE.gorsel) : yol) + ')';
+    r.style.backgroundSize  = (serit.en / o) + 'em ' + (serit.boy / o) + 'em';
     r.style.backgroundPosition = (-k.x / o) + 'em ' + (-k.y / o) + 'em';
     el.appendChild(r);
   }
 }
 
 /* ---- İSİM GİRİŞİ ----
-   Tasarımın tamamı assets/enter_name3.png içinde — klavye dahil. Aşağıdaki
-   koordinatlar 941x1672'lik görselin PİKSELLERİNDEN ölçüldü: tuşların açık
-   mor yüzleri tarandı, satır satır ayrıldı ve harflerle eşleştirildi. Kod
-   bunların üstüne görünmez düğmeler koyuyor.
+   Tasarımın tamamı assets/enter_name6.png içinde — klavye, "İSMİNİ GİR"
+   başlığı ve "BAŞLA" yazısı dahil. Kod artık o iki yazıyı çizmiyor;
+   ekranda yazıyla gelen tek şey çocuğun yazdığı isim.
+
+   Aşağıdaki koordinatlar 941x1672'lik görselin PİKSELLERİNDEN ölçüldü:
+   tuşların mor yüzleri tarandı, satırlara bölünüp sütun profilinden tek tek
+   ayrıldı ve soldan sağa harflerle eşleştirildi. Kod bunların üstüne
+   görünmez düğmeler koyuyor. Görsel değişirse yeniden ölçülmeli.
 
    GÖRSEL DEĞİŞİRSE BU TABLO YENİDEN ÖLÇÜLMELİ.
 
@@ -129,27 +168,28 @@ function sayiYaz(el, metin){
    ikinci sıradan sürekli bir harf düşüyordu ve eksik Ş'yi kod çizmek
    zorunda kalmıştık; bu tasarımda sıra tam, o geçici çözüm kalktı.        */
 const ISIM = {
-  gorsel:'assets/enter_name5.png',
+  gorsel:'assets/enter_name6.png',
   en:941, boy:1672,
-  baslik:{ x:199, y:111,  en:549, boy:113 },   // şeridin yüzü — "ADINI YAZ"
-  kutu:  { x:116, y:764,  en:695, boy:93  },   // yazılan ismin krem alanı
-  buton: { x:275, y:1439, en:372, boy:119 },   // altın buton — "BAŞLA"
+  kutu:  { x:102, y:763, en:735, boy:93 },    // yazılan ismin krem alanı
   /* Dokunma alanı çizilen tuştan biraz geniş: parmak kenara denk gelince
-     harf kaybolmasın. Tuşlar arası boşluk ~8 px, bu pay güvenli. */
+     harf kaybolmasın. Tuşlar arası boşluk ~10 px, bu pay güvenli. */
   tusPayi:4,
   satirlar:[
-    { y:940,  boy:85, tuslar:[
-      ['Q',28,67],['W',103,66],['E',177,66],['R',251,67],['T',326,66],['Y',401,66],
-      ['U',475,67],['I',550,67],['O',625,67],['P',700,66],['Ğ',774,66],['Ü',848,66] ] },
-    { y:1051, boy:86, tuslar:[
-      ['A',50,71],['S',129,69],['D',206,68],['F',283,67],['G',359,69],['H',436,69],
-      ['J',514,68],['K',591,69],['L',669,69],['Ş',746,69],['İ',823,70] ] },
-    { y:1162, boy:88, tuslar:[
-      ['Z',46,78],['X',134,75],['C',219,76],['V',305,75],['B',390,74],
-      ['N',474,74],['M',558,73],['Ö',640,72],['Ç',721,73] ] }
+    { y:934,  boy:98,  tuslar:[
+      ['Q',27,72],['W',100,73],['E',174,72],['R',248,75],['T',324,73],['Y',398,73],
+      ['U',471,73],['I',548,73],['O',622,73],['P',698,71],['Ğ',771,73],['Ü',845,71] ] },
+    { y:1045, boy:95,  tuslar:[
+      ['A',49,76],['S',126,75],['D',203,75],['F',281,75],['G',356,76],['H',433,76],
+      ['J',511,75],['K',588,75],['L',665,76],['Ş',742,76],['İ',820,75] ] },
+    { y:1156, boy:101, tuslar:[
+      ['Z',45,85],['X',130,85],['C',217,82],['V',302,83],['B',387,83],
+      ['N',471,82],['M',554,81],['Ö',636,80],['Ç',717,80] ] }
   ],
-  sil:    { x:802, y:1162, en:105, boy:88 },   // ⌫
-  bosluk: { x:131, y:1279, en:679, boy:84 }
+  sil:    { x:800, y:1156, en:110, boy:101 },  // ⌫
+  bosluk: { x:131, y:1277, en:680, boy: 91 },
+  /* "BAŞLA" görselin içinde çizili; buradaki kutu hem dokunma alanı hem de
+     yeterli harf girilmeden üstüne konan sönük örtü. */
+  buton:  { x:250, y:1425, en:431, boy:155 }
 };
 const AD_MIN = 2, AD_MAX = 12;   // 12'den uzun isim skor tablosuna sığmıyor
 let yazilanAd = '';
@@ -362,7 +402,7 @@ function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, 
 function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/home_page.png',
                  TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK,
-                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel, RAKAM.gorsel];
+                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel, RAKAM.gorsel, SIMGE.gorsel];
   for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
@@ -881,7 +921,6 @@ function isimEkraniniKur(){
   const yol = gorselYolu(ISIM.gorsel);
   $('#isimImg').src = yol;
   $('#isimBg').src  = yol;
-  isimYerlestir($('#isimBaslik'), ISIM.baslik);
   isimYerlestir($('#isimYazi'), ISIM.kutu);
   isimYerlestir($('#isimButon'), ISIM.buton);
 
