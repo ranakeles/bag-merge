@@ -502,6 +502,56 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
 /* Skor tablosu paneli: yeri ölçüldü, içeriği henüz yok. */
 .bit-tablo{ position:absolute; }
 
+/* ---------- İSİM GİRİŞİ ----------
+   Sahne bitiş ekranıyla aynı mantıkta: görselin kapladığı alanın birebir
+   aynısı, çünkü tuşların dokunma alanları onun yüzdesi olarak konuyor. */
+#isimSahne{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:min(100%, calc(100vh * var(--isim-oran, 0.5628)));
+  height:min(100%, calc(100vw / var(--isim-oran, 0.5628)));
+}
+#isimSahne .katman-img{ position:absolute; inset:0;
+  width:100%; height:100%; object-fit:fill; }
+
+/* Görselin üstündeki yazılar */
+.isim-baslik, .isim-yazi, .isim-buton{
+  position:absolute; display:grid; place-items:center;
+  font-family:var(--body); font-weight:800; line-height:1; white-space:nowrap;
+}
+.isim-baslik{ color:#fff; letter-spacing:.06em; font-size:min(3.4vh, 6vw);
+  text-shadow:0 2px 3px rgba(20,30,70,.45); }
+.isim-yazi{ color:#243a63; font-size:min(3.6vh, 6.4vw);
+  grid-auto-flow:column; gap:.06em; }
+.isim-buton{ color:#fff; letter-spacing:.06em; font-size:min(3.2vh, 5.6vw);
+  text-shadow:0 2px 3px rgba(120,60,0,.45); transition:opacity .15s; }
+/* Yeterli harf yok: buton sönük ve dokunması işe yaramıyor */
+.isim-buton.sonuk{ opacity:.45; }
+
+/* Yazarken yanıp sönen imleç */
+.imlec{ display:inline-block; width:.09em; height:1em; background:#243a63;
+  animation:imlecYanip 1s step-end infinite; }
+@keyframes imlecYanip{ 50%{ opacity:0; } }
+
+/* Tuşların üstündeki görünmez dokunma alanları */
+.tus-hit{ position:absolute; background:none; border:0; padding:0;
+  cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.tus-hit:active{ background:rgba(255,255,255,.35); border-radius:18%; }
+
+/* ---------- SKOR TABLOSU ---------- */
+.bit-tablo{ display:flex; flex-direction:column; justify-content:center;
+  gap:2%; padding:3% 6%; }
+.skor-satir{
+  display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:4%;
+  font-family:var(--body); font-weight:700; color:#3a4a6b;
+  font-size:min(2.2vh, 3.9vw); line-height:1;
+  padding:1.5% 3%; border-radius:999px;
+}
+/* Bu turun satırı ayırt edilsin — çocuk kendini tabloda bulsun */
+.skor-satir.benim{ background:rgba(126,74,214,.16); color:#5b2ea8; }
+.skor-sira{ opacity:.55; min-width:1.2em; }
+.skor-ad{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.skor-puan{ font-weight:800; }
+
 /* GEÇİCİ başlangıç/bitiş panelleri — tasarım görselleri gelince silinecek */
 .gecici-panel{
   position:relative; text-align:center; padding:34px 30px 28px; border-radius:30px;
