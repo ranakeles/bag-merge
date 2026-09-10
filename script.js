@@ -125,43 +125,32 @@ function sayiYaz(el, metin){
 
    GÖRSEL DEĞİŞİRSE BU TABLO YENİDEN ÖLÇÜLMELİ.
 
-   NOT: Bu görselde Ş TUŞU YOK. İkinci sıra on tuş: A S D F G H J K L İ.
-   Tablo görselde ne varsa onu yansıtıyor; Ş'li bir görsel gelirse buraya
-   tek satır eklenecek.                                                     */
+   Türkçe Q düzeni, 32 harf tuşu: Ğ Ü Ş İ Ö Ç dahil. Önceki görsellerde
+   ikinci sıradan sürekli bir harf düşüyordu ve eksik Ş'yi kod çizmek
+   zorunda kalmıştık; bu tasarımda sıra tam, o geçici çözüm kalktı.        */
 const ISIM = {
-  gorsel:'assets/enter_name3.png',
+  gorsel:'assets/enter_name5.png',
   en:941, boy:1672,
-  baslik:{ x:144, y:207,  en:648, boy:134 },   // şeridin yüzü — "ADINI YAZ"
-  kutu:  { x:84,  y:821,  en:773, boy:87  },   // yazılan ismin krem alanı
-  buton: { x:259, y:1447, en:421, boy:131 },   // altın buton — "BAŞLA"
+  baslik:{ x:199, y:111,  en:549, boy:113 },   // şeridin yüzü — "ADINI YAZ"
+  kutu:  { x:116, y:764,  en:695, boy:93  },   // yazılan ismin krem alanı
+  buton: { x:275, y:1439, en:372, boy:119 },   // altın buton — "BAŞLA"
   /* Dokunma alanı çizilen tuştan biraz geniş: parmak kenara denk gelince
-     harf kaybolmasın. Tuşlar arası boşluk ~19 px, bu pay güvenli. */
-  tusPayi:6,
+     harf kaybolmasın. Tuşlar arası boşluk ~8 px, bu pay güvenli. */
+  tusPayi:4,
   satirlar:[
-    { y:970,  boy:66, tuslar:[
-      ['Q',26,59],['W',103,59],['E',180,58],['R',256,59],['T',332,58],['Y',407,57],
-      ['U',480,59],['I',555,58],['O',629,58],['P',704,57],['Ğ',778,59],['Ü',855,58] ] },
-    { y:1074, boy:71, tuslar:[
-      ['A',48,67],['S',134,65],['D',218,66],['F',303,65],['G',388,67],
-      ['H',473,67],['J',559,68],['K',645,67],['L',731,67],['İ',817,66] ] },
-    { y:1186, boy:72, tuslar:[
-      ['Z',44,69],['X',134,68],['C',222,69],['V',312,70],['B',401,68],
-      ['N',490,68],['M',577,67],['Ö',663,63],['Ç',745,63] ] }
+    { y:940,  boy:85, tuslar:[
+      ['Q',28,67],['W',103,66],['E',177,66],['R',251,67],['T',326,66],['Y',401,66],
+      ['U',475,67],['I',550,67],['O',625,67],['P',700,66],['Ğ',774,66],['Ü',848,66] ] },
+    { y:1051, boy:86, tuslar:[
+      ['A',50,71],['S',129,69],['D',206,68],['F',283,67],['G',359,69],['H',436,69],
+      ['J',514,68],['K',591,69],['L',669,69],['Ş',746,69],['İ',823,70] ] },
+    { y:1162, boy:88, tuslar:[
+      ['Z',46,78],['X',134,75],['C',219,76],['V',305,75],['B',390,74],
+      ['N',474,74],['M',558,73],['Ö',640,72],['Ç',721,73] ] }
   ],
-  sil:    { x:812, y:1181, en:109, boy:77 },   // ⌫
-  bosluk: { x:110, y:1292, en:718, boy:92 }
+  sil:    { x:802, y:1162, en:105, boy:88 },   // ⌫
+  bosluk: { x:131, y:1279, en:679, boy:84 }
 };
-/* GEÇİCİ — GÖRSELDE Ş TUŞU YOK.
-   Üç ayrı üretimde de ikinci sıradan bir harf düştü ve bu sonuncusunda
-   düşen Ş oldu. AYŞE, IŞIL, BEŞİR gibi isimler yazılamıyor; oyun bu hâliyle
-   çocukların önüne çıkamaz. O yüzden eksik tuşu kod çiziyor ve boşluk
-   çubuğunun sağındaki boş alana koyuyor.
-
-   Ş'li bir görsel geldiğinde: burayı null yap, style.css'teki .eksik-tus
-   kuralını sil, ISIM tablosundaki ikinci satıra Ş'yi ekle. Başka hiçbir
-   yerde iz bırakmıyor.                                                    */
-const EKSIK_TUS = { harf:'Ş', x:850, y:1302, en:69, boy:72 };   // ölçü 3. satırın tuşlarıyla aynı
-
 const AD_MIN = 2, AD_MAX = 12;   // 12'den uzun isim skor tablosuna sığmıyor
 let yazilanAd = '';
 
@@ -906,17 +895,6 @@ function isimEkraniniKur(){
   tus(ISIM.sil,    'Sil',    adSil);
   tus(ISIM.bosluk, 'Boşluk', ()=> adYaz(' '));
   tus(ISIM.buton,  'Başla',  isimOnayla);
-
-  /* Görselde olmayan tuş — görünmez dokunma alanı değil, görünür bir tuş */
-  if(EKSIK_TUS){
-    const e = document.createElement('button');
-    e.className = 'eksik-tus'; e.type = 'button';
-    e.textContent = EKSIK_TUS.harf;
-    e.setAttribute('aria-label', EKSIK_TUS.harf);
-    isimYerlestir(e, EKSIK_TUS);
-    e.addEventListener('click', ()=> adYaz(EKSIK_TUS.harf));
-    sahne.appendChild(e);
-  }
   return true;
 }
 
