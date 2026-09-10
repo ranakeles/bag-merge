@@ -502,6 +502,23 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
 /* Skor tablosu paneli: yeri ölçüldü, içeriği henüz yok. */
 .bit-tablo{ position:absolute; }
 
+/* ---------- OYUN YAZISI ----------
+   Görsellerdeki yazılar kalın, konturlu ve altına oturan gölgeli. Düz bir
+   web fontu onların yanında sönük kalıyordu. Bu sınıf aynı hissi veriyor:
+   yuvarlak kalın yazı tipi, mor kontur, altta koyu bir oturma.
+
+   Rakamlar bu sınıfı KULLANMIYOR — onlar zaten görselden geliyor. Burası
+   yalnızca yazıyla gelmek zorunda olan metinler için: isimler ve ekran
+   yazıları. */
+.oyun-yazi{
+  font-family:var(--hud); font-weight:600;
+  color:#FFF8EC;
+  -webkit-text-stroke:.055em #5B3EC9;
+  paint-order:stroke fill;
+  text-shadow:0 .05em 0 #4A2FA8, 0 .09em .07em rgba(28,18,72,.35);
+  letter-spacing:.01em;
+}
+
 /* ---------- GÖRSELDEN DİZİLEN RAKAMLAR ----------
    Her rakam, şeritten kesilmiş bir kutu. Yükseklik 1em, genişlik rakamın
    kendi oranı — böylece punto değişince sayı da birlikte ölçekleniyor ve
@@ -535,23 +552,27 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
 /* Görselin üstündeki yazılar */
 .isim-baslik, .isim-yazi, .isim-buton{
   position:absolute; display:grid; place-items:center;
-  font-family:var(--body); font-weight:800; line-height:1; white-space:nowrap;
+  line-height:1; white-space:nowrap;
 }
-.isim-baslik{ color:#fff; letter-spacing:.06em; font-size:min(3.4vh, 6vw);
-  text-shadow:0 2px 3px rgba(20,30,70,.45); }
+.isim-baslik{ font-size:min(3.6vh, 6.3vw); }
 /* İmleç yazılan harfin HEMEN ARDINDA olmalı. Izgara yerleşiminde metin ve
    imleç iki ayrı sütuna düşüyor, her biri kendi sütununda ortalanıyor ve
    imleç yazıdan kopuk, satırın solunda kalıyordu. Satır olarak dizilince
    imleç metnin peşine takılıyor. */
-.isim-yazi{ color:#243a63; font-size:min(3.6vh, 6.4vw);
-  display:flex; align-items:center; justify-content:center; gap:.04em; }
-.isim-buton{ color:#fff; letter-spacing:.06em; font-size:min(3.2vh, 5.6vw);
-  text-shadow:0 2px 3px rgba(120,60,0,.45); transition:opacity .15s; }
+/* Yazılan isim KREM kutunun üstünde duruyor: krem dolgu + kontur orada
+   düşük kontrastta kalıyor. Burada dolu mor, üstünde ince açık bir taban —
+   krem zemine oturan bir yazı böyle görünür. */
+.isim-yazi{ font-size:min(3.8vh, 6.6vw);
+  display:flex; align-items:center; justify-content:center; gap:.04em;
+  color:#4A2FA8; -webkit-text-stroke:0;
+  text-shadow:0 .04em 0 rgba(255,255,255,.9); }
+.isim-buton{ font-size:min(3.4vh, 5.9vw); transition:opacity .15s; }
 /* Yeterli harf yok: buton sönük ve dokunması işe yaramıyor */
 .isim-buton.sonuk{ opacity:.45; }
 
 /* Yazarken yanıp sönen imleç */
-.imlec{ display:inline-block; width:.09em; height:1em; background:#243a63;
+.imlec{ display:inline-block; width:.10em; height:.95em; background:#5B3EC9;
+  border-radius:.05em;
   animation:imlecYanip 1s step-end infinite; }
 @keyframes imlecYanip{ 50%{ opacity:0; } }
 
@@ -567,13 +588,18 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
   gap:2%; padding:4% 6%; }
 .skor-satir{
   display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:4%;
-  font-family:var(--body); font-weight:700; color:#3a4a6b;
-  font-size:min(2.2vh, 3.9vw); line-height:1;
+  font-size:min(2.4vh, 4.2vw); line-height:1;
   padding:1.5% 3%; border-radius:999px;
 }
 /* Bu turun satırı ayırt edilsin — çocuk kendini tabloda bulsun */
-.skor-satir.benim{ background:rgba(126,74,214,.16); color:#5b2ea8; }
-.skor-sira{ opacity:.55; min-width:1.2em; }
+.skor-satir.benim{ background:rgba(126,74,214,.18); }
+/* Skor tablosu KREM panelin üstünde: krem dolgu + kontur burada da düşük
+   kontrastta kalıyor, isim alanında olduğu gibi dolu mor kullanılıyor. */
+.skor-ad, .skor-sira{
+  color:#4A2FA8; -webkit-text-stroke:0;
+  text-shadow:0 .04em 0 rgba(255,255,255,.9);
+}
+.skor-sira{ opacity:.65; min-width:1.2em; }
 .skor-ad{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .skor-puan{ font-weight:800; }
 

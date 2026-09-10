@@ -167,21 +167,26 @@ const BITIS = {
   en:941, boy:1672,
   basarili:{
     gorsel:'assets/end_page_success.png',
+    /* Kutular SÜTUNUN değil İKONUN altına ortalanıyor. Sütun sınırlarına
+       göre kurulduğunda ilk sütun diğerlerinden geniş olduğu için sayı
+       ikonun soluna kayıyordu. İkon merkezleri görselden ölçüldü:
+       211.5, 383, 557, 729.5 — kutular bu merkezlere oturuyor. */
     alanlar:{
-      bitPuan:   { x:68,  y:769, en:229, boy:68 },
-      bitHatali: { x:297, y:769, en:173, boy:68 },
-      bitDogru:  { x:470, y:769, en:174, boy:68 },
-      bitSure:   { x:644, y:769, en:167, boy:68 }
+      bitPuan:   { x:130, y:769, en:164, boy:68 },
+      bitHatali: { x:301, y:769, en:164, boy:68 },
+      bitDogru:  { x:475, y:769, en:164, boy:68 },
+      bitSure:   { x:648, y:769, en:164, boy:68 }
     },
     tablo:{ x:199, y:930, en:539, boy:417 }
   },
   sureDoldu:{
     gorsel:'assets/end_page_fail.png',
+    /* İkon merkezleri: 209.5, 381.5, 556, 728.5 */
     alanlar:{
-      bitPuan:   { x:124, y:832, en:171, boy:71 },
-      bitHatali: { x:295, y:832, en:173, boy:71 },
-      bitDogru:  { x:468, y:832, en:175, boy:71 },
-      bitSure:   { x:643, y:832, en:167, boy:71 }
+      bitPuan:   { x:128, y:832, en:164, boy:71 },
+      bitHatali: { x:300, y:832, en:164, boy:71 },
+      bitDogru:  { x:474, y:832, en:164, boy:71 },
+      bitSure:   { x:647, y:832, en:164, boy:71 }
     },
     tablo:{ x:199, y:1000, en:538, boy:427 }
   }
@@ -966,8 +971,8 @@ function skorTablosunuCiz(liste, vurgulaAd, vurgulaPuan){
     if(!vuruldu && k.ad === vurgulaAd && k.puan === vurgulaPuan){
       satir.classList.add('benim'); vuruldu = true;
     }
-    satir.innerHTML = '<span class="skor-sira">' + (i+1) + '</span>' +
-                      '<span class="skor-ad"></span>' +
+    satir.innerHTML = '<span class="skor-sira oyun-yazi">' + (i+1) + '</span>' +
+                      '<span class="skor-ad oyun-yazi"></span>' +
                       '<span class="skor-puan"></span>';
     satir.querySelector('.skor-ad').textContent = k.ad;
     sayiYaz(satir.querySelector('.skor-puan'), k.puan);
