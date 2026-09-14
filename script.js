@@ -36,7 +36,13 @@ const TEZGAH = {
   gorsel:'assets/tezgah.png',
   en:2172, boy:724,
   zeminY:470,                    // uçakların bastığı çizgi (px, üstten)
-  opakAlt:583                    // tezgahın gerçekten bittiği yer; altı şeffaf
+  opakAlt:583,                   // tezgahın gerçekten bittiği yer; altı şeffaf
+  /* Tezgah UÇAK SIRASI KADAR UZUN çiziliyor ve uçaklarla birlikte kayıyor:
+     sağda uçak varken sağ ucu ekranın dışında, son uçağa gelince görünüyor.
+     Görsel üç parçaya bölünüp ortası uzatılıyor. Uçlardaki yuvarlak köşeler
+     üst kenarda x=241'e ve x=1936'ya kadar sürüyor (ölçüldü); 260 px'lik uç
+     payı köşeyi tamamen içine alıyor, uzayan orta kısım düz yüzey. */
+  uc:260
 };
 /* Uçak yuvaları tezgahın ALTINDAN bu kadar yukarıda duruyor */
 const TEZGAH_ZEMIN = (TEZGAH.boy - TEZGAH.zeminY) / TEZGAH.boy * 100;
@@ -301,8 +307,11 @@ const MAKINE_KENDI_ARALIK = 2000;  // ms — kendiliğinden düşüm aralığı
 
 const HEDEF_SIPARIS = 6;       // bu kadar bagaj teslim edilince oyun biter
 /* Siparişlerin HEPSİ tezgahta duruyor; tezgah yana kaydırılıyor. Bu sayı
-   aynı anda kaç tanesinin ekrana sığdığı — kaydırma adımı da bu. */
-const GORUNEN_UCAK = 3;
+   aynı anda kaç kartın ekrana sığdığı. TAM SAYI DEĞİL: 3 olunca kartlar
+   ekranın kenarına tam oturuyor ve kaydırma olduğu hiç anlaşılmıyordu.
+   Artık sağdaki dördüncü uçağın bir kısmı kenardan kesik görünüyor;
+   kesik uçak "devamı var" diyor. */
+const GORUNEN_UCAK = 3.4;
 
 const PUAN_SIPARIS = 150;
 const PUAN_BIRLESTIR = 10;     // × ulaşılan basamak
@@ -489,6 +498,7 @@ function olculeriGuncelle(){
   const kok = document.documentElement;
   kok.style.setProperty('--hucre', h + 'px');
   kok.style.setProperty('--gorunen', GORUNEN_UCAK);
+  kok.style.setProperty('--sahne-en', G + 'px');
   kok.style.setProperty('--tahta-en',  TAHTA_EN.toFixed(4));
   kok.style.setProperty('--tahta-boy', TAHTA_BOY.toFixed(4));
 }
@@ -849,14 +859,53 @@ function siparisSehirleri(){
   return liste;
 }
 
+/* SİPARİŞ ŞERİDİNİ FAREYLE DE KAYDIRMA.
+   Şerit tarayıcının kendi yatay kaydırması: parmakla ve trackpad'de iki
+   parmakla kayıyor, ama fareyle tutup sürükleyince de tekerlekle de hiç
+   kaymıyordu. Kioska dokunuşu fare gibi ileten bir ekran takılırsa orada
+   da kaymazdı. Burada fare ve kalem için sürükleme elle yapılıyor;
+   parmak dokunuşuna karışılmıyor, onu tarayıcı zaten kaydırıyor.
+   Dikey tekerlek de yatay kaydırmaya çevriliyor. */
+function seritKaydirmayiKur(){
+  const alan = $('#ucaklar');
+  let surukle = null;
+
+  alan.addEventListener('pointerdown', ev => {
+    if(ev.pointerType === 'touch' || ev.button !== 0) return;
+    surukle = { x:ev.clientX, bas:alan.scrollLeft, id:ev.pointerId };
+    alan.setPointerCapture(ev.pointerId);
+    /* Sürüklerken yapışma kapalı: açıkken her kıpırtıda kartın ortasına
+       geri çekiyor, şerit parmağı izlemiyordu. */
+    alan.style.scrollSnapType = 'none';
+  });
+  alan.addEventListener('pointermove', ev => {
+    if(!surukle || ev.pointerId !== surukle.id) return;
+    alan.scrollLeft = surukle.bas - (ev.clientX - surukle.x);
+  });
+  const birak = ev => {
+    if(!surukle || ev.pointerId !== surukle.id) return;
+    surukle = null;
+    alan.style.scrollSnapType = '';
+  };
+  alan.addEventListener('pointerup', birak);
+  alan.addEventListener('pointercancel', birak);
+
+  alan.addEventListener('wheel', ev => {
+    if(Math.abs(ev.deltaY) <= Math.abs(ev.deltaX)) return;   // yatay kaydırma zaten çalışıyor
+    alan.scrollLeft += ev.deltaY;
+    ev.preventDefault();
+  }, { passive:false });
+}
+
 function ucaklariKur(){
   const alan = $('#ucaklar');
-  alan.innerHTML = '';
+  const serit = $('#ucakSerit');
+  serit.innerHTML = '';
   ucaklar = [];
   for(const sehir of siparisSehirleri()){
     const u = ucakKarti(sehir);
     ucaklar.push(u);
-    alan.appendChild(u.el);
+    serit.appendChild(u.el);
   }
   alan.scrollLeft = 0;
 }
@@ -1231,6 +1280,13 @@ function tahtaGorselleri(){
     /* Uçak yuvaları tezgahın yüzeyine otursun: yükseklik görselden ölçüldü */
     document.documentElement.style.setProperty('--tezgah-zemin', TEZGAH_ZEMIN.toFixed(2) + '%');
     document.documentElement.style.setProperty('--tezgah-alt', (-TEZGAH_ALT).toFixed(2) + '%');
+    /* Kayan tezgahın ölçüleri sahne genişliği cinsinden (bkz. style.css
+       #ucakSerit::before). Hepsi görselin kendi oranlarından. */
+    const kokS = document.documentElement.style;
+    kokS.setProperty('--tezgah-oran', (TEZGAH.boy / TEZGAH.en).toFixed(5));
+    kokS.setProperty('--tezgah-zemin-alt', ((TEZGAH.boy - TEZGAH.zeminY) / TEZGAH.en).toFixed(5));
+    kokS.setProperty('--tezgah-uc', (TEZGAH.uc / TEZGAH.en).toFixed(5));
+    kokS.setProperty('--tezgah-uc-px', TEZGAH.uc);
   }
   if(gorselVar(PLAKA.gorsel)){
     const kok = document.documentElement;
@@ -1256,6 +1312,7 @@ function kur(){
     document.addEventListener(olay, e => e.preventDefault());
 
   $('#izgara').addEventListener('pointerdown', tasimayaBasla);
+  seritKaydirmayiKur();
   $('#basBtn').addEventListener('click', isimEkraniniAc);
   window.addEventListener('keydown', isimTusu);
   $('#bitBtn').addEventListener('click', anaSayfayaDon);
