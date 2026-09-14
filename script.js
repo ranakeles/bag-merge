@@ -704,15 +704,14 @@ function tasimaHareket(ev){
     const varOlan = izgara[s][k];
     const birlesir = varOlan && varOlan.sehir===tasima.sehir && varOlan.basamak===tasima.basamak
                      && tasima.basamak < SON_BASAMAK && !(s===tasima.s && k===tasima.k);
-    /* Dolu ama birleşmeyen hücre işaretlenmiyor: oraya bırakmak bir şey
+    /* Yalnızca birleşeceği hücre işaretleniyor: başka yere bırakmak bir şey
        yapmıyor, işaret varmış gibi göstermesin. */
     if(birlesir) hucre.classList.add('birlesir');
-    else if(!varOlan) hucre.classList.add('uzeri');
   }
 }
 
 function isaretleriTemizle(){
-  document.querySelectorAll('.hucre.uzeri, .hucre.birlesir').forEach(h=>h.classList.remove('uzeri','birlesir'));
+  document.querySelectorAll('.hucre.birlesir').forEach(h=>h.classList.remove('birlesir'));
   document.querySelectorAll('.ucak.hedef, .ucak.hedef-yanlis').forEach(u=>u.classList.remove('hedef','hedef-yanlis'));
 }
 
@@ -739,22 +738,14 @@ function tasimaBitti(ev){
   const s = +hucre.dataset.s, k = +hucre.dataset.k;
   if(s===t.s && k===t.k) return;
 
+  /* Parça yalnızca eşiyle birleşir ya da uçağa gider; başka hiçbir yere
+     bırakılmaz, yerine döner. Eskiden boş hücreye taşınıyor, farklı parçayla
+     yer değiştiriyordu. Çocuklar birleştirmeye çalışırken bir hücre yana
+     bırakınca parçalar istemeden yer değiştiriyordu. */
   const hedef = izgara[s][k];
-  if(!hedef){ tasi(t.s,t.k,s,k); return; }
-
-  /* Farklı bir parçanın üstüne bırakılınca hiçbir şey olmuyor, parça yerine
-     döner. Eskiden ikisi yer değiştiriyordu; bir çocuk birleştirmeye
-     çalışırken yanlış hücreye bırakınca parçaları karıştırıyordu. */
-  if(hedef.sehir===t.sehir && hedef.basamak===t.basamak && t.basamak < SON_BASAMAK){
+  if(hedef && hedef.sehir===t.sehir && hedef.basamak===t.basamak && t.basamak < SON_BASAMAK){
     birlestir(t.s,t.k,s,k);
   }
-}
-
-function tasi(s1,k1,s2,k2){
-  const p = izgara[s1][k1];
-  izgara[s1][k1] = null;
-  izgara[s2][k2] = p;
-  hucreEl[s2][k2].appendChild(p.el);
 }
 
 function birlestir(s1,k1,s2,k2){
