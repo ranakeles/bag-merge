@@ -294,7 +294,7 @@ const MAKINE_YERI = { s:4, k:3 };
 
    Tıkanmayı süre değil tahtanın kendisi sınırlıyor: yer kalmayınca elle
    basışta uyarı çıkıyor, kendiliğinden düşüm ise sessizce bekliyor.
-   Bir turda kendiliğinden ~40 hediyelik düşüyor; bir bagaj 8 tane istiyor. */
+   Bir turda kendiliğinden ~40 hediyelik düşüyor; bir bagaj 4 tane istiyor. */
 const MAKINE_ADET = 3;         // dokununca düşen hediyelik
 const MAKINE_KENDI_ADET = 1;   // kendiliğinden düşen hediyelik
 const MAKINE_KENDI_ARALIK = 2000;  // ms — kendiliğinden düşüm aralığı
@@ -317,9 +317,11 @@ const PUAN_KALAN_SANIYE = 5;   // bitişte artan her saniye bu kadar puan
 const PUAN_HATALI = 50;
 const AZ_KALDI = 15;           // bu saniyenin altında sayaç uyarıya geçer
 
-/* Her şehrin KENDİ zinciri var: makineden çıkan 1. basamak, iki kere
-   birleşe birleşe o şehrin simgesine, en sonunda da o şehrin bagajına
-   dönüşüyor.
+/* Her şehrin KENDİ zinciri var, ÜÇ basamak: makineden çıkan hediyelik, onun
+   ikisi birleşince şehrin simgesi, simgenin ikisi birleşince şehrin bagajı.
+   (Önce dört basamaktı — bere, gözlük, şapka, şemsiye en baştaydı. Kioskta
+   çok uzun bulundu, ilk basamak kaldırıldı. Yeni şehirler de üç basamaklı
+   eklenmeli: SON_BASAMAK Paris'in zincirinden okunuyor.)
 
    DOSYA ADI TABLODA YAZIYOR. Önce adı koddan üretiyorduk (item_paris_1.png)
    ama görseller başka türlü adlandırılmış geldi ve oyunda hiç görünmediler.
@@ -337,7 +339,6 @@ const SEHIRLER = {
     ucuslar:['1823','1827','1831'],
     havayollari:['thy','ajet'],
     zincir:[
-      { ad:'Bere',         dosya:'item_paris1_bere.png' },
       { ad:'Kruvasan',     dosya:'item_paris2_croissant.png' },
       { ad:'Eyfel Kulesi', dosya:'item_paris3_eiffel.png' },
       { ad:'Paris Bagajı', dosya:'item_paris4_luggage.png' }
@@ -348,7 +349,6 @@ const SEHIRLER = {
     ucuslar:['0003','0011','0455'],
     havayollari:['thy'],
     zincir:[
-      { ad:'Güneş Gözlüğü',      dosya:'item_newyork1.png' },
       { ad:'Hot Dog',            dosya:'item_newyork2.png' },
       { ad:'Özgürlük Heykeli',   dosya:'item_newyork3.png' },
       { ad:'New York Bagajı',    dosya:'item_newyork4.png' }
@@ -359,7 +359,6 @@ const SEHIRLER = {
     ucuslar:['1861','1863','1867'],
     havayollari:['thy','ajet','sunexpress'],
     zincir:[
-      { ad:'Şapka',        dosya:'item_rome1.png' },
       { ad:'Pizza Dilimi', dosya:'item_rome2.png' },
       { ad:'Kolezyum',     dosya:'item_rome3.png' },
       { ad:'Roma Bagajı',  dosya:'item_rome4.png' }
@@ -370,7 +369,6 @@ const SEHIRLER = {
     ucuslar:['1979','1981','1987'],
     havayollari:['thy','ajet'],
     zincir:[
-      { ad:'Şemsiye',           dosya:'item_london1.png' },
       { ad:'Çift Katlı Otobüs', dosya:'item_london2.png' },
       { ad:'Big Ben',           dosya:'item_london3.png' },
       { ad:'Londra Bagajı',     dosya:'item_london4.png' }
@@ -383,7 +381,7 @@ const SEHIR_LISTE = Object.keys(SEHIRLER);
 const SON_BASAMAK = SEHIRLER.paris.zincir.length;
 
 /* Bir bagaj için kaç tane 1. basamak hediyelik gerekiyor: her basamak iki
-   parçadan oluştuğu için 2^(basamak-1). Dört basamaklı zincirde 8.
+   parçadan oluştuğu için 2^(basamak-1). Üç basamaklı zincirde 4.
    Basamak sayısı değişirse bu da kendiliğinden düzelir.                   */
 const TABAN_ADET = Math.pow(2, SON_BASAMAK - 1);
 
@@ -580,8 +578,8 @@ function makineyiKur(h){
 }
 
 /* MAKİNENİN STOĞU TURUN BAŞINDA SAYILIYOR.
-   Her sipariş için tam TABAN_ADET (8) hediyelik konuyor: bir Paris uçuşu
-   varsa 8 bere, iki Londra uçuşu varsa 16 şemsiye. Yani makineden çıkan
+   Her sipariş için tam TABAN_ADET (4) hediyelik konuyor: bir Paris uçuşu
+   varsa 4 kruvasan, iki Londra uçuşu varsa 8 otobüs. Yani makineden çıkan
    her şeyin karşılığı var — ne fazlası çıkıyor ne eksiği.
 
    Önce rastgele seçiliyordu; o zaman bir şehrin uçağı kalktıktan sonra o
@@ -589,7 +587,7 @@ function makineyiKur(h){
    çocuğun o zincire harcadığı emek boşa gidiyordu. Sayarak dağıtınca bu
    sorun kaynağında bitiyor.
 
-   Deste karılıyor: sırayla dağıtılsa önce sekiz bere, sonra sekiz şemsiye
+   Deste karılıyor: sırayla dağıtılsa önce dört kruvasan, sonra dört otobüs
    çıkar ve tahtada tek seferde tek şehir olurdu.                          */
 function stokKur(){
   const liste = [];
