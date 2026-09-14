@@ -704,7 +704,10 @@ function tasimaHareket(ev){
     const varOlan = izgara[s][k];
     const birlesir = varOlan && varOlan.sehir===tasima.sehir && varOlan.basamak===tasima.basamak
                      && tasima.basamak < SON_BASAMAK && !(s===tasima.s && k===tasima.k);
-    hucre.classList.add(birlesir ? 'birlesir' : 'uzeri');
+    /* Dolu ama birleşmeyen hücre işaretlenmiyor: oraya bırakmak bir şey
+       yapmıyor, işaret varmış gibi göstermesin. */
+    if(birlesir) hucre.classList.add('birlesir');
+    else if(!varOlan) hucre.classList.add('uzeri');
   }
 }
 
@@ -739,10 +742,11 @@ function tasimaBitti(ev){
   const hedef = izgara[s][k];
   if(!hedef){ tasi(t.s,t.k,s,k); return; }
 
+  /* Farklı bir parçanın üstüne bırakılınca hiçbir şey olmuyor, parça yerine
+     döner. Eskiden ikisi yer değiştiriyordu; bir çocuk birleştirmeye
+     çalışırken yanlış hücreye bırakınca parçaları karıştırıyordu. */
   if(hedef.sehir===t.sehir && hedef.basamak===t.basamak && t.basamak < SON_BASAMAK){
     birlestir(t.s,t.k,s,k);
-  }else{
-    yerDegistir(t.s,t.k,s,k);   // farklı parça: takas — hiçbir hamle boşa gitmesin
   }
 }
 
@@ -751,13 +755,6 @@ function tasi(s1,k1,s2,k2){
   izgara[s1][k1] = null;
   izgara[s2][k2] = p;
   hucreEl[s2][k2].appendChild(p.el);
-}
-
-function yerDegistir(s1,k1,s2,k2){
-  const a = izgara[s1][k1], b = izgara[s2][k2];
-  izgara[s1][k1] = b; izgara[s2][k2] = a;
-  hucreEl[s1][k1].appendChild(b.el);
-  hucreEl[s2][k2].appendChild(a.el);
 }
 
 function birlestir(s1,k1,s2,k2){
