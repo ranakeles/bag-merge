@@ -311,6 +311,10 @@ const PUAN_BIRLESTIR = 10;     // × ulaşılan basamak
    için turun kesin bir sonu olmalı.                                      */
 const TUR_SURESI = 120;        // saniye (2:00)
 const PUAN_KALAN_SANIYE = 5;   // bitişte artan her saniye bu kadar puan
+/* Hazır bir bagajı yanlış uçağa götürmek puandan düşüyor. Teslimin üçte biri:
+   dikkatsizliği hissettirecek kadar, tek bir hatayla turu mahvetmeyecek kadar.
+   Puan sıfırın altına inmiyor. */
+const PUAN_HATALI = 50;
 const AZ_KALDI = 15;           // bu saniyenin altında sayaç uyarıya geçer
 
 /* Her şehrin KENDİ zinciri var: makineden çıkan 1. basamak, iki kere
@@ -881,6 +885,7 @@ function teslimEt(t, ucakDom){
        çocuğun oyunu keşfetmesi. */
     hatali++;
     uyari(ucakDom, 'Bu uçak ' + SEHIRLER[u.sehir].ad + '\'e gidiyor');
+    puanDus(PUAN_HATALI, $('#hudPuan'));
     return;
   }
 
@@ -1024,6 +1029,14 @@ function puanEkle(p, yakinEl){
   puan += p;
   hudGuncelle();
   baloncuk(yakinEl, '+' + p, '');
+}
+/* Düşülen puan uçağın yanında değil PUAN PANELİNİN yanında çıkıyor: uçağın
+   üstünde zaten uyarı var, ikisi üst üste binerdi. */
+function puanDus(p, yakinEl){
+  const dusen = Math.min(p, puan);
+  puan -= dusen;
+  hudGuncelle();
+  if(dusen > 0) baloncuk(yakinEl, '-' + dusen, 'ceza');
 }
 
 function uyari(yakinEl, yazi){ baloncuk(yakinEl, yazi, 'uyari'); }

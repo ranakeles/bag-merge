@@ -441,6 +441,14 @@ body:not(.sanat-plaka) .ucak-plaka{
 .baloncuk.uyari{ font-size:calc(var(--hucre)*0.20); color:#fff;
   background:#D64545; padding:.35em .7em; border-radius:999px;
   -webkit-text-stroke:0; box-shadow:0 4px 10px rgba(30,45,80,.30); }
+/* Düşülen puan: kırmızı ve AŞAĞI doğru. Puan paneli ekranın en üstünde,
+   yukarı çıksaydı ekranın dışına taşardı. */
+.baloncuk.ceza{ color:#FF5A5A; animation-name:baloncukIn; }
+@keyframes baloncukIn{
+  0%{ opacity:0; transform:translate(-50%,-50%) scale(.6); }
+  25%{ opacity:1; transform:translate(-50%,40%) scale(1.1); }
+  100%{ opacity:0; transform:translate(-50%,150%) scale(1); }
+}
 @keyframes baloncukCik{
   0%{ opacity:0; transform:translate(-50%,-50%) scale(.6); }
   25%{ opacity:1; transform:translate(-50%,-90%) scale(1.1); }
