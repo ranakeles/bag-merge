@@ -1251,6 +1251,12 @@ function kur(){
 
   katmanGorseli('assets/home_page.png', '#basImg', '#basBg', '#basGecici');
 
+  /* Kioskta dokununca seçim, görsel sürükleme ve uzun basma menüsü olmasın.
+     CSS'teki engellerin olay düzeyindeki karşılığı: bir tarayıcı CSS'i
+     tanımasa bile burada duruyor. */
+  for(const olay of ['selectstart', 'dragstart', 'contextmenu'])
+    document.addEventListener(olay, e => e.preventDefault());
+
   $('#izgara').addEventListener('pointerdown', tasimayaBasla);
   $('#basBtn').addEventListener('click', isimEkraniniAc);
   window.addEventListener('keydown', isimTusu);
