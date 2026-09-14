@@ -858,6 +858,44 @@ function siparisSehirleri(){
   return liste;
 }
 
+/* SİPARİŞ ŞERİDİNİ FAREYLE DE KAYDIRMA.
+   Şerit tarayıcının kendi yatay kaydırması: parmakla ve trackpad'de iki
+   parmakla kayıyor, ama fareyle tutup sürükleyince de tekerlekle de hiç
+   kaymıyordu. Kioska dokunuşu fare gibi ileten bir ekran takılırsa orada
+   da kaymazdı. Burada fare ve kalem için sürükleme elle yapılıyor;
+   parmak dokunuşuna karışılmıyor, onu tarayıcı zaten kaydırıyor.
+   Dikey tekerlek de yatay kaydırmaya çevriliyor. */
+function seritKaydirmayiKur(){
+  const alan = $('#ucaklar');
+  let surukle = null;
+
+  alan.addEventListener('pointerdown', ev => {
+    if(ev.pointerType === 'touch' || ev.button !== 0) return;
+    surukle = { x:ev.clientX, bas:alan.scrollLeft, id:ev.pointerId };
+    alan.setPointerCapture(ev.pointerId);
+    /* Sürüklerken yapışma kapalı: açıkken her kıpırtıda kartın ortasına
+       geri çekiyor, şerit parmağı izlemiyordu. */
+    alan.style.scrollSnapType = 'none';
+  });
+  alan.addEventListener('pointermove', ev => {
+    if(!surukle || ev.pointerId !== surukle.id) return;
+    alan.scrollLeft = surukle.bas - (ev.clientX - surukle.x);
+  });
+  const birak = ev => {
+    if(!surukle || ev.pointerId !== surukle.id) return;
+    surukle = null;
+    alan.style.scrollSnapType = '';
+  };
+  alan.addEventListener('pointerup', birak);
+  alan.addEventListener('pointercancel', birak);
+
+  alan.addEventListener('wheel', ev => {
+    if(Math.abs(ev.deltaY) <= Math.abs(ev.deltaX)) return;   // yatay kaydırma zaten çalışıyor
+    alan.scrollLeft += ev.deltaY;
+    ev.preventDefault();
+  }, { passive:false });
+}
+
 function ucaklariKur(){
   const alan = $('#ucaklar');
   alan.innerHTML = '';
@@ -1266,6 +1304,7 @@ function kur(){
     document.addEventListener(olay, e => e.preventDefault());
 
   $('#izgara').addEventListener('pointerdown', tasimayaBasla);
+  seritKaydirmayiKur();
   $('#basBtn').addEventListener('click', isimEkraniniAc);
   window.addEventListener('keydown', isimTusu);
   $('#bitBtn').addEventListener('click', anaSayfayaDon);
