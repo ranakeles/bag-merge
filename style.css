@@ -209,9 +209,9 @@ img{ -webkit-user-drag:none; user-drag:none; }
   margin-bottom:var(--tezgah-alt, 0);
 }
 .tezgah-gorsel{ display:block; width:100%; height:auto; pointer-events:none; }
-/* Tezgah sahneden geniş, sağ ucu sahnenin dışında (sahne taşanı kırpıyor).
-   Oranı script.js'teki TEZGAH.tasma'dan geliyor. */
-.sanat-tezgah .tezgah-gorsel{ width:calc(var(--tezgah-tasma, 1) * 100%); max-width:none; }
+/* Görsel artık yalnızca YER tutuyor (tezgahın boyu ve tahtanın konumu
+   ondan geliyor); görünen tezgah uçaklarla kayan şeridin içinde. */
+.sanat-tezgah .tezgah-gorsel{ visibility:hidden; }
 .tezgah-gorsel:not([src]){ display:none; }
 
 /* SİPARİŞ ŞERİDİ
@@ -233,6 +233,33 @@ img{ -webkit-user-drag:none; user-drag:none; }
   scrollbar-width:none;
 }
 #ucaklar::-webkit-scrollbar{ display:none; }
+
+/* KARTLARI SARAN ŞERİT ve KAYAN TEZGAH.
+   Şerit kartlar kadar uzun (en az sahne kadar), tezgah da onun arkasına
+   çiziliyor; yani tezgah uçak sırasıyla aynı uzunlukta ve onunla kayıyor.
+   Sağda uçak kaldıkça tezgahın sağ ucu ekranın dışında; son uçağa
+   gelince ucu görünüyor. Üç uçak ya da daha azı kaldığında tezgah
+   ekrana tam sığıyor, iki ucu da görünüyor.
+
+   Görsel border-image ile üçe bölünüyor: iki yuvarlak uç olduğu gibi,
+   aradaki düz yüzey uzatılıyor. Dikeyde eski sabit görselle aynı yerde:
+   şeridin alt kenarı uçakların bastığı çizgi, görsel o çizginin altına
+   kendi zemin payı kadar iniyor. Ölçüler script.js TEZGAH tablosundan. */
+#ucakSerit{
+  display:flex; align-items:flex-end; flex:none;
+  min-width:100%; position:relative; isolation:isolate;
+}
+.sanat-tezgah #ucakSerit::before{
+  content:""; position:absolute; left:0; right:0; z-index:-1;
+  bottom:calc(var(--sahne-en) * var(--tezgah-zemin-alt) * -1);
+  height:calc(var(--sahne-en) * var(--tezgah-oran));
+  border-style:solid; border-width:0;
+  border-image-source:url(assets/tezgah.png);
+  border-image-slice:0 var(--tezgah-uc-px) fill;
+  border-image-width:0 calc(var(--sahne-en) * var(--tezgah-uc));
+  border-image-repeat:stretch;
+  pointer-events:none;
+}
 /* Tezgah görseli yokken uçaklar normal bir sıra olarak dursun */
 body:not(.sanat-tezgah) #ucaklar{
   position:static; padding:0 calc(var(--hucre)*0.26) calc(var(--hucre)*0.22);
@@ -241,7 +268,9 @@ body:not(.sanat-tezgah) #ucaklar{
    Genişlik SABİT (esnek değil): şeritte kaç sipariş olursa olsun kartlar
    aynı boyda kalsın, on sipariş varken hepsi ezilmesin. */
 .ucak{
-  flex:0 0 calc(100% / var(--gorunen, 3)); min-width:0; position:relative;
+  /* Genişlik sahneye göre: yüzde verilseydi kartları saran şeridin
+     genişliğine göre hesaplanırdı, şerit de kartlardan — döngü. */
+  flex:0 0 calc(var(--sahne-en, 100vw) / var(--gorunen, 3)); min-width:0; position:relative;
   scroll-snap-align:center;
   display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
   padding-bottom:calc(var(--hucre)*0.06);

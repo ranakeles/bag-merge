@@ -37,19 +37,19 @@ const TEZGAH = {
   en:2172, boy:724,
   zeminY:470,                    // uçakların bastığı çizgi (px, üstten)
   opakAlt:583,                   // tezgahın gerçekten bittiği yer; altı şeffaf
-  /* Görsel sahneden bu kadar GENİŞ çiziliyor, sola dayalı; sağ ucu ekranın
-     dışında kalıyor ve tezgah devam ediyormuş gibi görünüyor — şeridin
-     kaydırıldığını anlatan işaretlerden biri. Sağdaki yuvarlak köşe
-     x=1936'da başlıyor (üst kenardan ölçüldü); 1.16'da ekran x≈1872'de
-     kesiliyor, yani köşe tamamen dışarıda ve kesilen yer düz yüzey. */
-  tasma:1.16
+  /* Tezgah UÇAK SIRASI KADAR UZUN çiziliyor ve uçaklarla birlikte kayıyor:
+     sağda uçak varken sağ ucu ekranın dışında, son uçağa gelince görünüyor.
+     Görsel üç parçaya bölünüp ortası uzatılıyor. Uçlardaki yuvarlak köşeler
+     üst kenarda x=241'e ve x=1936'ya kadar sürüyor (ölçüldü); 260 px'lik uç
+     payı köşeyi tamamen içine alıyor, uzayan orta kısım düz yüzey. */
+  uc:260
 };
 /* Uçak yuvaları tezgahın ALTINDAN bu kadar yukarıda duruyor */
 const TEZGAH_ZEMIN = (TEZGAH.boy - TEZGAH.zeminY) / TEZGAH.boy * 100;
 /* Görselin altındaki şeffaf şerit boşuna yer kaplıyordu (görsel boyunun
    %19,5'i). Tahtayı o kadar yukarı çekiyoruz. Yüzde marjlar KAPSAYICININ
    GENİŞLİĞİNE göre hesaplandığı için değer görsel oranıyla çarpılıyor. */
-const TEZGAH_ALT = (1 - TEZGAH.opakAlt / TEZGAH.boy) * (TEZGAH.boy / TEZGAH.en) * 100 * TEZGAH.tasma;
+const TEZGAH_ALT = (1 - TEZGAH.opakAlt / TEZGAH.boy) * (TEZGAH.boy / TEZGAH.en) * 100;
 
 /* ---- PLAKA (biniş kartı) ----
    Yazılar plakanın krem alanına yazılıyor; alanın sınırları da görselden
@@ -498,6 +498,7 @@ function olculeriGuncelle(){
   const kok = document.documentElement;
   kok.style.setProperty('--hucre', h + 'px');
   kok.style.setProperty('--gorunen', GORUNEN_UCAK);
+  kok.style.setProperty('--sahne-en', G + 'px');
   kok.style.setProperty('--tahta-en',  TAHTA_EN.toFixed(4));
   kok.style.setProperty('--tahta-boy', TAHTA_BOY.toFixed(4));
 }
@@ -898,12 +899,13 @@ function seritKaydirmayiKur(){
 
 function ucaklariKur(){
   const alan = $('#ucaklar');
-  alan.innerHTML = '';
+  const serit = $('#ucakSerit');
+  serit.innerHTML = '';
   ucaklar = [];
   for(const sehir of siparisSehirleri()){
     const u = ucakKarti(sehir);
     ucaklar.push(u);
-    alan.appendChild(u.el);
+    serit.appendChild(u.el);
   }
   alan.scrollLeft = 0;
 }
@@ -1278,7 +1280,13 @@ function tahtaGorselleri(){
     /* Uçak yuvaları tezgahın yüzeyine otursun: yükseklik görselden ölçüldü */
     document.documentElement.style.setProperty('--tezgah-zemin', TEZGAH_ZEMIN.toFixed(2) + '%');
     document.documentElement.style.setProperty('--tezgah-alt', (-TEZGAH_ALT).toFixed(2) + '%');
-    document.documentElement.style.setProperty('--tezgah-tasma', TEZGAH.tasma);
+    /* Kayan tezgahın ölçüleri sahne genişliği cinsinden (bkz. style.css
+       #ucakSerit::before). Hepsi görselin kendi oranlarından. */
+    const kokS = document.documentElement.style;
+    kokS.setProperty('--tezgah-oran', (TEZGAH.boy / TEZGAH.en).toFixed(5));
+    kokS.setProperty('--tezgah-zemin-alt', ((TEZGAH.boy - TEZGAH.zeminY) / TEZGAH.en).toFixed(5));
+    kokS.setProperty('--tezgah-uc', (TEZGAH.uc / TEZGAH.en).toFixed(5));
+    kokS.setProperty('--tezgah-uc-px', TEZGAH.uc);
   }
   if(gorselVar(PLAKA.gorsel)){
     const kok = document.documentElement;
