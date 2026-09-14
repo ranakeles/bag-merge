@@ -331,7 +331,6 @@ body:not(.sanat-plaka) .ucak-plaka{
   transition:background-color .12s, box-shadow .12s;
 }
 /* Sürükleme sırasında altındaki hücre: birleşme olacaksa yeşil. */
-.hucre.uzeri{ background:#F3F6FB; }
 .hucre.birlesir{ background:#D8F7E4; box-shadow:0 0 0 3px #38C172 inset; }
 
 /* Tahta görseli geldiğinde koddan gelen tepsi ve hücre zeminleri çekilir:
@@ -339,7 +338,6 @@ body:not(.sanat-plaka) .ucak-plaka{
    hücrenin hedef olduğunu görmek şart. */
 .sanat-tahta #izgara{ background-color:transparent; box-shadow:none; border-radius:0; }
 .sanat-tahta .hucre{ background-color:transparent; box-shadow:none; }
-.sanat-tahta .hucre.uzeri{ box-shadow:0 0 0 3px rgba(255,255,255,.95) inset; }
 .sanat-tahta .hucre.birlesir{ background-color:rgba(56,193,114,.28);
   box-shadow:0 0 0 3px #38C172 inset; }
 

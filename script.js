@@ -708,12 +708,14 @@ function tasimaHareket(ev){
     const varOlan = izgara[s][k];
     const birlesir = varOlan && varOlan.sehir===tasima.sehir && varOlan.basamak===tasima.basamak
                      && tasima.basamak < SON_BASAMAK && !(s===tasima.s && k===tasima.k);
-    hucre.classList.add(birlesir ? 'birlesir' : 'uzeri');
+    /* Yalnızca birleşeceği hücre işaretleniyor: başka yere bırakmak bir şey
+       yapmıyor, işaret varmış gibi göstermesin. */
+    if(birlesir) hucre.classList.add('birlesir');
   }
 }
 
 function isaretleriTemizle(){
-  document.querySelectorAll('.hucre.uzeri, .hucre.birlesir').forEach(h=>h.classList.remove('uzeri','birlesir'));
+  document.querySelectorAll('.hucre.birlesir').forEach(h=>h.classList.remove('birlesir'));
   document.querySelectorAll('.ucak.hedef, .ucak.hedef-yanlis').forEach(u=>u.classList.remove('hedef','hedef-yanlis'));
 }
 
@@ -740,28 +742,14 @@ function tasimaBitti(ev){
   const s = +hucre.dataset.s, k = +hucre.dataset.k;
   if(s===t.s && k===t.k) return;
 
+  /* Parça yalnızca eşiyle birleşir ya da uçağa gider; başka hiçbir yere
+     bırakılmaz, yerine döner. Eskiden boş hücreye taşınıyor, farklı parçayla
+     yer değiştiriyordu. Çocuklar birleştirmeye çalışırken bir hücre yana
+     bırakınca parçalar istemeden yer değiştiriyordu. */
   const hedef = izgara[s][k];
-  if(!hedef){ tasi(t.s,t.k,s,k); return; }
-
-  if(hedef.sehir===t.sehir && hedef.basamak===t.basamak && t.basamak < SON_BASAMAK){
+  if(hedef && hedef.sehir===t.sehir && hedef.basamak===t.basamak && t.basamak < SON_BASAMAK){
     birlestir(t.s,t.k,s,k);
-  }else{
-    yerDegistir(t.s,t.k,s,k);   // farklı parça: takas — hiçbir hamle boşa gitmesin
   }
-}
-
-function tasi(s1,k1,s2,k2){
-  const p = izgara[s1][k1];
-  izgara[s1][k1] = null;
-  izgara[s2][k2] = p;
-  hucreEl[s2][k2].appendChild(p.el);
-}
-
-function yerDegistir(s1,k1,s2,k2){
-  const a = izgara[s1][k1], b = izgara[s2][k2];
-  izgara[s1][k1] = b; izgara[s2][k2] = a;
-  hucreEl[s1][k1].appendChild(b.el);
-  hucreEl[s2][k2].appendChild(a.el);
 }
 
 function birlestir(s1,k1,s2,k2){
