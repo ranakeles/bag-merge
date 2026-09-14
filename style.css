@@ -209,6 +209,9 @@ img{ -webkit-user-drag:none; user-drag:none; }
   margin-bottom:var(--tezgah-alt, 0);
 }
 .tezgah-gorsel{ display:block; width:100%; height:auto; pointer-events:none; }
+/* Tezgah sahneden geniş, sağ ucu sahnenin dışında (sahne taşanı kırpıyor).
+   Oranı script.js'teki TEZGAH.tasma'dan geliyor. */
+.sanat-tezgah .tezgah-gorsel{ width:calc(var(--tezgah-tasma, 1) * 100%); max-width:none; }
 .tezgah-gorsel:not([src]){ display:none; }
 
 /* SİPARİŞ ŞERİDİ

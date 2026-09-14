@@ -36,14 +36,20 @@ const TEZGAH = {
   gorsel:'assets/tezgah.png',
   en:2172, boy:724,
   zeminY:470,                    // uçakların bastığı çizgi (px, üstten)
-  opakAlt:583                    // tezgahın gerçekten bittiği yer; altı şeffaf
+  opakAlt:583,                   // tezgahın gerçekten bittiği yer; altı şeffaf
+  /* Görsel sahneden bu kadar GENİŞ çiziliyor, sola dayalı; sağ ucu ekranın
+     dışında kalıyor ve tezgah devam ediyormuş gibi görünüyor — şeridin
+     kaydırıldığını anlatan işaretlerden biri. Sağdaki yuvarlak köşe
+     x=1936'da başlıyor (üst kenardan ölçüldü); 1.16'da ekran x≈1872'de
+     kesiliyor, yani köşe tamamen dışarıda ve kesilen yer düz yüzey. */
+  tasma:1.16
 };
 /* Uçak yuvaları tezgahın ALTINDAN bu kadar yukarıda duruyor */
 const TEZGAH_ZEMIN = (TEZGAH.boy - TEZGAH.zeminY) / TEZGAH.boy * 100;
 /* Görselin altındaki şeffaf şerit boşuna yer kaplıyordu (görsel boyunun
    %19,5'i). Tahtayı o kadar yukarı çekiyoruz. Yüzde marjlar KAPSAYICININ
    GENİŞLİĞİNE göre hesaplandığı için değer görsel oranıyla çarpılıyor. */
-const TEZGAH_ALT = (1 - TEZGAH.opakAlt / TEZGAH.boy) * (TEZGAH.boy / TEZGAH.en) * 100;
+const TEZGAH_ALT = (1 - TEZGAH.opakAlt / TEZGAH.boy) * (TEZGAH.boy / TEZGAH.en) * 100 * TEZGAH.tasma;
 
 /* ---- PLAKA (biniş kartı) ----
    Yazılar plakanın krem alanına yazılıyor; alanın sınırları da görselden
@@ -301,8 +307,11 @@ const MAKINE_KENDI_ARALIK = 2000;  // ms — kendiliğinden düşüm aralığı
 
 const HEDEF_SIPARIS = 6;       // bu kadar bagaj teslim edilince oyun biter
 /* Siparişlerin HEPSİ tezgahta duruyor; tezgah yana kaydırılıyor. Bu sayı
-   aynı anda kaç tanesinin ekrana sığdığı — kaydırma adımı da bu. */
-const GORUNEN_UCAK = 3;
+   aynı anda kaç kartın ekrana sığdığı. TAM SAYI DEĞİL: 3 olunca kartlar
+   ekranın kenarına tam oturuyor ve kaydırma olduğu hiç anlaşılmıyordu.
+   Artık sağdaki dördüncü uçağın bir kısmı kenardan kesik görünüyor;
+   kesik uçak "devamı var" diyor. */
+const GORUNEN_UCAK = 3.4;
 
 const PUAN_SIPARIS = 150;
 const PUAN_BIRLESTIR = 10;     // × ulaşılan basamak
@@ -1231,6 +1240,7 @@ function tahtaGorselleri(){
     /* Uçak yuvaları tezgahın yüzeyine otursun: yükseklik görselden ölçüldü */
     document.documentElement.style.setProperty('--tezgah-zemin', TEZGAH_ZEMIN.toFixed(2) + '%');
     document.documentElement.style.setProperty('--tezgah-alt', (-TEZGAH_ALT).toFixed(2) + '%');
+    document.documentElement.style.setProperty('--tezgah-tasma', TEZGAH.tasma);
   }
   if(gorselVar(PLAKA.gorsel)){
     const kok = document.documentElement;
