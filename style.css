@@ -339,6 +339,37 @@ body:not(.sanat-tezgah) #ucaklar{
   box-shadow:0 3px 0 rgba(30,45,80,.16), 0 7px 12px rgba(30,45,80,.24);
 }
 
+/* ---------- HAZIR İŞARETLERİ ----------
+   Uçağın yanında rozet, tahtadaki bavulun yanında tik. İkisi de sahibinin
+   köşesine taşarak oturuyor ve küçük bir sıçramayla beliriyor. */
+.hazir-isaret{
+  position:absolute; pointer-events:none; object-fit:contain;
+  animation:hazirBelir .34s cubic-bezier(.2,.9,.3,1.5);
+  filter:drop-shadow(0 calc(var(--hucre)*0.03) calc(var(--hucre)*0.04) rgba(25,35,65,.35));
+}
+@keyframes hazirBelir{ from{ transform:scale(.2); opacity:0; } to{ transform:scale(1); opacity:1; } }
+/* Uçak burnu solda; rozet burnun üstündeki boşlukta. */
+.hazir-rozet{
+  z-index:5; width:calc(var(--hucre)*0.74); height:calc(var(--hucre)*0.74);
+  left:1%; top:calc(var(--hucre)*-0.03);
+}
+/* Bavulun sağ üst köşesinde, hücreden hafifçe taşarak. Komşu hücrelerin
+   parçaları üstüne binmesin diye hazır parça öne alınıyor. */
+.parca.hazir, .parca.gorselli.hazir{ z-index:4; }
+/* Bavul görselinin SOL ALTINDA, hücre köşesine değil bavulun kendisine
+   yakın: köşede sahipsiz duruyordu. Bavul hücrenin ortasında dar, tik
+   onun sol alt kenarına biniyor. ".parca img" kuralı her görseli parça
+   boyuna yaydığı için seçici ondan güçlü. */
+.parca img.hazir-tik, .parca .hazir-tik{
+  z-index:3; width:44%; height:44%;
+  left:6%; bottom:2%;
+}
+.hazir-gecici{
+  display:grid; place-items:center; border-radius:50%;
+  background:#38C172; color:#fff; font-weight:800; font-size:calc(var(--hucre)*0.3);
+  box-shadow:0 0 0 3px #fff inset;
+}
+
 /* ---------- PLAKA (biniş kartı) ----------
    Boyu görselin kendisinden geliyor; yazı alanı da görselden ÖLÇÜLMÜŞ
    yüzdelerle onun üstüne biniyor (script.js PLAKA tablosu). Uçağın alt

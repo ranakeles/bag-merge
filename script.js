@@ -71,6 +71,15 @@ const MOLA = {
   kart:'assets/pause_card.png'
 };
 
+/* ---- HAZIR İŞARETLERİ ----
+   Tahtada bir bavul oluşunca bavulun yanında tik, onu bekleyen uçağın
+   yanında rozet çıkıyor ve uçak tezgahta başa geçiyor (bkz. hazirlariGuncelle).
+   İki görsel ayrı: bavul tahtada küçük, rozet onu örterdi. */
+const HAZIR = {
+  rozet:'assets/check_badge.png',     // uçağın yanında
+  tik:'assets/check_sign.png'         // tahtadaki bavulun yanında
+};
+
 /* ---- RAKAMLAR ----
    Sayılar yazı tipiyle değil GÖRSELDEN diziliyor: 0-9 tek bir şeritte
    çizili, kod her rakamı oradan kesip yan yana koyuyor. Web yazı tipi
@@ -423,7 +432,7 @@ function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/home_page.png',
                  TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK,
                  BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel, RAKAM.gorsel, SIMGE.gorsel,
-                 MOLA.buton, MOLA.kart];
+                 MOLA.buton, MOLA.kart, HAZIR.rozet, HAZIR.tik];
   for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
@@ -791,6 +800,7 @@ function birlestir(s1,k1,s2,k2){
   const p = parcaKoy(s2,k2,sehir,yeni);
   p.el.classList.add('birlesti');
   puanEkle(PUAN_BIRLESTIR * yeni, hucreEl[s2][k2]);
+  hazirlariGuncelle();
 }
 
 /* ---------- 8) UÇAKLAR (SİPARİŞLER) ---------- */
@@ -866,7 +876,7 @@ function ucakKarti(sehir){
   plaka.appendChild(alan);
   el.appendChild(plaka);
 
-  return { sehir, havayolu:hvId, kod:kod.textContent, el };
+  return { sehir, havayolu:hvId, kod:kod.textContent, el, sira:0, hazirSira:0 };
 }
 
 /* Turun bütün siparişleri baştan belirleniyor. Şehirler karılmış destelerden
@@ -921,13 +931,100 @@ function seritKaydirmayiKur(){
   }, { passive:false });
 }
 
+/* ---------- HAZIR BAVULLAR ----------
+   Her birleştirme ve teslimden sonra yeniden sayılıyor, çünkü "hazır"
+   olmak tahtadaki bavullarla bekleyen uçakların eşleşmesi:
+   - Bir şehrin tahtada kaç bavulu varsa o şehrin o kadar uçağı hazır.
+     İki Roma uçuşu ve tek Roma bavulu varsa yalnızca biri hazır.
+   - Hazır uçaklar tezgahta başa geçiyor, hazır oldukları sırayla; geri
+     kalanlar turun başındaki sıralarını koruyor.
+   - Yeni bir uçak hazır olunca şerit başa kayıyor: çocuk aramasın.
+   Önce hazır olan uçak hazır kalıyor; aynı şehirden sonradan bir uçak daha
+   gelse bile rozet birinden ötekine atlamıyor. */
+let hazirSayac = 0;
+
+function hazirlariGuncelle(){
+  const bavullar = {};
+  for(let s=0;s<SATIR;s++) for(let k=0;k<SUTUN;k++){
+    const p = izgara[s][k];
+    if(p && p.sehir && p.basamak === SON_BASAMAK) (bavullar[p.sehir] = bavullar[p.sehir] || []).push(p);
+  }
+
+  let yeniHazir = false;
+  const sehirler = new Set(ucaklar.map(u => u.sehir).concat(Object.keys(bavullar)));
+  for(const sehir of sehirler){
+    const bekleyen = ucaklar.filter(u => u.sehir === sehir)
+      .sort((a, b) => (a.hazirSira ? a.hazirSira : 1e9 + a.sira) - (b.hazirSira ? b.hazirSira : 1e9 + b.sira));
+    const bavul = bavullar[sehir] || [];
+    const adet = Math.min(bekleyen.length, bavul.length);
+
+    bekleyen.forEach((u, i) => {
+      const hazir = i < adet;
+      if(hazir && !u.hazirSira){ u.hazirSira = ++hazirSayac; yeniHazir = true; }
+      if(!hazir) u.hazirSira = 0;
+      isaretKoy(u.el, hazir, 'hazir-rozet', HAZIR.rozet);
+    });
+    bavul.forEach((p, i) => isaretKoy(p.el, i < adet, 'hazir-tik', HAZIR.tik));
+  }
+
+  ucaklariSirala();
+  if(yeniHazir) $('#ucaklar').scrollTo({ left:0, behavior:'smooth' });
+}
+
+/* Bir elemana hazır işaretini takar ya da çıkarır. Görsel yoksa kod
+   yeşil bir daire içinde tik çiziyor. */
+function isaretKoy(el, var_, sinif, gorsel){
+  const mevcut = el.querySelector(':scope > .' + sinif);
+  el.classList.toggle('hazir', var_);
+  if(!var_){ if(mevcut) mevcut.remove(); return; }
+  if(mevcut) return;
+  let i;
+  if(gorselVar(gorsel)){
+    i = document.createElement('img');
+    i.src = gorselYolu(gorsel); i.alt = '';
+  }else{
+    i = document.createElement('span');
+    i.textContent = '✓';
+    i.classList.add('hazir-gecici');
+  }
+  i.classList.add('hazir-isaret', sinif);
+  el.appendChild(i);
+}
+
+/* Tezgahtaki kartları hazır olanlar önde olacak şekilde dizer. Kartlar
+   yeni yerlerine KAYARAK gidiyor (önce/sonra konumları ölçülüp aradaki fark
+   geri sarılıyor): anında yer değiştirse çocuk uçağın nereye gittiğini
+   göremezdi. Kalkmakta olan uçağa dokunulmuyor, yerinde kalkıyor. */
+function ucaklariSirala(){
+  const serit = $('#ucakSerit');
+  const istenen = ucaklar.slice().sort((a, b) =>
+    (a.hazirSira ? a.hazirSira : 1e9 + a.sira) - (b.hazirSira ? b.hazirSira : 1e9 + b.sira));
+  const simdiki = [...serit.children].filter(e => !e.classList.contains('kalkiyor'));
+  if(istenen.every((u, i) => simdiki[i] === u.el)) return;
+
+  const once = new Map(istenen.map(u => [u.el, u.el.getBoundingClientRect().left]));
+  for(const u of istenen) serit.appendChild(u.el);
+  for(const u of istenen){
+    const fark = once.get(u.el) - u.el.getBoundingClientRect().left;
+    if(!fark) continue;
+    u.el.style.transition = 'none';
+    u.el.style.transform = 'translateX(' + fark + 'px)';
+    u.el.getBoundingClientRect();
+    u.el.style.transition = 'transform .38s cubic-bezier(.3,.8,.3,1)';
+    u.el.style.transform = '';
+    setTimeout(() => { u.el.style.transition = ''; }, 420);
+  }
+}
+
 function ucaklariKur(){
   const alan = $('#ucaklar');
   const serit = $('#ucakSerit');
   serit.innerHTML = '';
   ucaklar = [];
+  hazirSayac = 0;
   for(const sehir of siparisSehirleri()){
     const u = ucakKarti(sehir);
+    u.sira = ucaklar.length;
     ucaklar.push(u);
     serit.appendChild(u.el);
   }
@@ -958,6 +1055,7 @@ function teslimEt(t, ucakDom){
   ucaklar.splice(ucaklar.indexOf(u), 1);
   u.el.classList.add('kalkiyor');
   setTimeout(()=> u.el.remove(), 700);
+  hazirlariGuncelle();
 
   if(tamamlanan >= HEDEF_SIPARIS){
     /* Sayaç HEMEN dursun: uçağın kalkış animasyonu sürerken saniyeler
