@@ -350,8 +350,8 @@ body:not(.sanat-tezgah) #ucaklar{
 @keyframes hazirBelir{ from{ transform:scale(.2); opacity:0; } to{ transform:scale(1); opacity:1; } }
 /* Uçak burnu solda; rozet burnun üstündeki boşlukta. */
 .hazir-rozet{
-  z-index:5; width:calc(var(--hucre)*0.86); height:calc(var(--hucre)*0.86);
-  left:0; top:calc(var(--hucre)*-0.08);
+  z-index:5; width:calc(var(--hucre)*0.74); height:calc(var(--hucre)*0.74);
+  left:1%; top:calc(var(--hucre)*-0.03);
 }
 /* Bavulun sağ üst köşesinde, hücreden hafifçe taşarak. Komşu hücrelerin
    parçaları üstüne binmesin diye hazır parça öne alınıyor. */
