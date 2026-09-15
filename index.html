@@ -47,6 +47,10 @@
       <img class="hud-gorsel" alt="" aria-hidden="true">
       <span class="hud-etiket">SÜRE</span><span class="hud-deger" id="hudSure">02:00</span>
     </div>
+    <!-- Mola: panellerin sağında. Görsel pause_button.png; yoksa kod çiziyor. -->
+    <button id="molaBtn" class="hud-mola" type="button" aria-label="Mola">
+      <img class="mola-btn-gorsel" alt="" aria-hidden="true">
+    </button>
   </div>
 
   <!-- ================= TEZGAH VE UÇAKLAR =================
@@ -108,6 +112,12 @@
     <!-- Tuşların üstündeki görünmez dokunma alanları script'te üretilir -->
   </div>
 </div>
+
+<!-- ================= MOLA =================
+     Tam ekran değil: donmuş oyunun üstünde duran bir kart (pause_card.png).
+     Sahnenin içinde, onunla aynı 9:16 alanı kaplıyor. Butonların dokunma
+     alanları görselden ÖLÇÜLDÜ (style.css .mola-devam / .mola-ana). -->
+<div id="molaScreen" class="gizli" aria-hidden="true"></div>
 
 <!-- ================= BİTİŞ ================= -->
 <div id="bitScreen" class="katman gizli">
