@@ -350,18 +350,19 @@ body:not(.sanat-tezgah) #ucaklar{
 @keyframes hazirBelir{ from{ transform:scale(.2); opacity:0; } to{ transform:scale(1); opacity:1; } }
 /* Uçak burnu solda; rozet burnun üstündeki boşlukta. */
 .hazir-rozet{
-  z-index:5; width:calc(var(--hucre)*0.62); height:calc(var(--hucre)*0.62);
-  left:2%; top:calc(var(--hucre)*0.02);
+  z-index:5; width:calc(var(--hucre)*0.86); height:calc(var(--hucre)*0.86);
+  left:0; top:calc(var(--hucre)*-0.08);
 }
 /* Bavulun sağ üst köşesinde, hücreden hafifçe taşarak. Komşu hücrelerin
    parçaları üstüne binmesin diye hazır parça öne alınıyor. */
 .parca.hazir, .parca.gorselli.hazir{ z-index:4; }
-/* Bavul hücrenin ortasında dar duruyor; tik onun üstüne binmesin diye
-   hücrenin sağ üst köşesine, bir parça dışına oturuyor. ".parca img"
-   kuralı her görseli parça boyuna yaydığı için seçici ondan güçlü. */
+/* Bavul görselinin SOL ALTINDA, hücre köşesine değil bavulun kendisine
+   yakın: köşede sahipsiz duruyordu. Bavul hücrenin ortasında dar, tik
+   onun sol alt kenarına biniyor. ".parca img" kuralı her görseli parça
+   boyuna yaydığı için seçici ondan güçlü. */
 .parca img.hazir-tik, .parca .hazir-tik{
-  z-index:3; width:58%; height:58%;
-  right:-36%; top:-20%;
+  z-index:3; width:44%; height:44%;
+  left:6%; bottom:2%;
 }
 .hazir-gecici{
   display:grid; place-items:center; border-radius:50%;
