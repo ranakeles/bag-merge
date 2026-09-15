@@ -62,6 +62,15 @@ const PLAKA = {
 
 const MANZARA = 'assets/bg_istanbul.png';
 
+/* ---- MOLA ----
+   Buton ve kart görselleri. Kartın buton yerleri görselden ölçüldü ve
+   style.css'te duruyor (.mola-devam / .mola-ana); görsel değişirse orası
+   da yeniden ölçülmeli. */
+const MOLA = {
+  buton:'assets/pause_button.png',
+  kart:'assets/pause_card.png'
+};
+
 /* ---- RAKAMLAR ----
    Sayılar yazı tipiyle değil GÖRSELDEN diziliyor: 0-9 tek bir şeritte
    çizili, kod her rakamı oradan kesip yan yana koyuyor. Web yazı tipi
@@ -413,7 +422,8 @@ function parcaGorseli(sehir, basamak){ return 'assets/' + basamakBilgisi(sehir, 
 function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/home_page.png',
                  TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK,
-                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel, RAKAM.gorsel, SIMGE.gorsel];
+                 BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel, RAKAM.gorsel, SIMGE.gorsel,
+                 MOLA.buton, MOLA.kart];
   for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
@@ -469,7 +479,8 @@ const $ = s => document.querySelector(s);
 const rastgele = n => Math.floor(Math.random()*n);
 function karistir(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=rastgele(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-let durum = 'bas';            // bas | isim | oyun | bitiyor | bitti
+let durum = 'bas';            // bas | isim | oyun | mola | bitiyor | bitti
+let molaBasi = 0;             // molanın başladığı an (performance.now)
 let izgara = [];              // izgara[s][k] = null | {sehir, basamak, el}
 let hucreEl = [];             // aynı boyutta DOM karşılıkları
 let ucaklar = [];             // {sehir, kod, el}
@@ -725,6 +736,19 @@ function tasimaHareket(ev){
 function isaretleriTemizle(){
   document.querySelectorAll('.hucre.birlesir').forEach(h=>h.classList.remove('birlesir'));
   document.querySelectorAll('.ucak.hedef, .ucak.hedef-yanlis').forEach(u=>u.classList.remove('hedef','hedef-yanlis'));
+}
+
+/* Sürükleme sürerken mola verilirse parça yerine döner, hayalet kaybolur. */
+function tasimayiIptal(){
+  window.removeEventListener('pointermove', tasimaHareket);
+  window.removeEventListener('pointerup', tasimaBitti);
+  window.removeEventListener('pointercancel', tasimaBitti);
+  if(!tasima) return;
+  const kaynak = izgara[tasima.s][tasima.k];
+  if(kaynak && kaynak.el) kaynak.el.classList.remove('tasiniyor');
+  tasima = null;
+  surukleEl().classList.add('gizli');
+  isaretleriTemizle();
 }
 
 function tasimaBitti(ev){
@@ -1198,6 +1222,69 @@ function oyunuBitir(){
 /* Bitiş ekranındaki buton "ANA SAYFA" diyor: tura doğrudan başlamak yerine
    başlangıç ekranına dönüyor. Kioskta doğru olan da bu — sıradaki çocuk
    oyunu baştan, nasıl oynanır anlatımıyla karşılıyor. */
+/* ---------- MOLA ----------
+   Molada HİÇBİR ŞEY ilerlemiyor: sayaç, makinenin kendiliğinden düşümü ve
+   dokunma. Süre duvar saatinden hesaplandığı için (bkz. dongu) devam
+   edince başlangıç anı mola süresi kadar ileri kaydırılıyor; mola süreden
+   yemiyor. Makinenin sayacı da aynı şekilde. */
+function molaVer(){
+  if(durum !== 'oyun') return;
+  tasimayiIptal();
+  durum = 'mola';
+  molaBasi = performance.now();
+  $('#molaScreen').classList.remove('gizli');
+}
+function molayiBitir(){
+  if(durum !== 'mola') return;
+  const gecen = performance.now() - molaBasi;
+  baslangic += gecen;
+  kendiSaat += gecen;
+  durum = 'oyun';
+  $('#molaScreen').classList.add('gizli');
+}
+/* Moladan ana sayfaya: tur yarıda bırakılıyor, skor tablosuna yazılmıyor. */
+function moladanAnaSayfaya(){
+  if(durum !== 'mola') return;
+  $('#molaScreen').classList.add('gizli');
+  anaSayfayaDon();
+}
+
+/* Mola kartını kurar. Görsel varsa kart görselin kendisi, butonlar onun
+   üstünde görünmez dokunma alanları. Yoksa kod basit bir kart çiziyor. */
+function molaEkraniniKur(){
+  const ekran = $('#molaScreen');
+  const gorselli = gorselVar(MOLA.kart);
+  ekran.innerHTML = '';
+  const kart = document.createElement('div');
+  kart.className = 'mola-kart' + (gorselli ? ' gorselli' : '');
+  if(gorselli){
+    const im = document.createElement('img');
+    im.className = 'mola-kart-gorsel'; im.src = gorselYolu(MOLA.kart); im.alt = '';
+    kart.appendChild(im);
+  }else{
+    const baslik = document.createElement('div');
+    baslik.className = 'mola-baslik'; baslik.textContent = 'MOLA';
+    kart.appendChild(baslik);
+  }
+  const buton = (sinif, etiket, isle) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'mola-hit ' + sinif;
+    b.setAttribute('aria-label', etiket);
+    if(!gorselli) b.textContent = etiket;
+    b.addEventListener('click', isle);
+    kart.appendChild(b);
+  };
+  buton('mola-devam', 'DEVAM ET', molayiBitir);
+  buton('mola-ana',   'ANA SAYFA', moladanAnaSayfaya);
+  ekran.appendChild(kart);
+
+  const bi = $('#molaBtn .mola-btn-gorsel');
+  if(gorselVar(MOLA.buton)){
+    bi.src = gorselYolu(MOLA.buton);
+    $('#molaBtn').classList.add('gorselli');
+  }
+}
+
 function anaSayfayaDon(){
   durum = 'bas';
   $('#bitScreen').classList.add('gizli');
@@ -1265,6 +1352,7 @@ function hudGorselleri(){
 
 function tahtaGorselleri(){
   hudGorselleri();
+  molaEkraniniKur();
   if(gorselVar(TAHTA.gorsel)){
     document.documentElement.style.setProperty('--tahta-gorsel',
       'url(' + gorselYolu(TAHTA.gorsel) + ')');
@@ -1316,6 +1404,7 @@ function kur(){
   $('#basBtn').addEventListener('click', isimEkraniniAc);
   window.addEventListener('keydown', isimTusu);
   $('#bitBtn').addEventListener('click', anaSayfayaDon);
+  $('#molaBtn').addEventListener('click', molaVer);
 
   izgarayiKur();       // arka planda duran boş matris (başlangıç ekranının altında)
   requestAnimationFrame(dongu);

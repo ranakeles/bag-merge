@@ -135,7 +135,10 @@ img{ -webkit-user-drag:none; user-drag:none; }
   /* Genişlik AÇIKÇA veriliyor. flex:1 ile bırakılınca tarayıcı önce
      yüksekliği (içerik boş olduğu için) hesaplayıp genişliği ondan
      türetiyor ve paneller olması gerekenin üçte ikisi kadar kalıyordu. */
-  flex:0 0 calc((100% - var(--hucre)*0.20) / 3);
+  /* Üç panel + mola butonu. Butonun eni panel YÜKSEKLİĞİNİN --mola-kat
+     katı, panel yüksekliği de panel eni / --hud-oran; ikisi aynı satırı
+     paylaşınca panel eni = (satır − 3 boşluk) / (3 + kat / oran). */
+  flex:0 0 calc((100% - var(--hucre)*0.30) / (3 + var(--mola-kat) / var(--hud-oran, 3.45)));
   aspect-ratio:var(--hud-oran, 3.45);
   padding:0; border-radius:0; background:none; box-shadow:none;
   display:block;
@@ -145,6 +148,31 @@ img{ -webkit-user-drag:none; user-drag:none; }
 .sanat-hud #hud{ gap:calc(var(--hucre)*0.10); padding:calc(var(--hucre)*0.18) calc(var(--hucre)*0.16); }
 .sanat-hud .hud-gorsel{ display:block; position:absolute; pointer-events:none; }
 .sanat-hud .hud-etiket{ display:none; }        /* simge zaten anlatıyor */
+/* ---- MOLA BUTONU ----
+   Görselin %84'ü daire, çevresi şeffaf pay; kat 1.15 iken görünen daire
+   panel yüksekliğine yaklaşık eşit oluyor. */
+:root{ --mola-kat:1.15; }
+.hud-mola{
+  flex:none; position:relative; padding:0; border:0; cursor:pointer;
+  width:calc(var(--hucre)*0.78); aspect-ratio:1;
+  border-radius:50%; background:var(--kart); color:#5B3EC9;
+  font-family:var(--hud); font-weight:700; font-size:calc(var(--hucre)*0.28);
+  box-shadow:0 4px 0 rgba(30,45,80,.10), 0 9px 16px rgba(30,45,80,.16);
+  transition:transform .12s;
+}
+.hud-mola::before{ content:"❚❚"; letter-spacing:-.05em; }
+.hud-mola:active{ transform:scale(.9); }
+.mola-btn-gorsel{ display:none; }
+.hud-mola.gorselli{ background:none; box-shadow:none; }
+.hud-mola.gorselli::before{ content:none; }
+.hud-mola.gorselli .mola-btn-gorsel{
+  display:block; position:absolute; inset:0; width:100%; height:100%; pointer-events:none;
+}
+.sanat-hud .hud-mola{
+  width:calc((100% - var(--hucre)*0.30) / (3 + var(--mola-kat) / var(--hud-oran, 3.45))
+        * var(--mola-kat) / var(--hud-oran, 3.45));
+}
+
 /* Son saniyeler: sayaç kırmızıya döner ve panel nabız atar. */
 .hud-kutu.az-kaldi .hud-deger{ color:#C0392B; }
 .hud-kutu.az-kaldi{ animation:sureNabiz .9s ease-in-out infinite; }
@@ -503,6 +531,46 @@ body:not(.sanat-plaka) .ucak-plaka{
   25%{ opacity:1; transform:translate(-50%,-90%) scale(1.1); }
   100%{ opacity:0; transform:translate(-50%,-190%) scale(1); }
 }
+
+/* ---------- MOLA KARTI ----------
+   Sahnenin (9:16) üstünde, donmuş oyunu karartan bir perde ve ortasında
+   kart. pause_card.png 1145x1374; buton alanları görselden ölçüldü:
+     DEVAM ET   x 189-949  y 595-824
+     ANA SAYFA  x 188-948  y 877-1099
+   Görsel değişirse bu yüzdeler yeniden ölçülmeli. */
+#molaScreen{
+  position:fixed; z-index:50; display:grid; place-items:center;
+  left:50%; top:50%; transform:translate(-50%,-50%);
+  width:min(100vw, calc(100vh * 9 / 16));
+  height:min(100vh, calc(100vw * 16 / 9));
+  background:rgba(28,18,72,.45);
+}
+.mola-kart{
+  position:relative; width:78%;
+  animation:molaGir .24s cubic-bezier(.2,.9,.25,1);
+}
+.mola-kart.gorselli{ aspect-ratio:1145 / 1374; }
+.mola-kart-gorsel{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+@keyframes molaGir{ from{ opacity:0; transform:translateY(16px) scale(.94); } to{ opacity:1; transform:none; } }
+.mola-hit{ position:absolute; border:0; padding:0; background:none; cursor:pointer; border-radius:999px; }
+.mola-hit:active{ background:rgba(0,0,0,.14); }
+.mola-kart.gorselli .mola-devam{ left:16.51%; width:66.46%; top:43.30%; height:16.74%; }
+.mola-kart.gorselli .mola-ana  { left:16.42%; width:66.46%; top:63.83%; height:16.23%; }
+
+/* Görsel yokken kodun çizdiği basit kart */
+.mola-kart:not(.gorselli){
+  display:flex; flex-direction:column; gap:calc(var(--hucre)*0.24);
+  padding:calc(var(--hucre)*0.4); border-radius:28px; background:var(--kart);
+  box-shadow:0 8px 0 rgba(30,45,80,.12), 0 20px 40px rgba(30,45,80,.26);
+}
+.mola-baslik{ text-align:center; font-family:var(--hud); font-weight:700;
+  font-size:calc(var(--hucre)*0.6); color:#5B3EC9; }
+.mola-kart:not(.gorselli) .mola-hit{
+  position:static; padding:calc(var(--hucre)*0.22); color:#fff;
+  font-family:var(--hud); font-weight:700; font-size:calc(var(--hucre)*0.34);
+}
+.mola-kart:not(.gorselli) .mola-devam{ background:#38C172; }
+.mola-kart:not(.gorselli) .mola-ana{ background:#F0A020; }
 
 /* ---------- TAM EKRAN KATMANLAR (başlangıç / bitiş) ---------- */
 .katman{ position:fixed; inset:0; z-index:60; display:grid; place-items:center; overflow:hidden;
