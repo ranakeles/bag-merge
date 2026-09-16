@@ -109,15 +109,14 @@ img{ -webkit-user-drag:none; user-drag:none; }
 /* ---------- ÜST BİLGİ ---------- */
 /* HUD sahnenin akışında DEĞİL, manzaranın üstünde yüzüyor: üst bölge dar,
    HUD yer kaplasaydı uçaklar tezgahın üstüne sığmazdı. */
-/* ÜST BİLGİ TEZGAHIN HEMEN ÜSTÜNDE, sahnenin akışında. Kiosk yüksekte
-   duruyor; en üstteyken mola butonuna çocukların eli yetişmiyordu. Solda
-   sipariş ve puan alt alta, sağda süre ve mola; ortası boş, manzara
-   görünüyor. Akışta olduğu için tezgahı ve tahtayı aşağıda tutan boşluk
-   (margin-top:auto) artık onun üstünde. */
+/* ÜST BİLGİ sahnenin EN ÜSTÜNDE, akışın dışında (manzaranın üstünde
+   yüzüyor). Solda sipariş ve puan alt alta, sağda süre ve mola alt alta;
+   ortası boş, manzara görünüyor. Tahta kısalınca tezgah ve tahta aşağı
+   indi, üst bilgi yerinde kaldı. */
 #hud{
-  position:relative; z-index:6; flex:none; margin-top:auto;
-  width:100%; display:flex; justify-content:space-between; align-items:flex-end;
-  gap:calc(var(--hucre)*0.14); padding:0 calc(var(--hucre)*0.26) calc(var(--hucre)*0.06);
+  position:absolute; top:0; left:0; z-index:6;
+  width:100%; display:flex; justify-content:space-between; align-items:flex-start;
+  gap:calc(var(--hucre)*0.14); padding:calc(var(--hucre)*0.20) calc(var(--hucre)*0.26);
 }
 .hud-sol{ display:flex; flex-direction:column; gap:calc(var(--hucre)*0.10); }
 .hud-sag{ display:flex; flex-direction:column; align-items:flex-end; gap:calc(var(--hucre)*0.10); }
@@ -151,7 +150,7 @@ img{ -webkit-user-drag:none; user-drag:none; }
 }
 /* Görselli hâlde kutular kenara daha yakın: panel oranı çok yatık, kenar
    payı büyük kalırsa paneller cılız duruyor. */
-.sanat-hud #hud{ padding:0 calc(var(--hucre)*0.16) calc(var(--hucre)*0.06); }
+.sanat-hud #hud{ padding:calc(var(--hucre)*0.18) calc(var(--hucre)*0.16); }
 .sanat-hud .hud-gorsel{ display:block; position:absolute; pointer-events:none; }
 .sanat-hud .hud-etiket{ display:none; }        /* simge zaten anlatıyor */
 /* ---- MOLA BUTONU ----
@@ -233,10 +232,10 @@ img{ -webkit-user-drag:none; user-drag:none; }
 #tezgah, #izgara, #surukle, #baloncuklar{ position:relative; z-index:2; }
 /* HUD her şeyin üstünde kalmalı: bu satır yukarıdaki z-index'i geri
    almasın diye ayrı yazılıyor (aynı özgüllükte, sonra geliyor). */
-#hud{ position:relative; z-index:6; }
+#hud{ position:absolute; z-index:6; }
 
 #tezgah{
-  width:100%; flex:none; position:relative;
+  width:100%; flex:none; position:relative; margin-top:auto;
   /* Görselin altındaki şeffaf şerit kadar aşağı taşsın: yoksa tezgahla
      tahta arasında sebepsiz bir boşluk kalıyor. */
   margin-bottom:var(--tezgah-alt, 0);
