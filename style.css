@@ -109,11 +109,18 @@ img{ -webkit-user-drag:none; user-drag:none; }
 /* ---------- ÜST BİLGİ ---------- */
 /* HUD sahnenin akışında DEĞİL, manzaranın üstünde yüzüyor: üst bölge dar,
    HUD yer kaplasaydı uçaklar tezgahın üstüne sığmazdı. */
+/* ÜST BİLGİ TEZGAHIN HEMEN ÜSTÜNDE, sahnenin akışında. Kiosk yüksekte
+   duruyor; en üstteyken mola butonuna çocukların eli yetişmiyordu. Solda
+   sipariş ve puan alt alta, sağda süre ve mola; ortası boş, manzara
+   görünüyor. Akışta olduğu için tezgahı ve tahtayı aşağıda tutan boşluk
+   (margin-top:auto) artık onun üstünde. */
 #hud{
-  position:absolute; top:0; left:0; z-index:6;
-  width:100%; display:flex; justify-content:space-between; align-items:center;
-  gap:calc(var(--hucre)*0.14); padding:calc(var(--hucre)*0.20) calc(var(--hucre)*0.26);
+  position:relative; z-index:6; flex:none; margin-top:auto;
+  width:100%; display:flex; justify-content:space-between; align-items:flex-end;
+  gap:calc(var(--hucre)*0.14); padding:0 calc(var(--hucre)*0.26) calc(var(--hucre)*0.06);
 }
+.hud-sol{ display:flex; flex-direction:column; gap:calc(var(--hucre)*0.10); }
+.hud-sag{ display:flex; flex-direction:column; align-items:flex-end; gap:calc(var(--hucre)*0.10); }
 .hud-kutu{
   flex:1; display:flex; flex-direction:column; align-items:center; gap:1px;
   padding:calc(var(--hucre)*0.12) calc(var(--hucre)*0.10);
@@ -135,23 +142,22 @@ img{ -webkit-user-drag:none; user-drag:none; }
   /* Genişlik AÇIKÇA veriliyor. flex:1 ile bırakılınca tarayıcı önce
      yüksekliği (içerik boş olduğu için) hesaplayıp genişliği ondan
      türetiyor ve paneller olması gerekenin üçte ikisi kadar kalıyordu. */
-  /* Üç panel + mola butonu. Butonun eni panel YÜKSEKLİĞİNİN --mola-kat
-     katı, panel yüksekliği de panel eni / --hud-oran; ikisi aynı satırı
-     paylaşınca panel eni = (satır − 3 boşluk) / (3 + kat / oran). */
-  flex:0 0 calc((100% - var(--hucre)*0.30) / (3 + var(--mola-kat) / var(--hud-oran, 3.45)));
+  /* Panellerin hepsi aynı en: sahnenin --panel-en kadarı. Eskiden üçü bir
+     satırı paylaştığı için satırdan hesaplanıyordu; artık iki sütundalar. */
+  flex:none; width:var(--panel-en);
   aspect-ratio:var(--hud-oran, 3.45);
   padding:0; border-radius:0; background:none; box-shadow:none;
   display:block;
 }
 /* Görselli hâlde kutular kenara daha yakın: panel oranı çok yatık, kenar
    payı büyük kalırsa paneller cılız duruyor. */
-.sanat-hud #hud{ gap:calc(var(--hucre)*0.10); padding:calc(var(--hucre)*0.18) calc(var(--hucre)*0.16); }
+.sanat-hud #hud{ padding:0 calc(var(--hucre)*0.16) calc(var(--hucre)*0.06); }
 .sanat-hud .hud-gorsel{ display:block; position:absolute; pointer-events:none; }
 .sanat-hud .hud-etiket{ display:none; }        /* simge zaten anlatıyor */
 /* ---- MOLA BUTONU ----
    Görselin %84'ü daire, çevresi şeffaf pay; kat 1.15 iken görünen daire
    panel yüksekliğine yaklaşık eşit oluyor. */
-:root{ --mola-kat:1.15; }
+:root{ --mola-kat:1.15; --panel-en:calc(var(--sahne-en, 100vw) * 0.36); }
 .hud-mola{
   flex:none; position:relative; padding:0; border:0; cursor:pointer;
   width:calc(var(--hucre)*0.78); aspect-ratio:1;
@@ -169,8 +175,7 @@ img{ -webkit-user-drag:none; user-drag:none; }
   display:block; position:absolute; inset:0; width:100%; height:100%; pointer-events:none;
 }
 .sanat-hud .hud-mola{
-  width:calc((100% - var(--hucre)*0.30) / (3 + var(--mola-kat) / var(--hud-oran, 3.45))
-        * var(--mola-kat) / var(--hud-oran, 3.45));
+  width:calc(var(--panel-en) * var(--mola-kat) / var(--hud-oran, 3.45));
 }
 
 /* Son saniyeler: sayaç kırmızıya döner ve panel nabız atar. */
@@ -228,10 +233,10 @@ img{ -webkit-user-drag:none; user-drag:none; }
 #tezgah, #izgara, #surukle, #baloncuklar{ position:relative; z-index:2; }
 /* HUD her şeyin üstünde kalmalı: bu satır yukarıdaki z-index'i geri
    almasın diye ayrı yazılıyor (aynı özgüllükte, sonra geliyor). */
-#hud{ position:absolute; z-index:6; }
+#hud{ position:relative; z-index:6; }
 
 #tezgah{
-  width:100%; flex:none; position:relative; margin-top:auto;
+  width:100%; flex:none; position:relative;
   /* Görselin altındaki şeffaf şerit kadar aşağı taşsın: yoksa tezgahla
      tahta arasında sebepsiz bir boşluk kalıyor. */
   margin-bottom:var(--tezgah-alt, 0);

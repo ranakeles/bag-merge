@@ -35,22 +35,28 @@
        etiketleri gizleniyor (Türkçe "SİPARİŞ/SÜRE" görselde üretilemiyor,
        İ ve Ü bozuk çıkıyor). Görsel yoksa etiketler geri geliyor. -->
   <div id="hud">
-    <div class="hud-kutu" data-hud="siparis">
-      <img class="hud-gorsel" alt="" aria-hidden="true">
-      <span class="hud-etiket">SİPARİŞ</span><span class="hud-deger" id="hudSiparis">0/6</span>
+    <!-- Solda sipariş ve puan alt alta, sağda süre ve mola. Hepsi tezgahın
+         hemen üstünde: kiosk yüksekte, çocukların eli yukarıya yetişmiyor. -->
+    <div class="hud-sol">
+      <div class="hud-kutu" data-hud="siparis">
+        <img class="hud-gorsel" alt="" aria-hidden="true">
+        <span class="hud-etiket">SİPARİŞ</span><span class="hud-deger" id="hudSiparis">0/6</span>
+      </div>
+      <div class="hud-kutu" data-hud="puan">
+        <img class="hud-gorsel" alt="" aria-hidden="true">
+        <span class="hud-etiket">PUAN</span><span class="hud-deger" id="hudPuan">0</span>
+      </div>
     </div>
-    <div class="hud-kutu" data-hud="puan">
-      <img class="hud-gorsel" alt="" aria-hidden="true">
-      <span class="hud-etiket">PUAN</span><span class="hud-deger" id="hudPuan">0</span>
+    <div class="hud-sag">
+      <div class="hud-kutu" data-hud="sure">
+        <img class="hud-gorsel" alt="" aria-hidden="true">
+        <span class="hud-etiket">SÜRE</span><span class="hud-deger" id="hudSure">02:00</span>
+      </div>
+      <!-- Mola. Görsel pause_button.png; yoksa kod çiziyor. -->
+      <button id="molaBtn" class="hud-mola" type="button" aria-label="Mola">
+        <img class="mola-btn-gorsel" alt="" aria-hidden="true">
+      </button>
     </div>
-    <div class="hud-kutu" data-hud="sure">
-      <img class="hud-gorsel" alt="" aria-hidden="true">
-      <span class="hud-etiket">SÜRE</span><span class="hud-deger" id="hudSure">02:00</span>
-    </div>
-    <!-- Mola: panellerin sağında. Görsel pause_button.png; yoksa kod çiziyor. -->
-    <button id="molaBtn" class="hud-mola" type="button" aria-label="Mola">
-      <img class="mola-btn-gorsel" alt="" aria-hidden="true">
-    </button>
   </div>
 
   <!-- ================= TEZGAH VE UÇAKLAR =================
