@@ -199,12 +199,16 @@ img{ -webkit-user-drag:none; user-drag:none; }
    uçaklar da tezgahın üst yüzeyine basıyor — bastıkları çizgi görselden
    ölçüldü, --tezgah-zemin ile geliyor. */
 .manzara{
-  position:absolute; left:0; z-index:0;
-  width:100%; height:auto; pointer-events:none;
-  /* Görsel biraz YUKARI kaydırılıyor. Kendi oranıyla çizilince silüet
-     (Galata, cami, köprü) tam uçak sırasının arkasına denk geliyor ve
-     ekranda yalnızca gökyüzü ile deniz kalıyordu. */
-  top:calc(var(--hucre) * -0.85);
+  position:absolute; z-index:0; height:auto; pointer-events:none;
+  /* Görsel sahneden GENİŞ çiziliyor (yanları taşıyor, sahne kırpıyor) ve
+     üst bilgiden tezgaha kadar olan bandı kaplıyor. Tahta 7x9'ken bu bant
+     kısaydı ve görsel sahne eninde yetiyordu; tahta kısalıp tezgah iki satır
+     aşağı inince manzara yukarıda kaldı, silüet (cami, köprü, Kız Kulesi)
+     üst bilginin arkasına girdi, uçakların arkası boş gökyüzüne döndü.
+     Büyütülünce silüet yine üst bilgiyle uçakların arasına, uçaklar da
+     şehrin önüne düşüyor. Görsel kendi oranını koruyor, esnetilmiyor. */
+  width:150%; left:-25%;
+  top:calc(var(--hucre) * -0.4);
 }
 .manzara:not([src]){ display:none; }
 /* Manzaranın alt kenarı tahtaya doğru yumuşasın: keskin bir kesik çizgi
