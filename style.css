@@ -250,6 +250,32 @@ img{ -webkit-user-drag:none; user-drag:none; }
 .sanat-tezgah .tezgah-gorsel{ visibility:hidden; }
 .tezgah-gorsel:not([src]){ display:none; }
 
+/* ---------- KALKIŞ PANOSU ----------
+   Tezgahın ÜSTÜNDE, sola dayalı (kolu soldaki duvardan geliyor). Boyu,
+   üst bilgi ile uçaklar arasındaki bandı dolduracak kadar: sahne eninin
+   %72'si, görsel oranı 3:1 olduğu için yüksekliği enin üçte biri. Görselin
+   altındaki şeffaf pay uçaklarla arasında nefes bırakıyor.
+   Yazı boyu da sahne enine bağlı: satır yüksekliği sahne eninin
+   0.72 / 3 × 80 / 724 ≈ %2.65'i, yazı onun yarısından biraz fazlası. */
+.pano{
+  position:absolute; left:0; bottom:100%; z-index:1;
+  width:calc(var(--sahne-en, 100vw) * 0.72); aspect-ratio:2172 / 724;
+  pointer-events:none;
+}
+.pano-gorsel{ position:absolute; inset:0; width:100%; height:100%; }
+.pano-satir{
+  position:absolute; display:flex; align-items:center;
+  padding:0 2.2%; gap:3%;
+  font-family:var(--pano); font-weight:700; line-height:1; white-space:nowrap;
+  font-size:calc(var(--sahne-en, 100vw) * 0.0172);
+  letter-spacing:.06em; color:#FFD34D;
+  text-shadow:0 0 .35em rgba(255,200,60,.55);
+}
+.pano-kod{ flex:0 0 22%; }
+.pano-sehir{ flex:1; overflow:hidden; text-overflow:ellipsis; }
+.pano-durum{ flex:none; color:rgba(255,211,77,.55); text-shadow:none; }
+.pano-satir.hazir .pano-durum{ color:#6BFF8E; text-shadow:0 0 .4em rgba(80,255,130,.6); }
+
 /* SİPARİŞ ŞERİDİ
    Turun bütün siparişleri tezgahta duruyor ve şerit yana kaydırılıyor;
    aynı anda --gorunen kadarı ekrana sığıyor.
