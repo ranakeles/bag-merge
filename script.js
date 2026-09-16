@@ -344,7 +344,10 @@ const PUAN_KALAN_SANIYE = 5;   // bitişte artan her saniye bu kadar puan
 const PUAN_HATALI = 50;
 const AZ_KALDI = 15;           // bu saniyenin altında sayaç uyarıya geçer
 
-/* Her şehrin KENDİ zinciri var, ÜÇ basamak: makineden çıkan hediyelik, onun
+/* "renk" yalnızca o şehrin görselleri eksikken kodun çizdiği yedek kutunun
+   rengi; oyunda görünen renk bavul görselinden geliyor.
+
+   Her şehrin KENDİ zinciri var, ÜÇ basamak: makineden çıkan hediyelik, onun
    ikisi birleşince şehrin simgesi, simgenin ikisi birleşince şehrin bagajı.
    (Önce dört basamaktı — bere, gözlük, şapka, şemsiye en baştaydı. Kioskta
    çok uzun bulundu, ilk basamak kaldırıldı. Yeni şehirler de üç basamaklı
@@ -399,6 +402,86 @@ const SEHIRLER = {
       { ad:'Çift Katlı Otobüs', dosya:'item_london2.png' },
       { ad:'Big Ben',           dosya:'item_london3.png' },
       { ad:'Londra Bagajı',     dosya:'item_london4.png' }
+    ]
+  },
+  istanbul: {
+    ad:'İstanbul', kod:'IST', renk:'#17A2A2',
+    ucuslar:['2001','2005','2009'],
+    havayollari:['thy','ajet'],
+    zincir:[
+      { ad:'Simit',            dosya:'item_istanbul.png' },
+      { ad:'Galata Kulesi',    dosya:'item_istanbul2.png' },
+      { ad:'İstanbul Bagajı',  dosya:'item_istanbul3.png' }
+    ]
+  },
+  urfa: {
+    ad:'Şanlıurfa', kod:'GNY', renk:'#D35400',
+    ucuslar:['2422','2426','2430'],
+    havayollari:['thy','ajet'],
+    zincir:[
+      { ad:'Çiğ Köfte',         dosya:'item_urfa.png' },
+      { ad:'Göbeklitepe',       dosya:'item_urfa2.png' },
+      { ad:'Şanlıurfa Bagajı',  dosya:'item_urfa3.png' }
+    ]
+  },
+  kapadokya: {
+    ad:'Kapadokya', kod:'NAV', renk:'#E86AA6',
+    ucuslar:['2020','2024','2028'],
+    havayollari:['thy','ajet'],
+    zincir:[
+      { ad:'Testi Kebabı',     dosya:'item_kapadokya.png' },
+      { ad:'Peribacaları',     dosya:'item_kapadokya2.png' },
+      { ad:'Kapadokya Bagajı', dosya:'item_kapadokya3.png' }
+    ]
+  },
+  trabzon: {
+    ad:'Trabzon', kod:'TZX', renk:'#1E7E45',
+    ucuslar:['2244','2248','2252'],
+    havayollari:['thy','ajet'],
+    zincir:[
+      { ad:'Hamsi',           dosya:'item_trabzon.png' },
+      { ad:'Sümela',          dosya:'item_trabzon2.png' },
+      { ad:'Trabzon Bagajı',  dosya:'item_trabzon3.png' }
+    ]
+  },
+  konya: {
+    ad:'Konya', kod:'KYA', renk:'#E3B505',
+    ucuslar:['2290','2294','2298'],
+    havayollari:['thy','ajet'],
+    zincir:[
+      { ad:'Etli Ekmek',   dosya:'item_konya.png' },
+      { ad:'Mevlana',      dosya:'item_konya2.png' },
+      { ad:'Konya Bagajı', dosya:'item_konya3.png' }
+    ]
+  },
+  kibris: {
+    ad:'Kıbrıs', kod:'ECN', renk:'#C0392B',
+    ucuslar:['0740','0744','0748'],
+    havayollari:['thy','ajet'],
+    zincir:[
+      { ad:'Hellim',        dosya:'item_kibris.png' },
+      { ad:'Girne Kalesi',  dosya:'item_kibris2.png' },
+      { ad:'Kıbrıs Bagajı', dosya:'item_kibris3.png' }
+    ]
+  },
+  tokyo: {
+    ad:'Tokyo', kod:'HND', renk:'#2E2E38',
+    ucuslar:['0198','0052','0056'],
+    havayollari:['thy'],
+    zincir:[
+      { ad:'Suşi',         dosya:'item_tokyo.png' },
+      { ad:'Senso-ji',     dosya:'item_tokyo2.png' },
+      { ad:'Tokyo Bagajı', dosya:'item_tokyo3.png' }
+    ]
+  },
+  kahire: {
+    ad:'Kahire', kod:'CAI', renk:'#C8A02C',
+    ucuslar:['0692','0694','0698'],
+    havayollari:['thy'],
+    zincir:[
+      { ad:'Hurma',         dosya:'item_kahire.png' },
+      { ad:'Piramitler',    dosya:'item_kahire2.png' },
+      { ad:'Kahire Bagajı', dosya:'item_kahire3.png' }
     ]
   }
 };
@@ -879,9 +962,12 @@ function ucakKarti(sehir){
   return { sehir, havayolu:hvId, kod:kod.textContent, el, sira:0, hazirSira:0 };
 }
 
-/* Turun bütün siparişleri baştan belirleniyor. Şehirler karılmış destelerden
-   sırayla alınıyor: saf rastgelelikte aynı şehir üst üste üç kez çıkıp
-   turun yarısını tek zincire çeviriyordu. */
+/* Turun bütün siparişleri baştan belirleniyor. Şehirler KARILMIŞ DESTEDEN
+   sırayla alınıyor, yani bir turda aynı şehir iki kez çıkmıyor: deste
+   bitmeden kimse ikinci kez gelemez. Şehir sayısı sipariş sayısından azsa
+   deste yeniden karılıp devam ediyor, ancak o zaman tekrar olabiliyor.
+   (Saf rastgelelikte aynı şehir üst üste üç kez çıkıp turun yarısını tek
+   zincire çeviriyordu.) */
 function siparisSehirleri(){
   const liste = [];
   while(liste.length < HEDEF_SIPARIS){
