@@ -1490,8 +1490,16 @@ function dongu(simdi){
 
 /* Tasarım görselleri assets/ içine düşünce geçici paneller kendiliğinden
    kalkar; kod tarafında yapılacak bir şey yok. */
+/* Katman görseli: adres index.html'de zaten yazılı, burada yalnızca pakete
+   gömülü hâliyle değiştiriliyor. Görsel hiç yoksa yerine geçici panel
+   açılıyor (panel baştan gizli, bkz. index.html). */
 function katmanGorseli(gorselAd, imgId, bgId, geciciId){
-  if(!gorselVar(gorselAd)) return;
+  if(!gorselVar(gorselAd)){
+    $(imgId).removeAttribute('src');
+    $(bgId).removeAttribute('src');
+    $(geciciId).classList.remove('gizli');
+    return;
+  }
   const y = gorselYolu(gorselAd);
   $(imgId).src = y;
   $(bgId).src = y;
