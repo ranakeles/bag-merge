@@ -86,9 +86,16 @@
      kadar geçici bir panel duruyor; tüm ekran dokunmatik, çocuk nereye basarsa
      bassın oyun başlar. -->
 <div id="basScreen" class="katman">
-  <img id="basBg"  class="katman-bg"  alt="" aria-hidden="true">
-  <img id="basImg" class="katman-img" alt="Bagaj Atölyesi">
-  <div class="gecici-panel" id="basGecici">
+  <!-- Görselin adresi BURADA yazılı, kodun koymasını beklemiyor: dosya
+       yöneticisinin önizlemesi sayfayı JavaScript'siz açıyor ve kodun
+       kurduğu hiçbir şey görünmüyor. Böyle yazılınca önizlemede oyunun
+       gerçek başlangıç ekranı çıkıyor. Paketlemede bu adres de gömülü
+       görsele çevriliyor. -->
+  <img id="basBg"  class="katman-bg"  src="assets/home_page.png" alt="" aria-hidden="true">
+  <img id="basImg" class="katman-img" src="assets/home_page.png" alt="Bagaj Atölyesi">
+  <!-- Geçici panel BAŞTAN GİZLİ; görsel bulunamazsa kod açıyor. Açık
+       bırakılsaydı önizlemede görselin üstünde duracaktı. -->
+  <div class="gecici-panel gizli" id="basGecici">
     <h1>BAGAJ ATÖLYESİ</h1>
     <p>Hediyelikleri birleştir, bagajı hazırla, doğru uçağa yükle.</p>
     <span class="gecici-not">geçici ekran — tasarım görseli gelince kalkacak</span>
@@ -133,7 +140,7 @@
     <div class="bit-deger" id="bitSure">00:00</div>
     <div class="bit-tablo" id="bitTablo"></div>
   </div>
-  <div class="gecici-panel" id="bitGecici">
+  <div class="gecici-panel gizli" id="bitGecici">
     <!-- Başlık sonuca göre değişiyor: altı sipariş yetiştiyse tebrik,
          süre dolduysa "süre doldu". Script dolduruyor. -->
     <h1 id="bitBaslik">TEBRİKLER</h1>
