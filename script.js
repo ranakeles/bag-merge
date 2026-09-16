@@ -367,7 +367,7 @@ const SEHIRLER = {
   paris: {
     ad:'Paris', kod:'CDG', renk:'#C0392B',
     ucuslar:['1823','1827','1831'],
-    havayollari:['thy','ajet'],
+    havayollari:['thy','ajet','sunexpress'],
     zincir:[
       { ad:'Kruvasan',     dosya:'item_paris2_croissant.png' },
       { ad:'Eyfel Kulesi', dosya:'item_paris3_eiffel.png' },
@@ -397,7 +397,7 @@ const SEHIRLER = {
   londra: {
     ad:'Londra', kod:'LHR', renk:'#1F618D',
     ucuslar:['1979','1981','1987'],
-    havayollari:['thy','ajet'],
+    havayollari:['thy','ajet','sunexpress'],
     zincir:[
       { ad:'Çift Katlı Otobüs', dosya:'item_london2.png' },
       { ad:'Big Ben',           dosya:'item_london3.png' },
@@ -417,7 +417,7 @@ const SEHIRLER = {
   urfa: {
     ad:'Şanlıurfa', kod:'GNY', renk:'#D35400',
     ucuslar:['2422','2426','2430'],
-    havayollari:['thy','ajet'],
+    havayollari:['thy','ajet','sunexpress'],
     zincir:[
       { ad:'Çiğ Köfte',         dosya:'item_urfa.png' },
       { ad:'Göbeklitepe',       dosya:'item_urfa2.png' },
@@ -427,7 +427,7 @@ const SEHIRLER = {
   kapadokya: {
     ad:'Kapadokya', kod:'NAV', renk:'#E86AA6',
     ucuslar:['2020','2024','2028'],
-    havayollari:['thy','ajet'],
+    havayollari:['thy','ajet','sunexpress'],
     zincir:[
       { ad:'Testi Kebabı',     dosya:'item_kapadokya.png' },
       { ad:'Peribacaları',     dosya:'item_kapadokya2.png' },
@@ -437,7 +437,7 @@ const SEHIRLER = {
   trabzon: {
     ad:'Trabzon', kod:'TZX', renk:'#1E7E45',
     ucuslar:['2244','2248','2252'],
-    havayollari:['thy','ajet'],
+    havayollari:['thy','ajet','sunexpress'],
     zincir:[
       { ad:'Hamsi',           dosya:'item_trabzon.png' },
       { ad:'Sümela',          dosya:'item_trabzon2.png' },
@@ -447,7 +447,7 @@ const SEHIRLER = {
   konya: {
     ad:'Konya', kod:'KYA', renk:'#E3B505',
     ucuslar:['2290','2294','2298'],
-    havayollari:['thy','ajet'],
+    havayollari:['thy','ajet','sunexpress'],
     zincir:[
       { ad:'Etli Ekmek',   dosya:'item_konya.png' },
       { ad:'Mevlana',      dosya:'item_konya2.png' },
@@ -457,7 +457,7 @@ const SEHIRLER = {
   kibris: {
     ad:'Kıbrıs', kod:'ECN', renk:'#C0392B',
     ucuslar:['0740','0744','0748'],
-    havayollari:['thy','ajet'],
+    havayollari:['thy','ajet','sunexpress'],
     zincir:[
       { ad:'Hellim',        dosya:'item_kibris.png' },
       { ad:'Girne Kalesi',  dosya:'item_kibris2.png' },
@@ -477,7 +477,7 @@ const SEHIRLER = {
   kahire: {
     ad:'Kahire', kod:'CAI', renk:'#C8A02C',
     ucuslar:['0692','0694','0698'],
-    havayollari:['thy'],
+    havayollari:['thy','ajet','sunexpress'],
     zincir:[
       { ad:'Hurma',         dosya:'item_kahire.png' },
       { ad:'Piramitler',    dosya:'item_kahire2.png' },
