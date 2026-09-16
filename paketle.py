@@ -11,8 +11,19 @@ NEDEN ELLE LİSTE YOK
 --------------------
 Siber Koşu'nun paketleyicisinde her görselin adı elle yazılmış bir tablo
 vardı; yeni bir görsel eklenip tabloya yazılmayı unutunca paket sessizce
-eksik çıkıyordu. Burada öyle bir tablo YOK: assets/ klasöründe ne varsa
-otomatik gömülür.
+eksik çıkıyordu. Burada öyle bir tablo YOK.
+
+Ölçüt "klasörde var mı" değil, "KODDA GEÇİYOR MU": index.html, script.js ve
+style.css taranıyor, adı hiçbirinde geçmeyen dosya pakete girmiyor. Klasörde
+eski denemeler birikiyor (eski isim ekranları, kaldırılmış hediyelikler) ve
+bunlar paketi yüz megabaytlarca şişiriyordu. Dosyalar diskte duruyor,
+yalnızca pakete girmiyorlar; hangilerinin atlandığı üretim sırasında
+yazılıyor.
+
+Bir dosyanın adı kodda iki şekilde geçebilir: CSS ve HTML "assets/ad.png"
+diye tam yolu yazar, script.js'teki tablolar ise yalnızca dosya adını
+("item_urfa.png") tutar ve "assets/" önekini çalışırken ekler. İkisi de
+aranıyor.
 
 NASIL ÇALIŞIYOR
 ---------------
@@ -45,9 +56,12 @@ def oku(ad):
         return f.read()
 
 
-def varliklari_topla():
-    """assets/ altındaki her dosyayı 'assets/alt/klasor/ad.png' -> data: URI."""
-    tablo = {}
+def varliklari_topla(kaynak):
+    """Kodda ADI GEÇEN her dosyayı 'assets/alt/klasor/ad.png' -> data: URI.
+
+    kaynak: index.html + script.js + style.css metinleri birleşik.
+    """
+    tablo, atlanan = {}, []
     kok_assets = os.path.join(KOK, "assets")
     if not os.path.isdir(kok_assets):
         print("UYARI: assets/ klasörü yok, hiçbir görsel gömülmedi.")
@@ -59,10 +73,19 @@ def varliklari_topla():
                 continue
             tam = os.path.join(dizin, d)
             gorece = os.path.relpath(tam, KOK).replace(os.sep, "/")
+            if gorece not in kaynak and d not in kaynak:
+                atlanan.append((gorece, os.path.getsize(tam)))
+                continue
             with open(tam, "rb") as f:
                 ham = f.read()
             tablo[gorece] = "data:%s;base64,%s" % (
                 TURLER[uzanti], base64.b64encode(ham).decode("ascii"))
+    if atlanan:
+        toplam = sum(b for _, b in atlanan) / (1024 * 1024)
+        print("Kodda geçmediği için atlanan %d dosya (%.1f MB):"
+              % (len(atlanan), toplam))
+        for yol, b in sorted(atlanan):
+            print("   %-34s %6.2f MB" % (yol, b / (1024 * 1024)))
     return tablo
 
 
@@ -85,12 +108,16 @@ def js_tablosu(tablo):
 
 def main():
     print("Kaynak klasör:", KOK)
-    tablo = varliklari_topla()
+
+    html_ham = oku("index.html")
+    css_ham  = oku("style.css")
+    js       = oku("script.js")    # JS'teki yollar tabloyla çözülüyor, değiştirilmiyor
+
+    tablo = varliklari_topla(html_ham + css_ham + js)
     print("Gömülen dosya:", len(tablo))
 
-    html = oku("index.html")
-    css = yollari_goem(oku("style.css"), tablo)
-    js = oku("script.js")          # JS'teki yollar tabloyla çözülüyor, değiştirilmiyor
+    html = html_ham
+    css = yollari_goem(css_ham, tablo)
 
     # SIRA ÖNEMLİ: HTML'in kendi "assets/..." yolları ÖNCE değiştiriliyor.
     # Sonra yapılırsa sayfaya gömülen arama tablosunun ANAHTARLARI da
