@@ -90,8 +90,12 @@
        yöneticisinin önizlemesi sayfayı JavaScript'siz açıyor ve kodun
        kurduğu hiçbir şey görünmüyor. Böyle yazılınca önizlemede oyunun
        gerçek başlangıç ekranı çıkıyor. Paketlemede bu adres de gömülü
-       görsele çevriliyor. -->
-  <img id="basBg"  class="katman-bg"  src="assets/home_page.png" alt="" aria-hidden="true">
+       görsele çevriliyor.
+       Adres yalnızca asıl görselde var, arkadaki bulanık kopyada yok:
+       pakette her yazılış görselin tamamını bir kez daha gömüyor (2,6 MB).
+       Bulanık kopyayı kod dolduruyor; önizlemede kenarlarda sadece gökyüzü
+       rengi kalıyor. -->
+  <img id="basBg"  class="katman-bg"  alt="" aria-hidden="true">
   <img id="basImg" class="katman-img" src="assets/home_page.png" alt="Bagaj Atölyesi">
   <!-- Geçici panel BAŞTAN GİZLİ; görsel bulunamazsa kod açıyor. Açık
        bırakılsaydı önizlemede görselin üstünde duracaktı. -->

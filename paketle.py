@@ -35,6 +35,7 @@ NASIL ÇALIŞIYOR
   geçirir (bkz. gorselYolu), tablo yoksa dosyadan okur.
 """
 import base64
+import re
 import os
 import sys
 
@@ -116,7 +117,12 @@ def main():
     tablo = varliklari_topla(html_ham + css_ham + js)
     print("Gömülen dosya:", len(tablo))
 
-    html = html_ham
+    # HTML yorumları pakete girmiyor: içlerinde "assets/..." geçen bir yorum
+    # olunca o yol da görselin tamamıyla değiştiriliyordu. Başlangıç görseli
+    # yalnızca bir açıklama satırında adı geçtiği için pakete fazladan 2,6 MB
+    # olarak giriyordu. Taramada (yukarıda) yorumlar hâlâ sayılıyor; yorumda
+    # adı geçen dosya da gömülüyor ama yorumun kendisi değil.
+    html = re.sub(r"<!--.*?-->", "", html_ham, flags=re.S)
     css = yollari_goem(css_ham, tablo)
 
     # SIRA ÖNEMLİ: HTML'in kendi "assets/..." yolları ÖNCE değiştiriliyor.
