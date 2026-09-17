@@ -672,6 +672,18 @@ body:not(.sanat-plaka) .ucak-plaka{
 /* Tüm ekran dokunmatik: çocuk nereye basarsa bassın devam eder */
 .katman-hit{ position:absolute; inset:0; background:none; border:0; cursor:pointer; }
 
+/* Başlangıç ekranının logosu (bkz. #bitSahne: kutu görselle aynı alan).
+   Logonun yazısı beyaz; altındaki hafif gölge açık bir tavan parçasına
+   denk gelse de okunsun diye. */
+#basSahne{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:min(100%, calc(100vh * 941 / 1672));
+  height:min(100%, calc(100vw * 1672 / 941));
+  pointer-events:none;
+}
+.bas-logo{ position:absolute; top:2.2%; left:3.5%; width:36%; height:auto;
+  filter:drop-shadow(0 .15vh .4vh rgba(0,0,0,.55)); }
+
 /* ---------- BİTİŞ EKRANI ----------
    Sahne görselle AYNI ORANDA: rakam kutuları görselden ölçülmüş yüzdelerle
    yerleştirildiği için kutu ile görselin birebir üst üste durması şart.
