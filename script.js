@@ -87,7 +87,7 @@ const MANZARA = 'assets/bg_istanbul.png';
    zaten BAŞLA'ya basarak başladığı için ilk dokunuşta bağlam uyandırılıyor.
    Sessize alma: M tuşu (görevli için; isim yazarken harf olarak kalıyor). */
 const SESLER = {
-  tik:      { src:'assets/sounds/tik.wav',      ses:1.1  },  // buton, klavye
+  tik:      { src:'assets/sounds/tik.wav',      ses:0.7  },  // buton, klavye
   dus:      { src:'assets/sounds/dus.wav',      ses:1.5  },  // makineden düşüş
   birlesme: { src:'assets/sounds/birlesme.wav', ses:0.9  },  // aşama yükseldikçe inceliyor
   hazir:    { src:'assets/sounds/hazir.wav',    ses:0.6  },  // bavul hazır, uçak başa geçti
@@ -100,10 +100,20 @@ const SESLER = {
 const ANA_SES = 0.8;          // hepsinin ortak seviyesi
 const SAYAC_SANIYE = 10;      // son kaç saniyede tık tak çalıyor
 
+/* Arka plan müziği: yalnızca tur sırasında, döngüde ve kısık çalıyor.
+   Molada kaldığı yerde duruyor, devam edince oradan sürüyor; tur bitince
+   yavaşça kısılıp susuyor. Parçanın ortalama yüksekliği efektlere yakın
+   (RMS 0.16), bu yüzden seviyesi efektlerin çok altında tutuldu. MP3: 47
+   saniyelik parça WAV olsaydı 8 MB tutardı; Chrome MP3'ü sorunsuz açıyor. */
+const MUZIK = { src:'assets/sounds/muzik.mp3', ses:0.3 };
+
 const SesBaglam = window.AudioContext || window.webkitAudioContext;
 const sesBaglam = SesBaglam ? new SesBaglam() : null;
 const SES_TAMPON = {};
 let sesAcik = true;
+let muzikTampon = null, muzikKaynak = null, muzikKazanc = null;
+let muzikKonum = 0;           // parçanın neresinde kalındı (saniye)
+let muzikBasi = 0;            // o konumun bağlam saatindeki karşılığı
 
 function sesleriYukle(){
   if(!sesBaglam) return;
@@ -115,6 +125,44 @@ function sesleriYukle(){
       .then(b => new Promise((ok, no) => sesBaglam.decodeAudioData(b, ok, no)))
       .then(t => { SES_TAMPON[ad] = t; })
       .catch(() => {});
+  }
+  fetch(gorselYolu(MUZIK.src)).then(c => c.arrayBuffer())
+    .then(b => new Promise((ok, no) => sesBaglam.decodeAudioData(b, ok, no)))
+    .then(t => {
+      muzikTampon = t;
+      /* Tur, müzik yüklenmeden başladıysa şimdi girsin. */
+      if(durum === 'oyun') muzikBaslat();
+    })
+    .catch(() => {});
+}
+
+/* Müziği muzikKonum'dan başlatır; zaten çalıyorsa bir şey yapmaz. */
+function muzikBaslat(){
+  if(!muzikTampon || muzikKaynak) return;
+  muzikKazanc = sesBaglam.createGain();
+  muzikKazanc.gain.value = sesAcik ? MUZIK.ses * ANA_SES : 0;
+  muzikKaynak = sesBaglam.createBufferSource();
+  muzikKaynak.buffer = muzikTampon;
+  muzikKaynak.loop = true;
+  muzikKaynak.connect(muzikKazanc).connect(sesBaglam.destination);
+  muzikKaynak.start(0, muzikKonum % muzikTampon.duration);
+  muzikBasi = sesBaglam.currentTime - muzikKonum;
+}
+
+/* Müziği durdurur. sonu: turun bitişi, yavaşça kısılıyor ve bir sonraki
+   tur baştan başlıyor. Değilse (mola) kalınan yer saklanıyor. */
+function muzikDurdur(sonu = false){
+  if(!muzikKaynak) return;
+  const kaynak = muzikKaynak, simdi = sesBaglam.currentTime;
+  muzikKaynak = null;
+  if(sonu){
+    muzikKonum = 0;
+    muzikKazanc.gain.setValueAtTime(muzikKazanc.gain.value, simdi);
+    muzikKazanc.gain.linearRampToValueAtTime(0, simdi + 0.6);
+    kaynak.stop(simdi + 0.6);
+  }else{
+    muzikKonum = (simdi - muzikBasi) % muzikTampon.duration;
+    kaynak.stop();
   }
 }
 
@@ -143,7 +191,10 @@ function sesiKur(){
     if(e.target.closest && e.target.closest('button')) sesCal('tik');
   }, true);
   window.addEventListener('keydown', e => {
-    if((e.key === 'm' || e.key === 'M') && durum !== 'isim') sesAcik = !sesAcik;
+    if((e.key === 'm' || e.key === 'M') && durum !== 'isim'){
+      sesAcik = !sesAcik;
+      if(muzikKazanc && muzikKaynak) muzikKazanc.gain.value = sesAcik ? MUZIK.ses * ANA_SES : 0;
+    }
   });
   sesleriYukle();
 }
@@ -1355,6 +1406,7 @@ function teslimEt(t, ucakDom){
     /* Sayaç HEMEN dursun: uçağın kalkış animasyonu sürerken saniyeler
        işlemeye devam edip kazanılan bonusu yiyordu. */
     durum = 'bitiyor';
+    muzikDurdur(true);
     setTimeout(oyunuBitir, 800);
   }
 }
@@ -1523,6 +1575,8 @@ function oyunuBaslat(){
   durum = 'oyun';
   puan = 0; tamamlanan = 0; hatali = 0; kalanSn = TUR_SURESI;
   baslangic = performance.now();
+  muzikKonum = 0;
+  muzikBaslat();
 
   $('#basScreen').classList.add('gizli');
   $('#bitScreen').classList.add('gizli');
@@ -1583,8 +1637,9 @@ function yaziyiSigdir(el){
 }
 
 function oyunuBitir(){
-  if(durum !== 'bitti') sesCal('bitis');
   if(durum === 'bitti') return;          // hem süre bitişi hem son teslimat çağırabilir
+  muzikDurdur(true);
+  sesCal('bitis');
   durum = 'bitti';
   /* Artan süre puana dönüşüyor: erken bitirmenin ödülü bu. Süre dolduysa
      kalan sıfır, bonus da yok. */
@@ -1624,6 +1679,7 @@ function molaVer(){
   if(durum !== 'oyun') return;
   tasimayiIptal();
   durum = 'mola';
+  muzikDurdur();
   molaBasi = performance.now();
   $('#molaScreen').classList.remove('gizli');
 }
@@ -1633,12 +1689,14 @@ function molayiBitir(){
   baslangic += gecen;
   kendiSaat += gecen;
   durum = 'oyun';
+  muzikBaslat();
   $('#molaScreen').classList.add('gizli');
 }
 /* Moladan ana sayfaya: tur yarıda bırakılıyor, skor tablosuna yazılmıyor. */
 function moladanAnaSayfaya(){
   if(durum !== 'mola') return;
   $('#molaScreen').classList.add('gizli');
+  muzikKonum = 0;
   anaSayfayaDon();
 }
 
