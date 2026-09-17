@@ -10,7 +10,8 @@ sound itself is unchanged. Files copied from Siber Kosu keep its sources.
 dus.wav        Kenney - Interface Sounds    drop_002.ogg
 hazir.wav      Kenney - Interface Sounds    confirmation_001.ogg
 birlesme.wav   synthesised: sine sweep 280->950 Hz, 70 ms
-kalkis.wav     synthesised: sine glide 300->1400 Hz with light vibrato, 600 ms
+kalkis.wav     synthesised: jet whoosh, filtered noise swell with a soft turbine
+               whine rising 700->1600 Hz, panned left to right, 1.2 s
 sayac.wav      synthesised: 1250 Hz woodblock tick with harmonic, 50 ms
 tik.wav        synthesised: same file as birlesme.wav (chosen by ear for buttons)
 dogru.wav      from Siber Kosu (Kenney - Interface Sounds, confirmation_003.ogg)

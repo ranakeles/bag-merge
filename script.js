@@ -92,7 +92,7 @@ const SESLER = {
   birlesme: { src:'assets/sounds/birlesme.wav', ses:0.9  },  // aşama yükseldikçe inceliyor
   hazir:    { src:'assets/sounds/hazir.wav',    ses:0.6  },  // bavul hazır, uçak başa geçti
   dogru:    { src:'assets/sounds/dogru.wav',    ses:0.75 },  // doğru teslim
-  kalkis:   { src:'assets/sounds/kalkis.wav',   ses:0.4  },  // ardından uçak kalkıyor
+  kalkis:   { src:'assets/sounds/kalkis.wav',   ses:0.8  },  // ardından uçak kalkıyor (jet sesi)
   yanlis:   { src:'assets/sounds/yanlis.wav',   ses:1.2  },  // yanlış uçak
   sayac:    { src:'assets/sounds/sayac.wav',    ses:1.15 },  // son saniyeler, her saniye
   bitis:    { src:'assets/sounds/bitis.wav',    ses:1.05 }   // tur bitti
