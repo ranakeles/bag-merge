@@ -1208,6 +1208,11 @@ function seritKaydirmayiKur(){
   alan.addEventListener('pointerup', birak);
   alan.addEventListener('pointercancel', birak);
 
+  /* Şerit yalnızca yatay kayar. Safari overflow-y:hidden kutuyu da
+     dikeyde kaydırabiliyor (içerik taşarsa); olursa hemen geri alınıyor,
+     yoksa tezgah yukarı kayıp uçakları kesiyordu. */
+  alan.addEventListener('scroll', () => { if(alan.scrollTop) alan.scrollTop = 0; });
+
   alan.addEventListener('wheel', ev => {
     if(Math.abs(ev.deltaY) <= Math.abs(ev.deltaX)) return;   // yatay kaydırma zaten çalışıyor
     alan.scrollLeft += ev.deltaY;
@@ -1868,8 +1873,12 @@ function tahtaGorselleri(){
     /* Kayan tezgahın ölçüleri sahne genişliği cinsinden (bkz. style.css
        #ucakSerit::before). Hepsi görselin kendi oranlarından. */
     const kokS = document.documentElement.style;
-    kokS.setProperty('--tezgah-oran', (TEZGAH.boy / TEZGAH.en).toFixed(5));
-    kokS.setProperty('--tezgah-zemin-alt', ((TEZGAH.boy - TEZGAH.zeminY) / TEZGAH.en).toFixed(5));
+    /* Görselin opakAlt'tan aşağısı tamamen şeffaf ve ÇİZİLMİYOR: çizilince
+       şeridin kutusundan taşıyordu, Safari de o taşmayı dikey kaydırma
+       payı sayıp tezgahı yukarı kaydırtıyordu (uçaklar kesiliyordu). */
+    kokS.setProperty('--tezgah-oran', (TEZGAH.opakAlt / TEZGAH.en).toFixed(5));
+    kokS.setProperty('--tezgah-zemin-alt', ((TEZGAH.opakAlt - TEZGAH.zeminY) / TEZGAH.en).toFixed(5));
+    kokS.setProperty('--tezgah-kes-px', TEZGAH.boy - TEZGAH.opakAlt);
     kokS.setProperty('--tezgah-uc', (TEZGAH.uc / TEZGAH.en).toFixed(5));
     kokS.setProperty('--tezgah-uc-px', TEZGAH.uc);
   }
