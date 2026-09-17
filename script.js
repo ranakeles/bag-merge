@@ -86,15 +86,24 @@ const MOLA = {
    yanında rozet çıkıyor ve uçak tezgahta başa geçiyor (bkz. hazirlariGuncelle).
    İki görsel ayrı: bavul tahtada küçük, rozet onu örterdi. */
 /* ---- KALKIŞ PANOSU ----
-   Tahta kısalınca üst bilgi ile uçaklar arasında kalan boşluğu dolduruyor.
-   Görsel 2172x724; soldaki kol görselin içinde. Üç satırın yeri görselden
-   ÖLÇÜLDÜ (parlaklık profili: her satırın açık lacivert dolgusu koyu bir
-   çizgiyle çevrili). Görsel değişirse yeniden ölçülmeli.
-     satırlar  x 415-2053, y 312 / 408 / 504, her biri 80 px */
+   Tahta kısalınca üst bilgi ile uçaklar arasında kalan boşluğu dolduruyor;
+   turun altı uçuşunun hepsi yazılı.
+
+   departure_board_6.png, üç satırlık çizim olan departure_board.png'den
+   TÜRETİLDİ (yeniden üretilmedi): satırlar 96 px adımla birebir aynı
+   çizildiği için ikinci satır üç kez araya eklendi. Soldaki kolda
+   çubuklar kopyalanmasın diye orada yalnızca iki çubuk arasındaki düz
+   plaka uzatıldı; plakayla çerçeve kenarları tek bir düz satırla
+   dolduruldu, ek yerlerinde çizgi kalmasın diye uçları yumuşatıldı.
+   Ekranın geri kalanı kaynakla piksel piksel aynı.
+
+   Satırların yeri kaynaktan ÖLÇÜLDÜ (parlaklık profili: her satırın açık
+   lacivert dolgusu koyu bir çizgiyle çevrili): x 415-2053, 80 px yükseklik,
+   ilki y=312, adım 96. Görsel değişirse yeniden ölçülmeli. */
 const PANO = {
-  gorsel:'assets/departure_board.png',
-  en:2172, boy:724,
-  satir:{ x:415, en:1639, boy:80, y:[312, 408, 504] }
+  gorsel:'assets/departure_board_6.png',
+  en:2172, boy:1012,
+  satir:{ x:415, en:1639, boy:80, y:[312, 408, 504, 600, 696, 792] }
 };
 
 const HAZIR = {
@@ -1149,14 +1158,21 @@ function ucaklariKur(){
 }
 
 /* ---------- KALKIŞ PANOSU ----------
-   Tezgahtaki sıranın ilk üç uçuşu: uçuş kodu, şehir ve durum. Bavulu hazır
+   Tezgahtaki sırayla bütün uçuşlar: uçuş kodu, şehir ve durum. Bavulu hazır
    olan uçuş "HAZIR", diğerleri "BEKLİYOR". Uçak kalkınca listeden düşüyor,
-   sıradaki yukarı çıkıyor; üçten az uçuş kalınca alttaki satırlar boş. */
+   alttakiler yukarı çıkıyor, en alttaki satırlar boşalıyor. */
 function panoKur(){
   if(!gorselVar(PANO.gorsel)) return;
   const pano = $('#pano');
+  pano.style.setProperty('--pano-oran', (PANO.boy / PANO.en).toFixed(5));
   pano.querySelector('.pano-gorsel').src = gorselYolu(PANO.gorsel);
   const S = PANO.satir;
+  pano.querySelectorAll('.pano-satir').forEach(el => el.remove());
+  S.y.forEach(() => {
+    const el = document.createElement('div');
+    el.className = 'pano-satir';
+    pano.appendChild(el);
+  });
   pano.querySelectorAll('.pano-satir').forEach((el, i) => {
     el.style.left   = (S.x    / PANO.en  * 100) + '%';
     el.style.width  = (S.en   / PANO.en  * 100) + '%';
