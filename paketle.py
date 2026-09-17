@@ -37,6 +37,8 @@ NASIL ÇALIŞIYOR
 import base64
 import re
 import os
+import shutil
+import subprocess
 import sys
 
 KOK = sys.argv[1] if len(sys.argv) > 1 else os.path.dirname(os.path.abspath(__file__))
@@ -145,8 +147,20 @@ def main():
     html = html.replace(etiket, "<script>\n%s\n</script>\n<script>\n%s\n</script>"
                         % (js_tablosu(tablo), js))
 
-    with open(CIKTI, "w", encoding="utf-8") as f:
+    # Eski dosyanın ÜSTÜNE yazılmıyor: Finder önizlemeyi dosyaya göre
+    # önbellekte tutuyor ve yerinde değişen dosyada eski oyunun görüntüsü
+    # kalıyordu. Yanına yazılıp yerine taşınınca yeni bir dosya oluyor ve
+    # önizleme baştan çıkarılıyor.
+    gecici = CIKTI + ".yaziliyor"
+    with open(gecici, "w", encoding="utf-8") as f:
         f.write(html)
+    if os.path.exists(CIKTI):
+        os.remove(CIKTI)
+    os.replace(gecici, CIKTI)
+    # Önizleme önbelleğini de tazele (yalnızca macOS'ta var).
+    if shutil.which("qlmanage"):
+        subprocess.run(["qlmanage", "-r", "cache"],
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     mb = os.path.getsize(CIKTI) / (1024 * 1024)
     print("Hazır: %s  (%.1f MB)" % (CIKTI, mb))
