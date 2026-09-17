@@ -347,6 +347,12 @@ body:not(.sanat-tezgah) #ucaklar{
   /* Genişlik sahneye göre: yüzde verilseydi kartları saran şeridin
      genişliğine göre hesaplanırdı, şerit de kartlardan — döngü. */
   flex:0 0 calc(var(--sahne-en, 100vw) / var(--gorunen, 3)); min-width:0; position:relative;
+  /* Aynı genişlik width olarak da yazılı. Safari şeridin (#ucakSerit)
+     genişliğini kartların flex-basis'inden değil İÇERİKLERİNDEN
+     hesaplıyordu (plaka görseli 1821 px): şerit kartlardan uzun çıkıyor,
+     tezgah son uçaktan sonra da uzuyor ve sağ ucu hiç görünmüyordu.
+     Chrome'da sorun yoktu. width verilince iki tarayıcı da aynı ölçüyor. */
+  width:calc(var(--sahne-en, 100vw) / var(--gorunen, 3));
   scroll-snap-align:center;
   display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
   padding-bottom:calc(var(--hucre)*0.06);
