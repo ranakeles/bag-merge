@@ -482,10 +482,12 @@ const MAKINE_YERI = { s:3, k:3 };
 
    Tıkanmayı süre değil tahtanın kendisi sınırlıyor: yer kalmayınca elle
    basışta uyarı çıkıyor, kendiliğinden düşüm ise sessizce bekliyor.
-   Bir turda kendiliğinden ~40 hediyelik düşüyor; bir bagaj 4 tane istiyor. */
+   Bir bagaj 4 hediyelik istiyor, 6 siparişte stokta toplam 24 tane var.
+   Saniyede bir düşünce hiç dokunulmasa da stok ~24 saniyede bitiyor
+   (2 saniyeyken çocuklara yavaş geldi). */
 const MAKINE_ADET = 3;         // dokununca düşen hediyelik
 const MAKINE_KENDI_ADET = 1;   // kendiliğinden düşen hediyelik
-const MAKINE_KENDI_ARALIK = 2000;  // ms — kendiliğinden düşüm aralığı
+const MAKINE_KENDI_ARALIK = 1000;  // ms — kendiliğinden düşüm aralığı
 
 const HEDEF_SIPARIS = 6;       // bu kadar bagaj teslim edilince oyun biter
 /* Siparişlerin HEPSİ tezgahta duruyor; tezgah yana kaydırılıyor. Bu sayı
