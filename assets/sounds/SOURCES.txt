@@ -1,0 +1,24 @@
+Sound effects for Bagaj Atolyesi
+
+Every file here is either CC0 (public domain, no attribution required) or
+was synthesised in code for this game. Nothing needs crediting.
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Kenney files were converted from OGG to 16-bit PCM WAV with afconvert; the
+sound itself is unchanged. Files copied from Siber Kosu keep its sources.
+
+dus.wav        Kenney - Interface Sounds    drop_002.ogg
+hazir.wav      Kenney - Interface Sounds    confirmation_001.ogg
+birlesme.wav   synthesised: sine sweep 280->950 Hz, 70 ms
+kalkis.wav     synthesised: sine glide 300->1400 Hz with light vibrato, 600 ms
+sayac.wav      synthesised: 1250 Hz woodblock tick with harmonic, 50 ms
+tik.wav        synthesised: same file as birlesme.wav (chosen by ear for buttons)
+dogru.wav      from Siber Kosu (Kenney - Interface Sounds, confirmation_003.ogg)
+yanlis.wav     from Siber Kosu (Kenney - Digital Audio, phaserDown3.ogg)
+bitis.wav      from Siber Kosu (Kenney - Music Jingles, jingles_PIZZI02.ogg)
+
+Kenney: https://kenney.nl/assets
+
+Background music - CC0
+muzik.mp3      TinyWorlds - Happy Adventure (Loop)
+               https://opengameart.org/content/happy-adventure-loop   (file unchanged)
