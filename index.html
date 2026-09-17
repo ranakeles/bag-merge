@@ -143,6 +143,22 @@
   </div>
 </div>
 
+<!-- ================= NASIL OYNANIR =================
+     İsim girilince açılır; tur ancak kartın HADİ BAŞLA'sına basınca
+     başlıyor, yani kart okunurken süre işlemiyor. Arkada oyun değil, ana
+     ekranın bulanık kopyası var: oyun henüz başlamadı (Siber Koşu'da da
+     böyle). Görselin adresini kod koyuyor: HTML'de yazılsaydı pakete
+     ikinci kez gömülürdü. Buton alanı görselden ÖLÇÜLDÜ (style.css). -->
+<div id="nasilScreen" class="katman gizli">
+  <img id="nasilBg" class="katman-bg" alt="" aria-hidden="true">
+  <div id="nasilSahne">
+    <div class="nasil-kart">
+      <img id="nasilImg" class="nasil-gorsel" alt="Nasıl oynanır: makineye dokun, aynıları birleştir, bavulu hazırla, doğru uçağa sürükle">
+      <button type="button" id="nasilBtn" class="nasil-basla" aria-label="Hadi başla"></button>
+    </div>
+  </div>
+</div>
+
 <!-- ================= MOLA =================
      Tam ekran değil: donmuş oyunun üstünde duran bir kart (pause_card.png).
      Sahnenin içinde, onunla aynı 9:16 alanı kaplıyor. Butonların dokunma

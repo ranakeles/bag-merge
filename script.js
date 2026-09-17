@@ -208,6 +208,12 @@ const MOLA = {
   kart:'assets/pause_card.png'
 };
 
+/* ---- NASIL OYNANIR ----
+   İsimden sonra, turdan önce açılan kart. HADİ BAŞLA'nın yeri görselden
+   ölçüldü ve style.css'te duruyor (.nasil-basla). Görsel yoksa kart
+   atlanıyor, tur doğrudan başlıyor. */
+const NASIL = { kart:'assets/how_to_play.png' };
+
 /* ---- HAZIR İŞARETLERİ ----
    Tahtada bir bavul oluşunca bavulun yanında tik, onu bekleyen uçağın
    yanında rozet çıkıyor ve uçak tezgahta başa geçiyor (bkz. hazirlariGuncelle).
@@ -673,7 +679,7 @@ function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/home_page.png',
                  TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK,
                  BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel, RAKAM.gorsel, SIMGE.gorsel,
-                 MOLA.buton, MOLA.kart, HAZIR.rozet, HAZIR.tik, PANO.gorsel];
+                 MOLA.buton, MOLA.kart, NASIL.kart, HAZIR.rozet, HAZIR.tik, PANO.gorsel];
   for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
@@ -729,7 +735,7 @@ const $ = s => document.querySelector(s);
 const rastgele = n => Math.floor(Math.random()*n);
 function karistir(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=rastgele(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-let durum = 'bas';            // bas | isim | oyun | mola | bitiyor | bitti
+let durum = 'bas';            // bas | isim | nasil | oyun | mola | bitiyor | bitti
 let molaBasi = 0;             // molanın başladığı an (performance.now)
 let izgara = [];              // izgara[s][k] = null | {sehir, basamak, el}
 let hucreEl = [];             // aynı boyutta DOM karşılıkları
@@ -1471,17 +1477,34 @@ function isimEkraniniAc(){
   $('#basScreen').classList.add('gizli');
   $('#bitScreen').classList.add('gizli');
   if(isimEkraniniKur()) $('#isimScreen').classList.remove('gizli');
-  else oyunuBaslat();          // görsel yoksa isim adımını atla
+  else nasilOynanirAc();       // görsel yoksa isim adımını atla
 }
 
 function isimOnayla(){
   if(yazilanAd.trim().length < AD_MIN) return;
   $('#isimScreen').classList.add('gizli');
+  nasilOynanirAc();
+}
+
+/* Tur burada değil, kartın HADİ BAŞLA'sında başlıyor. */
+function nasilOynanirAc(){
+  if(!gorselVar(NASIL.kart)){ oyunuBaslat(); return; }
+  durum = 'nasil';
+  $('#nasilImg').src = gorselYolu(NASIL.kart);
+  /* Arkadaki bulanık kopya ana ekranın görseli. Aynı data adresi olduğu
+     için pakette ikinci kez yer tutmuyor. */
+  if(gorselVar('assets/home_page.png')) $('#nasilBg').src = gorselYolu('assets/home_page.png');
+  $('#nasilScreen').classList.remove('gizli');
+}
+function nasilOynanirBitti(){
+  if(durum !== 'nasil') return;
+  $('#nasilScreen').classList.add('gizli');
   oyunuBaslat();
 }
 
 /* Geliştirirken fiziksel klavyeyle de yazılabilsin; kioskta klavye yok. */
 function isimTusu(e){
+  if(durum === 'nasil' && e.key === 'Enter'){ nasilOynanirBitti(); return; }
   if(durum !== 'isim') return;
   if(e.key === 'Backspace'){ adSil(); e.preventDefault(); return; }
   if(e.key === 'Enter'){ isimOnayla(); return; }
@@ -1864,6 +1887,7 @@ function kur(){
   $('#izgara').addEventListener('pointerdown', tasimayaBasla);
   seritKaydirmayiKur();
   $('#basBtn').addEventListener('click', isimEkraniniAc);
+  $('#nasilBtn').addEventListener('click', nasilOynanirBitti);
   window.addEventListener('keydown', isimTusu);
   $('#bitBtn').addEventListener('click', anaSayfayaDon);
   $('#molaBtn').addEventListener('click', molaVer);
