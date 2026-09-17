@@ -1323,6 +1323,17 @@ function ucaklariKur(){
     sehirler = siparisSehirleri();
     havayollari = havayollariniDagit(sehirler);
   }
+  /* Tezgahın en önündeki uçak her turda THY. Turda en az bir THY hep var
+     (her şehre THY uçuyor ve her havayolu en az bir kez geliyor); birden
+     fazlaysa öne geçen rastgele seçiliyor, diğerlerinin sırası bozulmuyor. */
+  if(havayollari){
+    const thyler = havayollari.map((h, i) => h === 'thy' ? i : -1).filter(i => i >= 0);
+    if(thyler.length){
+      const i = thyler[rastgele(thyler.length)];
+      sehirler = [sehirler[i], ...sehirler.filter((_, j) => j !== i)];
+      havayollari = [havayollari[i], ...havayollari.filter((_, j) => j !== i)];
+    }
+  }
   sehirler.forEach((sehir, i) => {
     const u = ucakKarti(sehir, havayollari && havayollari[i]);
     u.sira = ucaklar.length;
