@@ -15,14 +15,24 @@
    ========================================================= */
 
 /* ---------- 1) AYARLAR + ŞEHİR ZİNCİRLERİ ---------- */
-const SUTUN = 7, SATIR = 9;
+/* 7x7. Önce 7x9'du; kiosk yüksekte duruyor ve çocukların eli üst satırlara
+   yetişmiyordu, üstteki iki satır kaldırıldı. */
+const SUTUN = 7, SATIR = 7;
 
 /* ---- TAHTA GÖRSELİ ----
    Izgara artık koddan çizilmiyor: tahtanın tamamı tek bir görsel
-   (assets/matrix.png) ve hücreler onun üstüne oturuyor. Aşağıdaki sayılar
-   GÖRSELDEN ÖLÇÜLDÜ (parlaklık geçişlerinden hücre kenarları bulundu):
-   görsel 1100x1429, ilk hücrenin sol üstü (38, 45), hücre adımı yatayda
-   146.14 px, dikeyde 146.44 px — 7 sütun ve 9 satır tam oturuyor.
+   (assets/matrix_7x7.png) ve hücreler onun üstüne oturuyor. Aşağıdaki
+   sayılar GÖRSELDEN ÖLÇÜLDÜ (parlaklık geçişlerinden hücre kenarları
+   bulundu): ilk hücrenin sol üstü (38, 45), hücre adımı yatayda 146.14 px,
+   dikeyde 146.44 px.
+
+   matrix_7x7.png, çizilmiş 7x9'luk matrix.png'den KESİLDİ, yeniden
+   üretilmedi: y=118'de (ilk satır hücrelerinin ortası, çerçevenin yuvarlak
+   köşeleri bitmiş) kesilip 293 px (iki satır adımı) aşağıdan devam
+   ettirildi. İki taraf aynı renk desenindeki satırlar; ek yerindeki fark
+   ortalama 1,5 ton ve 8 piksellik yumuşak geçişle birleştirildi. Ek
+   dışındaki her piksel kaynakla birebir aynı, kayıp yok. Hücre adımı
+   aynı kaldığı için ölçüler de aynı; yalnızca boy 1429 → 1136.
 
    GÖRSEL DEĞİŞİRSE BU SAYILAR DA DEĞİŞMELİ. Yoksa çocuk bir hücreye basar,
    yandaki tepki verir. Ölçüm yöntemi: hücre sıraları boyunca parlaklık
@@ -293,22 +303,22 @@ const HAVAYOLLARI = {
 const UCAK_YEDEK = 'assets/plane.png';
 
 const TAHTA = {
-  gorsel:'assets/matrix.png',
-  en:1100, boy:1429,      // görselin piksel ölçüsü
+  gorsel:'assets/matrix_7x7.png',
+  en:1100, boy:1136,      // görselin piksel ölçüsü
   x0:38, y0:45,           // ilk hücrenin sol üst köşesi
   adimX:146.14, adimY:146.44
 };
 /* Tahtanın ekrandaki boyu hücre cinsinden: görsel, hücre adımı kadar
    ölçeklenince bu kadar hücre eni/boyu kaplıyor. */
 const TAHTA_EN  = TAHTA.en  / TAHTA.adimX;   // ≈ 7.53 hücre
-const TAHTA_BOY = TAHTA.boy / TAHTA.adimY;   // ≈ 9.76 hücre
+const TAHTA_BOY = TAHTA.boy / TAHTA.adimY;   // ≈ 7.76 hücre
 /* Hücrenin görsel içindeki yüzdesi — konumlar bundan türüyor. */
 const HUCRE_EN_YUZDE  = TAHTA.adimX / TAHTA.en  * 100;
 const HUCRE_BOY_YUZDE = TAHTA.adimY / TAHTA.boy * 100;
 /* Makine ızgaranın ORTASINDA: sekiz komşusu da var, düşen hediyelikler
    parmağın rahat ulaştığı yere geliyor. Kenara alınırsa komşu sayısı
    üçe düşüyor ve makine sürekli "yer yok" diyor.                        */
-const MAKINE_YERI = { s:4, k:3 };
+const MAKINE_YERI = { s:3, k:3 };
 /* MAKİNE İKİ TÜRLÜ ÇALIŞIYOR:
    1) Kendi kendine, düzenli aralıklarla birer hediyelik döküyor. Böylece
       hiç dokunulmasa bile tahta besleniyor; çocuk sadece birleştirmeye
