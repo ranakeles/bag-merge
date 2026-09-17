@@ -110,16 +110,17 @@ img{ -webkit-user-drag:none; user-drag:none; }
 /* HUD sahnenin akışında DEĞİL, manzaranın üstünde yüzüyor: üst bölge dar,
    HUD yer kaplasaydı uçaklar tezgahın üstüne sığmazdı. */
 /* ÜST BİLGİ sahnenin EN ÜSTÜNDE, akışın dışında (manzaranın üstünde
-   yüzüyor). Solda sipariş ve puan alt alta, sağda süre ve mola alt alta;
-   ortası boş, manzara görünüyor. Tahta kısalınca tezgah ve tahta aşağı
-   indi, üst bilgi yerinde kaldı. */
+   yüzüyor): üç panel ve mola butonu tek satırda. Tahta kısalınca tezgah ve
+   tahta aşağı indi, üst bilgi yerinde kaldı; aradaki bandı kalkış panosu
+   dolduruyor. Paneller iki gruba ayrılmış durumda (sipariş+puan, süre+
+   mola) ama gruplar da yatay. */
 #hud{
   position:absolute; top:0; left:0; z-index:6;
-  width:100%; display:flex; justify-content:space-between; align-items:flex-start;
+  width:100%; display:flex; justify-content:space-between; align-items:center;
   gap:calc(var(--hucre)*0.14); padding:calc(var(--hucre)*0.20) calc(var(--hucre)*0.26);
 }
-.hud-sol{ display:flex; flex-direction:column; gap:calc(var(--hucre)*0.10); }
-.hud-sag{ display:flex; flex-direction:column; align-items:flex-end; gap:calc(var(--hucre)*0.10); }
+.hud-sol{ display:flex; align-items:center; gap:calc(var(--hucre)*0.10); }
+.hud-sag{ display:flex; align-items:center; gap:calc(var(--hucre)*0.10); }
 .hud-kutu{
   flex:1; display:flex; flex-direction:column; align-items:center; gap:1px;
   padding:calc(var(--hucre)*0.12) calc(var(--hucre)*0.10);
@@ -156,7 +157,17 @@ img{ -webkit-user-drag:none; user-drag:none; }
 /* ---- MOLA BUTONU ----
    Görselin %84'ü daire, çevresi şeffaf pay; kat 1.15 iken görünen daire
    panel yüksekliğine yaklaşık eşit oluyor. */
-:root{ --mola-kat:1.15; --panel-en:calc(var(--sahne-en, 100vw) * 0.36); }
+:root{
+  --mola-kat:1.15;
+  /* Tabelanın eni ve üst bilginin boyu: tabela üst bilginin hemen altına
+     oturuyor, iki düzende de bu iki sayıdan hesaplanıyor. */
+  --pano-en:calc(var(--sahne-en, 100vw) * 0.72);
+  --hud-boy:calc(var(--hucre)*0.36 + var(--panel-en) / var(--hud-oran, 3.45));
+  /* Üç panel ve mola tek satırda: satır = sahne − kenar payları (2×0.16
+     hücre) − boşluklar (0.10 + 0.14 + 0.10 hücre). Mola butonunun eni panel
+     yüksekliğinin --mola-kat katı, panel yüksekliği de panel eni / oran. */
+  --panel-en:calc((var(--sahne-en, 100vw) - var(--hucre)*0.66) / (3 + 1.15 / 3.45));
+}
 .hud-mola{
   flex:none; position:relative; padding:0; border:0; cursor:pointer;
   width:calc(var(--hucre)*0.78); aspect-ratio:1;
@@ -249,6 +260,35 @@ img{ -webkit-user-drag:none; user-drag:none; }
    ondan geliyor); görünen tezgah uçaklarla kayan şeridin içinde. */
 .sanat-tezgah .tezgah-gorsel{ visibility:hidden; }
 .tezgah-gorsel:not([src]){ display:none; }
+
+/* ---------- KALKIŞ PANOSU ----------
+   Üst bilginin hemen altında, sola dayalı (kolu soldaki duvardan geliyor).
+   Eni sahnenin %72'si, boyu görsel oranından (2172x1012). Altı satırla
+   üst bilgi ile uçaklar arasındaki bandın büyük kısmını dolduruyor.
+   Yazı boyu da sahne enine bağlı: satır yüksekliği sahne eninin
+   0.72 × 80 / 2172 ≈ %2.65'i, yazı onun yarısından biraz fazlası. */
+.pano{
+  /* Üst bilginin hemen altında: üst bilgi yüksekliği = iki kenar payı
+     (0.18 hücre) + panel yüksekliği (panel eni / oran). Görselin üstündeki
+     şeffaf pay (%13) panellerle arasında nefes bırakıyor. */
+  position:absolute; left:0; z-index:3;
+  top:calc(var(--hud-boy) - var(--pano-en) * var(--pano-oran, .4659) * 0.09);
+  width:var(--pano-en); aspect-ratio:1 / var(--pano-oran, .4659);
+  pointer-events:none;
+}
+.pano-gorsel{ position:absolute; inset:0; width:100%; height:100%; }
+.pano-satir{
+  position:absolute; display:flex; align-items:center;
+  padding:0 2.2%; gap:3%;
+  font-family:var(--pano); font-weight:700; line-height:1; white-space:nowrap;
+  font-size:calc(var(--pano-en) * 0.0239);
+  letter-spacing:.06em; color:#FFD34D;
+  text-shadow:0 0 .35em rgba(255,200,60,.55);
+}
+.pano-kod{ flex:0 0 22%; }
+.pano-sehir{ flex:1; overflow:hidden; text-overflow:ellipsis; }
+.pano-durum{ flex:none; color:rgba(255,211,77,.55); text-shadow:none; }
+.pano-satir.hazir .pano-durum{ color:#6BFF8E; text-shadow:0 0 .4em rgba(80,255,130,.6); }
 
 /* SİPARİŞ ŞERİDİ
    Turun bütün siparişleri tezgahta duruyor ve şerit yana kaydırılıyor;

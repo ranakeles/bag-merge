@@ -35,7 +35,7 @@
        etiketleri gizleniyor (Türkçe "SİPARİŞ/SÜRE" görselde üretilemiyor,
        İ ve Ü bozuk çıkıyor). Görsel yoksa etiketler geri geliyor. -->
   <div id="hud">
-    <!-- Solda sipariş ve puan alt alta, sağda süre ve mola alt alta. -->
+    <!-- Tek satır: solda sipariş ve puan, sağda süre ve mola. -->
     <div class="hud-sol">
       <div class="hud-kutu" data-hud="siparis">
         <img class="hud-gorsel" alt="" aria-hidden="true">
@@ -56,6 +56,14 @@
         <img class="mola-btn-gorsel" alt="" aria-hidden="true">
       </button>
     </div>
+  </div>
+
+  <!-- KALKIŞ PANOSU: üst bilginin hemen altında, soldaki duvardan çıkan bir kolla
+       tutuluyor. Satırlarına sıradaki uçuşları kod yazıyor. Görsel yoksa
+       hiç görünmüyor. -->
+  <div id="pano" class="pano gizli" aria-hidden="true">
+    <img class="pano-gorsel" alt="">
+    <!-- satırları kod üretiyor (PANO tablosundaki satır sayısı kadar) -->
   </div>
 
   <!-- ================= TEZGAH VE UÇAKLAR =================

@@ -85,6 +85,27 @@ const MOLA = {
    Tahtada bir bavul oluşunca bavulun yanında tik, onu bekleyen uçağın
    yanında rozet çıkıyor ve uçak tezgahta başa geçiyor (bkz. hazirlariGuncelle).
    İki görsel ayrı: bavul tahtada küçük, rozet onu örterdi. */
+/* ---- KALKIŞ PANOSU ----
+   Tahta kısalınca üst bilgi ile uçaklar arasında kalan boşluğu dolduruyor;
+   turun altı uçuşunun hepsi yazılı.
+
+   departure_board_6.png, üç satırlık çizim olan departure_board.png'den
+   TÜRETİLDİ (yeniden üretilmedi): satırlar 96 px adımla birebir aynı
+   çizildiği için ikinci satır üç kez araya eklendi. Soldaki kolda
+   çubuklar kopyalanmasın diye orada yalnızca iki çubuk arasındaki düz
+   plaka uzatıldı; plakayla çerçeve kenarları tek bir düz satırla
+   dolduruldu, ek yerlerinde çizgi kalmasın diye uçları yumuşatıldı.
+   Ekranın geri kalanı kaynakla piksel piksel aynı.
+
+   Satırların yeri kaynaktan ÖLÇÜLDÜ (parlaklık profili: her satırın açık
+   lacivert dolgusu koyu bir çizgiyle çevrili): x 415-2053, 80 px yükseklik,
+   ilki y=312, adım 96. Görsel değişirse yeniden ölçülmeli. */
+const PANO = {
+  gorsel:'assets/departure_board_6.png',
+  en:2172, boy:1012,
+  satir:{ x:415, en:1639, boy:80, y:[312, 408, 504, 600, 696, 792] }
+};
+
 const HAZIR = {
   rozet:'assets/check_badge.png',     // uçağın yanında
   tik:'assets/check_sign.png'         // tahtadaki bavulun yanında
@@ -525,7 +546,7 @@ function beklenenGorseller(){
   const liste = ['assets/machine.png','assets/home_page.png',
                  TAHTA.gorsel, TEZGAH.gorsel, PLAKA.gorsel, MANZARA, UCAK_YEDEK,
                  BITIS.basarili.gorsel, BITIS.sureDoldu.gorsel, ISIM.gorsel, RAKAM.gorsel, SIMGE.gorsel,
-                 MOLA.buton, MOLA.kart, HAZIR.rozet, HAZIR.tik];
+                 MOLA.buton, MOLA.kart, HAZIR.rozet, HAZIR.tik, PANO.gorsel];
   for(const p of Object.values(HUD)) liste.push(p.gorsel);
   for(const h of Object.values(HAVAYOLLARI)) liste.push(h.dosya);
   for(const s of SEHIR_LISTE){
@@ -1091,10 +1112,18 @@ function isaretKoy(el, var_, sinif, gorsel){
    yeni yerlerine KAYARAK gidiyor (önce/sonra konumları ölçülüp aradaki fark
    geri sarılıyor): anında yer değiştirse çocuk uçağın nereye gittiğini
    göremezdi. Kalkmakta olan uçağa dokunulmuyor, yerinde kalkıyor. */
-function ucaklariSirala(){
-  const serit = $('#ucakSerit');
-  const istenen = ucaklar.slice().sort((a, b) =>
+/* Uçakların tezgahtaki sırası: hazır olanlar önde (hazır oldukları
+   sırayla), kalanlar turun başındaki sırasıyla. Pano da aynı sırayı
+   gösteriyor. */
+function ucakSirasi(){
+  return ucaklar.slice().sort((a, b) =>
     (a.hazirSira ? a.hazirSira : 1e9 + a.sira) - (b.hazirSira ? b.hazirSira : 1e9 + b.sira));
+}
+
+function ucaklariSirala(){
+  panoGuncelle();
+  const serit = $('#ucakSerit');
+  const istenen = ucakSirasi();
   const simdiki = [...serit.children].filter(e => !e.classList.contains('kalkiyor'));
   if(istenen.every((u, i) => simdiki[i] === u.el)) return;
 
@@ -1125,6 +1154,54 @@ function ucaklariKur(){
     serit.appendChild(u.el);
   }
   alan.scrollLeft = 0;
+  panoGuncelle();
+}
+
+/* ---------- KALKIŞ PANOSU ----------
+   Tezgahtaki sırayla bütün uçuşlar: uçuş kodu, şehir ve durum. Bavulu hazır
+   olan uçuş "HAZIR", diğerleri "BEKLİYOR". Uçak kalkınca listeden düşüyor,
+   alttakiler yukarı çıkıyor, en alttaki satırlar boşalıyor. */
+function panoKur(){
+  if(!gorselVar(PANO.gorsel)) return;
+  const pano = $('#pano');
+  pano.style.setProperty('--pano-oran', (PANO.boy / PANO.en).toFixed(5));
+  pano.querySelector('.pano-gorsel').src = gorselYolu(PANO.gorsel);
+  const S = PANO.satir;
+  pano.querySelectorAll('.pano-satir').forEach(el => el.remove());
+  S.y.forEach(() => {
+    const el = document.createElement('div');
+    el.className = 'pano-satir';
+    pano.appendChild(el);
+  });
+  pano.querySelectorAll('.pano-satir').forEach((el, i) => {
+    el.style.left   = (S.x    / PANO.en  * 100) + '%';
+    el.style.width  = (S.en   / PANO.en  * 100) + '%';
+    el.style.top    = (S.y[i] / PANO.boy * 100) + '%';
+    el.style.height = (S.boy  / PANO.boy * 100) + '%';
+  });
+  pano.classList.remove('gizli');
+}
+
+function panoGuncelle(){
+  const satirlar = document.querySelectorAll('#pano .pano-satir');
+  const sira = ucakSirasi();
+  satirlar.forEach((el, i) => {
+    const u = sira[i];
+    el.classList.toggle('hazir', !!(u && u.hazirSira));
+    if(!u){ el.innerHTML = ''; return; }
+    const yeni = u.kod + '|' + u.sehir + '|' + (u.hazirSira ? 1 : 0);
+    if(el.dataset.icerik === yeni) return;
+    el.dataset.icerik = yeni;
+    el.innerHTML = '';
+    const parca = (sinif, yazi) => {
+      const p = document.createElement('span');
+      p.className = sinif; p.textContent = yazi;
+      el.appendChild(p);
+    };
+    parca('pano-kod', u.kod);
+    parca('pano-sehir', SEHIRLER[u.sehir].ad.toLocaleUpperCase('tr'));
+    parca('pano-durum', u.hazirSira ? 'HAZIR' : 'BEKLİYOR');
+  });
 }
 
 function teslimEt(t, ucakDom){
@@ -1555,6 +1632,7 @@ function hudGorselleri(){
 function tahtaGorselleri(){
   hudGorselleri();
   molaEkraniniKur();
+  panoKur();
   if(gorselVar(TAHTA.gorsel)){
     document.documentElement.style.setProperty('--tahta-gorsel',
       'url(' + gorselYolu(TAHTA.gorsel) + ')');
