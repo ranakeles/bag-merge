@@ -681,7 +681,7 @@ body:not(.sanat-plaka) .ucak-plaka{
   height:min(100%, calc(100vw * 1672 / 941));
   pointer-events:none;
 }
-.bas-logo{ position:absolute; top:2.2%; right:3.5%; width:36%; height:auto;
+.bas-logo{ position:absolute; top:2.2%; left:3.5%; width:36%; height:auto;
   filter:drop-shadow(0 .15vh .4vh rgba(0,0,0,.55)); }
 
 /* ---------- BİTİŞ EKRANI ----------
