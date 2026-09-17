@@ -72,6 +72,82 @@ const PLAKA = {
 
 const MANZARA = 'assets/bg_istanbul.png';
 
+/* ---- SESLER (assets/sounds/) ----
+   Kaynaklar assets/sounds/SOURCES.txt'te; hepsi CC0 ya da kodla üretilmiş.
+   Kullanıcı dinleyip seçti. Hepsi düz WAV: Siber Koşu'da paketteki bir OGG
+   Chrome'da hiç açılmamıştı.
+
+   `ses` = o sesin kendi seviyesi. Dosyaların yüksekliği çok farklıydı
+   (en güçlü 50 ms'lik bölümün RMS'i 0.09 ile 0.60 arası); değerler bunu
+   eşitleyecek şekilde ölçülerek verildi. Sık çalanlar (düşme, buton, son
+   saniyeler) bilerek daha kısık. Kioskta dinleyip BURADAN ayarla.
+
+   Web Audio kullanılıyor: aynı ses üst üste çalabiliyor ve gecikmesiz
+   başlıyor. Tarayıcı ilk dokunuşa kadar ses çalmaya izin vermiyor; çocuk
+   zaten BAŞLA'ya basarak başladığı için ilk dokunuşta bağlam uyandırılıyor.
+   Sessize alma: M tuşu (görevli için; isim yazarken harf olarak kalıyor). */
+const SESLER = {
+  tik:      { src:'assets/sounds/tik.wav',      ses:1.1  },  // buton, klavye
+  dus:      { src:'assets/sounds/dus.wav',      ses:1.5  },  // makineden düşüş
+  birlesme: { src:'assets/sounds/birlesme.wav', ses:0.9  },  // aşama yükseldikçe inceliyor
+  hazir:    { src:'assets/sounds/hazir.wav',    ses:0.6  },  // bavul hazır, uçak başa geçti
+  dogru:    { src:'assets/sounds/dogru.wav',    ses:0.75 },  // doğru teslim
+  kalkis:   { src:'assets/sounds/kalkis.wav',   ses:0.4  },  // ardından uçak kalkıyor
+  yanlis:   { src:'assets/sounds/yanlis.wav',   ses:1.2  },  // yanlış uçak
+  sayac:    { src:'assets/sounds/sayac.wav',    ses:1.15 },  // son saniyeler, her saniye
+  bitis:    { src:'assets/sounds/bitis.wav',    ses:1.05 }   // tur bitti
+};
+const ANA_SES = 0.8;          // hepsinin ortak seviyesi
+const SAYAC_SANIYE = 10;      // son kaç saniyede tık tak çalıyor
+
+const SesBaglam = window.AudioContext || window.webkitAudioContext;
+const sesBaglam = SesBaglam ? new SesBaglam() : null;
+const SES_TAMPON = {};
+let sesAcik = true;
+
+function sesleriYukle(){
+  if(!sesBaglam) return;
+  for(const [ad, s] of Object.entries(SESLER)){
+    /* Dosya yoksa ya da açılamazsa o ses susar, oyun bozulmaz. (Görsel
+       taraması <img> ile yapıldığı için sesleri "var" diye işaretleyemiyor;
+       burada doğrudan deneniyor.) */
+    fetch(gorselYolu(s.src)).then(c => c.arrayBuffer())
+      .then(b => new Promise((ok, no) => sesBaglam.decodeAudioData(b, ok, no)))
+      .then(t => { SES_TAMPON[ad] = t; })
+      .catch(() => {});
+  }
+}
+
+/* Bir sesi çalar. hiz: çalma hızı (1'den büyükse daha ince ve kısa). */
+function sesCal(ad, gecikme = 0, hiz = 1){
+  const t = SES_TAMPON[ad];
+  if(!t || !sesAcik || !sesBaglam) return 0;
+  const kaynak = sesBaglam.createBufferSource();
+  kaynak.buffer = t;
+  kaynak.playbackRate.value = hiz;
+  const kazanc = sesBaglam.createGain();
+  kazanc.gain.value = SESLER[ad].ses * ANA_SES;
+  kaynak.connect(kazanc).connect(sesBaglam.destination);
+  kaynak.start(sesBaglam.currentTime + gecikme);
+  return t.duration / hiz;
+}
+
+function sesiKur(){
+  if(!sesBaglam) return;
+  const uyandir = () => { if(sesBaglam.state === 'suspended') sesBaglam.resume(); };
+  window.addEventListener('pointerdown', uyandir, true);
+  window.addEventListener('keydown', uyandir, true);
+  /* Butona dokununca tık. Mola ve bitiş gibi ekran butonları da, isim
+     klavyesinin tuşları da <button>. */
+  document.addEventListener('pointerdown', e => {
+    if(e.target.closest && e.target.closest('button')) sesCal('tik');
+  }, true);
+  window.addEventListener('keydown', e => {
+    if((e.key === 'm' || e.key === 'M') && durum !== 'isim') sesAcik = !sesAcik;
+  });
+  sesleriYukle();
+}
+
 /* ---- MOLA ----
    Buton ve kart görselleri. Kartın buton yerleri görselden ölçüldü ve
    style.css'te duruyor (.mola-devam / .mola-ana); görsel değişirse orası
@@ -756,6 +832,7 @@ function hediyelikDusur(adet){
      tur bitirilemez hâle gelirdi. */
   const kac = Math.min(adet, hedef.length, stok.length);
   for(let i = 0; i < kac; i++) parcaKoy(hedef[i].s, hedef[i].k, stok.pop(), 1);
+  sesCal('dus');
   makineKipirdat();
   makineEl.classList.toggle('bos', stok.length === 0);
   return true;
@@ -913,6 +990,8 @@ function birlestir(s1,k1,s2,k2){
   parcaSil(s2,k2);
   const p = parcaKoy(s2,k2,sehir,yeni);
   p.el.classList.add('birlesti');
+  /* Her aşama bir öncekinden biraz daha ince: bavul olunca en tiz. */
+  sesCal('birlesme', 0, 1 + (yeni - 2) * 0.25);
   puanEkle(PUAN_BIRLESTIR * yeni, hucreEl[s2][k2]);
   hazirlariGuncelle();
 }
@@ -1114,7 +1193,11 @@ function hazirlariGuncelle(){
   }
 
   ucaklariSirala();
-  if(yeniHazir) $('#ucaklar').scrollTo({ left:0, behavior:'smooth' });
+  if(yeniHazir){
+    $('#ucaklar').scrollTo({ left:0, behavior:'smooth' });
+    /* Birleşme sesiyle üst üste binmesin diye biraz sonra. */
+    sesCal('hazir', 0.12);
+  }
 }
 
 /* Bir elemana hazır işaretini takar ya da çıkarır. Görsel yoksa kod
@@ -1247,6 +1330,7 @@ function teslimEt(t, ucakDom){
        olmayan bir parçayı uçağa sürüklemek sayılmıyor: o hata değil,
        çocuğun oyunu keşfetmesi. */
     hatali++;
+    sesCal('yanlis');
     uyari(ucakDom, 'Bu uçak ' + SEHIRLER[u.sehir].ad + '\'e gidiyor');
     puanDus(PUAN_HATALI, $('#hudPuan'));
     return;
@@ -1254,6 +1338,9 @@ function teslimEt(t, ucakDom){
 
   parcaSil(t.s, t.k);
   tamamlanan++;
+  /* Önce onay, onay bitmeden uçak kalkış sesiyle havalanıyor. */
+  const onay = sesCal('dogru');
+  sesCal('kalkis', onay * 0.6);
   puanEkle(PUAN_SIPARIS, ucakDom);
   hudGuncelle();
 
@@ -1496,6 +1583,7 @@ function yaziyiSigdir(el){
 }
 
 function oyunuBitir(){
+  if(durum !== 'bitti') sesCal('bitis');
   if(durum === 'bitti') return;          // hem süre bitişi hem son teslimat çağırabilir
   durum = 'bitti';
   /* Artan süre puana dönüşüyor: erken bitirmenin ödülü bu. Süre dolduysa
@@ -1602,6 +1690,7 @@ function dongu(simdi){
     const kalan = Math.max(0, TUR_SURESI - Math.floor((simdi - baslangic)/1000));
     if(kalan !== kalanSn){
       kalanSn = kalan;
+      if(kalanSn > 0 && kalanSn <= SAYAC_SANIYE) sesCal('sayac');
       hudGuncelle();
       if(kalanSn === 0) oyunuBitir();
     }
@@ -1701,6 +1790,7 @@ function tahtaGorselleri(){
 }
 
 function kur(){
+  sesiKur();
   olculeriGuncelle();
   tahtaGorselleri();
   window.addEventListener('resize', olculeriGuncelle);
