@@ -296,11 +296,14 @@ img{ -webkit-user-drag:none; user-drag:none; }
 
    Kutunun ALT PAYI (padding-bottom) plakanın taşan kısmı kadar: yatay
    kaydırma açıkken tarayıcı dikey taşmayı kırpıyor, plaka o pay olmadan
-   alttan kesiliyordu. Üstteki pay da seçili kartın büyüme payı. */
+   alttan kesiliyordu. Üstteki pay da seçili kartın büyüme payı.
+  Alt pay tezgahın zeminin altında kalan kısmından da kısa olamaz: kısa
+  kalınca tezgah kutudan taşıyor, Safari de kutuyu dikeyde kaydırıyordu. */
 #ucaklar{
   position:absolute; left:0; right:0;
   bottom:calc(var(--tezgah-zemin, 34%) - var(--hucre)*0.55);
-  padding:calc(var(--hucre)*0.16) 0 calc(var(--hucre)*0.55);
+  padding:calc(var(--hucre)*0.16) 0
+          max(calc(var(--hucre)*0.55), calc(var(--sahne-en) * var(--tezgah-zemin-alt, 0)));
   display:flex; align-items:flex-end;
   overflow-x:auto; overflow-y:hidden;
   scroll-snap-type:x proximity;
@@ -331,7 +334,9 @@ img{ -webkit-user-drag:none; user-drag:none; }
   height:calc(var(--sahne-en) * var(--tezgah-oran));
   border-style:solid; border-width:0;
   border-image-source:url(assets/tezgah.png);
-  border-image-slice:0 var(--tezgah-uc-px) fill;
+  /* Alttan --tezgah-kes-px kadarı (şeffaf şerit) kesiliyor; alt kenarın
+     genişliği 0 olduğu için o parça hiç çizilmiyor. */
+  border-image-slice:0 var(--tezgah-uc-px) var(--tezgah-kes-px, 0) fill;
   border-image-width:0 calc(var(--sahne-en) * var(--tezgah-uc));
   border-image-repeat:stretch;
   pointer-events:none;
