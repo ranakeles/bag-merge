@@ -921,16 +921,45 @@ function birlestir(s1,k1,s2,k2){
 /* Şehre uçan havayollarından biri. Görseli OLAN şirketler tercih ediliyor:
    uçaklar parça parça üretilirken sahnede logosuz beyaz uçaklar değil,
    hazır olan livery'ler görünsün. Hiçbirinin görseli yoksa sıradan seçim. */
-function havayoluSec(sehir){
+/* Bir şehre uçabilen havayolları; uçak görseli olanlar öncelikli. */
+function havayoluHavuzu(sehir){
   const hepsi = SEHIRLER[sehir].havayollari;
   const hazir = hepsi.filter(h => gorselVar(HAVAYOLLARI[h].dosya));
-  const havuz = hazir.length ? hazir : hepsi;
+  return hazir.length ? hazir : hepsi;
+}
+function havayoluSec(sehir){
+  const havuz = havayoluHavuzu(sehir);
   return havuz[rastgele(havuz.length)];
 }
 
-function ucakKarti(sehir){
+/* TURDA HER HAVAYOLUNDAN EN AZ BİR UÇAK.
+   Her havayolu için ona izin veren AYRI bir sipariş seçiliyor (karışık
+   sırayla denenerek, tıkanırsa geri dönülerek); kalan siparişlere izinli
+   havayollarından rastgele biri veriliyor. Şehir kısıtları korunuyor:
+   New York ve Tokyo'ya yalnızca THY uçtuğu için onlara başka havayolu
+   düşmüyor. Eşleştirme mümkün değilse null dönüyor ve çağıran taraf yeni
+   şehirler çekiyor. Bugünkü tabloyla bu olmuyor: altı farklı şehrin en az
+   üçü SunExpress'e, en az dördü AJet'e açık. */
+function havayollariniDagit(sehirler){
+  const gerekli = karistir(Object.keys(HAVAYOLLARI));
+  const atama = new Array(sehirler.length).fill(null);
+  const yerlestir = i => {
+    if(i === gerekli.length) return true;
+    for(const j of karistir(sehirler.map((_, k) => k))){
+      if(atama[j] || !havayoluHavuzu(sehirler[j]).includes(gerekli[i])) continue;
+      atama[j] = gerekli[i];
+      if(yerlestir(i + 1)) return true;
+      atama[j] = null;
+    }
+    return false;
+  };
+  if(!yerlestir(0)) return null;
+  return atama.map((h, i) => h || havayoluSec(sehirler[i]));
+}
+
+function ucakKarti(sehir, hvSecili){
   const S = SEHIRLER[sehir];
-  const hvId = havayoluSec(sehir);
+  const hvId = hvSecili || havayoluSec(sehir);
   const hv = HAVAYOLLARI[hvId];
   const el = document.createElement('div');
   el.className = 'ucak geliyor';
@@ -1147,12 +1176,17 @@ function ucaklariKur(){
   serit.innerHTML = '';
   ucaklar = [];
   hazirSayac = 0;
-  for(const sehir of siparisSehirleri()){
-    const u = ucakKarti(sehir);
+  let sehirler, havayollari = null;
+  for(let deneme = 0; deneme < 20 && !havayollari; deneme++){
+    sehirler = siparisSehirleri();
+    havayollari = havayollariniDagit(sehirler);
+  }
+  sehirler.forEach((sehir, i) => {
+    const u = ucakKarti(sehir, havayollari && havayollari[i]);
     u.sira = ucaklar.length;
     ucaklar.push(u);
     serit.appendChild(u.el);
-  }
+  });
   alan.scrollLeft = 0;
   panoGuncelle();
 }
