@@ -1677,6 +1677,21 @@ function yaziyiSigdir(el){
   if(tasma > 1) el.style.fontSize = (boy / tasma) + 'px';
 }
 
+/* sample-vanilla-js/js/app.js sayfa açılır açılmaz platforma bağlanıp
+   window.KioskSample'ı kuruyor. Kiosk bağlı değilse (masaüstünde test gibi)
+   sessizce hiçbir şey yapmıyor — oyunun kendisi buna bağımlı değil. */
+function platformaYazdir(ad, puan, sira){
+  if(!window.KioskSample) return;
+  const barkodMetni = 'TEKNOFESTE HOSGELDIN ' + ad +
+    ' TURK HAVA YOLLARI TEKNOLOJI EKIBI OLARAK BU KODU OKUMANDAN DOLAYI FARKINDALIGIN VE MERAKIN ICIN TEBRIK EDERIZ.';
+  window.KioskSample.bpp.printFields({
+    '2D': ad,
+    '3B': puan + 'P',
+    '3C': '-' + String(sira).padStart(2, '0') + '-',
+    '4B': barkodMetni,
+  });
+}
+
 function oyunuBitir(){
   if(durum === 'bitti') return;          // hem süre bitişi hem son teslimat çağırabilir
   muzikDurdur(true);
@@ -1702,7 +1717,11 @@ function oyunuBitir(){
   $('#bitSureYedek').textContent = sureYazi(kalanSn);
   $('#bitPuanYedek').textContent = puan;
 
-  skorTablosunuCiz(skorEkle(yazilanAd || 'OYUNCU', puan), yazilanAd, puan);
+  const oyuncuAdi = yazilanAd || 'OYUNCU';
+  const skorListesi = skorEkle(oyuncuAdi, puan);
+  skorTablosunuCiz(skorListesi, yazilanAd, puan);
+  const sira = skorListesi.findIndex(k => k.ad === oyuncuAdi && k.puan === puan) + 1;
+  platformaYazdir(oyuncuAdi, puan, sira || skorListesi.length);
   $('#bitScreen').classList.remove('gizli');
   /* Ölçüm ancak ekran görünürken doğru: gizliyken kutuların boyu sıfır. */
   Object.keys(BITIS.basarili.alanlar).forEach(id => yaziyiSigdir($('#' + id)));
