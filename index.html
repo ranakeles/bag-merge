@@ -191,6 +191,32 @@
   <button id="bitBtn" class="katman-hit" aria-label="Tekrar oyna"></button>
 </div>
 
+<!-- ================= PLATFORM PANELİ (geliştirici) =================
+     Sağ altta duran küçük düğme; bağlantı/yazıcı durumunu gösteren ve
+     elle bağlan/kes/yeniden başlat + elle yazdır imkânı veren bindirme.
+     Oyuncunun göreceği ekranların dışında, en üstte duruyor. -->
+<button id="pdBtn" type="button" aria-label="Platform durumu">⚙</button>
+<div id="pdPanel" class="gizli">
+  <div class="pd-ust">
+    <b>Platform Durumu</b>
+    <button id="pdKapatBtn" type="button" aria-label="Kapat">×</button>
+  </div>
+  <div class="pd-satir">Bağlantı: <span id="pdBaglanti">—</span></div>
+  <div class="pd-satir">Uygulama: <span id="pdUygulama">—</span></div>
+  <div class="pd-satir">Yazıcı: <span id="pdYazici">—</span></div>
+  <div class="pd-butonlar">
+    <button id="pdBaglanBtn" type="button">Bağlan</button>
+    <button id="pdKesBtn" type="button">Bağlantıyı Kes</button>
+    <button id="pdInitBtn" type="button">Init'i Yeniden Başlat</button>
+  </div>
+  <div class="pd-form">
+    <input id="pdAdGir" type="text" placeholder="Ad">
+    <input id="pdPuanGir" type="number" placeholder="Puan">
+    <input id="pdSiraGir" type="number" placeholder="Sıra">
+    <button id="pdYazdirBtn" type="button">Yazdır</button>
+  </div>
+</div>
+
 <!-- Kiosk platformu: sample-vanilla-js'teki demo entegrasyonun aynısı —
      bu üç script sayfa açılır açılmaz platforma bağlanıp init'i tamamlıyor
      (window.KioskSample), script.js tur bitince yazdırma çağrısını yapıyor. -->
