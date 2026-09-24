@@ -893,8 +893,15 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
   gap:2%; padding:4% 6%; }
 .skor-satir{
   display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:4%;
-  font-size:min(2.4vh, 4.2vw); line-height:1;
-  padding:1.5% 3%; border-radius:999px;
+  font-size:min(2.0vh, 3.5vw); line-height:1;
+  padding:1.2% 3%; border-radius:999px;
+}
+/* Araya giren noktalı satır: çocuk ilk sıralarda değilse, üstteki sıralarla
+   kendi sırası arasında liste devam ediyor demek. */
+.skor-nokta{
+  text-align:center; letter-spacing:.2em; line-height:1;
+  font-size:min(1.5vh, 2.6vw); color:#4A2FA8; opacity:.45;
+  padding:0.2% 0;
 }
 /* Bu turun satırı ayırt edilsin — çocuk kendini tabloda bulsun */
 .skor-satir.benim{ background:rgba(126,74,214,.18); }
