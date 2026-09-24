@@ -1547,11 +1547,21 @@ function skorEkle(ad, p){
   try{ localStorage.setItem(SKOR_ANAHTAR, JSON.stringify(kirpik)); }catch(e){}
   return kirpik;
 }
+/* Panele SKOR_SATIR satır sığıyor. Çocuk daha geride kaldıysa ilk satırlar
+   kısaltılıp SON SATIRA kendi kaydı konuyor: yoksa altıncı olan çocuk
+   tabloda kendini hiç göremiyordu (test edenler böyle söyledi). Sıra
+   numarası gerçek sırası — 1,2,3,4,9 gibi atlayarak gidiyor. */
 function skorTablosunuCiz(liste, vurgulaAd, vurgulaPuan){
   const kap = $('#bitTablo');
   kap.innerHTML = '';
   let vuruldu = false;
-  liste.slice(0, SKOR_SATIR).forEach((k, i) => {
+  const benim = liste.findIndex(k => k.ad === vurgulaAd && k.puan === vurgulaPuan);
+  let gosterilen = liste.slice(0, SKOR_SATIR).map((k, i) => ({ k, sira:i + 1 }));
+  if(benim >= SKOR_SATIR){
+    gosterilen = liste.slice(0, SKOR_SATIR - 1).map((k, i) => ({ k, sira:i + 1 }));
+    gosterilen.push({ k:liste[benim], sira:benim + 1 });
+  }
+  gosterilen.forEach(({ k, sira }) => {
     const satir = document.createElement('div');
     satir.className = 'skor-satir';
     /* Bu turun kaydı bir kez işaretleniyor: aynı ad ve puan tabloda birden
@@ -1559,7 +1569,7 @@ function skorTablosunuCiz(liste, vurgulaAd, vurgulaPuan){
     if(!vuruldu && k.ad === vurgulaAd && k.puan === vurgulaPuan){
       satir.classList.add('benim'); vuruldu = true;
     }
-    satir.innerHTML = '<span class="skor-sira oyun-yazi">' + (i+1) + '</span>' +
+    satir.innerHTML = '<span class="skor-sira oyun-yazi">' + sira + '</span>' +
                       '<span class="skor-ad oyun-yazi"></span>' +
                       '<span class="skor-puan"></span>';
     satir.querySelector('.skor-ad').textContent = k.ad;
