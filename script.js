@@ -1547,19 +1547,37 @@ function skorEkle(ad, p){
   try{ localStorage.setItem(SKOR_ANAHTAR, JSON.stringify(kirpik)); }catch(e){}
   return kirpik;
 }
+/* Tabloda ilk SKOR_SATIR sıra duruyor. Çocuk daha geride kaldıysa altına
+   NOKTALI bir ara satır, onun altına da çocuğun kendi kaydı gerçek sırasıyla
+   ekleniyor: yoksa altıncı olan çocuk tabloda kendini hiç göremiyordu (test
+   edenler böyle söyledi). Noktalı satır listenin devam ettiğini gösteriyor;
+   o olmadan beşin hemen altındaki sekiz yazım hatası gibi duruyordu. */
 function skorTablosunuCiz(liste, vurgulaAd, vurgulaPuan){
   const kap = $('#bitTablo');
   kap.innerHTML = '';
   let vuruldu = false;
-  liste.slice(0, SKOR_SATIR).forEach((k, i) => {
+  const benim = liste.findIndex(k => k.ad === vurgulaAd && k.puan === vurgulaPuan);
+  let gosterilen = liste.slice(0, SKOR_SATIR).map((k, i) => ({ k, sira:i + 1 }));
+  if(benim >= SKOR_SATIR){
+    gosterilen.push({ nokta:true });
+    gosterilen.push({ k:liste[benim], sira:benim + 1 });
+  }
+  gosterilen.forEach(({ k, sira, nokta }) => {
     const satir = document.createElement('div');
     satir.className = 'skor-satir';
+    if(nokta){
+      satir.className = 'skor-nokta';
+      satir.textContent = '• • •';
+      satir.setAttribute('aria-hidden', 'true');
+      kap.appendChild(satir);
+      return;
+    }
     /* Bu turun kaydı bir kez işaretleniyor: aynı ad ve puan tabloda birden
        fazla olabilir, hepsi vurgulanırsa hangisinin bu tur olduğu kaybolur. */
     if(!vuruldu && k.ad === vurgulaAd && k.puan === vurgulaPuan){
       satir.classList.add('benim'); vuruldu = true;
     }
-    satir.innerHTML = '<span class="skor-sira oyun-yazi">' + (i+1) + '</span>' +
+    satir.innerHTML = '<span class="skor-sira oyun-yazi">' + sira + '</span>' +
                       '<span class="skor-ad oyun-yazi"></span>' +
                       '<span class="skor-puan"></span>';
     satir.querySelector('.skor-ad').textContent = k.ad;
