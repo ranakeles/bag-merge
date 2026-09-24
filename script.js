@@ -1695,6 +1695,52 @@ function yaziyiSigdir(el){
   if(tasma > 1) el.style.fontSize = (boy / tasma) + 'px';
 }
 
+/* sample-vanilla-js/js/app.js sayfa açılır açılmaz platforma bağlanıp
+   window.KioskSample'ı kuruyor. Kiosk bağlı değilse (masaüstünde test gibi)
+   sessizce hiçbir şey yapmıyor — oyunun kendisi buna bağımlı değil. */
+function platformaYazdir(ad, puan, sira){
+  if(!window.KioskSample) return;
+  const barkodMetni = 'TEKNOFESTE HOSGELDIN ' + ad +
+    ' TURK HAVA YOLLARI TEKNOLOJI EKIBI OLARAK BU KODU OKUMANDAN DOLAYI FARKINDALIGIN VE MERAKIN ICIN TEBRIK EDERIZ.';
+  window.KioskSample.bpp.printFields({
+    '2D': ad,
+    '3B': puan + 'P',
+    '3C': '-' + String(sira).padStart(2, '0') + '-',
+    '4B': barkodMetni,
+  });
+}
+
+/* ---------- PLATFORM PANELİ (geliştirici) ----------
+   Sağ alttaki dişli düğme durumu gösterir, elle bağlan/kes/init ve elle
+   yazdırma sağlar. KioskSample henüz kurulmamışsa (app.js DOMContentLoaded'da
+   çalışıyor) düğmeler yine de bağlanıyor, sadece o an window.KioskSample
+   yoksa tıklama sessizce hiçbir şey yapmıyor. */
+function pdDurumunuGuncelle(){
+  const c = window.KioskSample && window.KioskSample.client;
+  $('#pdBaglanti').textContent = c ? c.getState() : 'bağlı değil';
+  $('#pdUygulama').textContent = c && c.isInitialized() ? 'ACTIVE' : 'hazır değil';
+  const son = window.KioskSample && window.KioskSample.bpp && window.KioskSample.bpp.getLastResult();
+  $('#pdYazici').textContent = son ? (son.statusLabel || son.statusCode || son.eventType) : '—';
+}
+function pdPaneliKur(){
+  $('#pdBtn').addEventListener('click', () => {
+    $('#pdPanel').classList.remove('gizli');
+    pdDurumunuGuncelle();
+  });
+  $('#pdKapatBtn').addEventListener('click', () => $('#pdPanel').classList.add('gizli'));
+  $('#pdBaglanBtn').addEventListener('click', () => window.KioskSample && window.KioskSample.connect());
+  $('#pdKesBtn').addEventListener('click', () => window.KioskSample && window.KioskSample.disconnect());
+  $('#pdInitBtn').addEventListener('click', () => window.KioskSample && window.KioskSample.restartInit());
+  $('#pdYazdirBtn').addEventListener('click', () => {
+    const ad = $('#pdAdGir').value.trim() || yazilanAd || 'OYUNCU';
+    const p = Number($('#pdPuanGir').value) || puan;
+    const sira = Number($('#pdSiraGir').value) || 1;
+    platformaYazdir(ad, p, sira);
+  });
+  /* Panel açıkken saniyede bir tazeleniyor; kapalıyken gereksiz çalışmasın. */
+  setInterval(() => { if(!$('#pdPanel').classList.contains('gizli')) pdDurumunuGuncelle(); }, 1000);
+}
+
 function oyunuBitir(){
   if(durum === 'bitti') return;          // hem süre bitişi hem son teslimat çağırabilir
   muzikDurdur(true);
@@ -1720,7 +1766,11 @@ function oyunuBitir(){
   $('#bitSureYedek').textContent = sureYazi(kalanSn);
   $('#bitPuanYedek').textContent = puan;
 
-  skorTablosunuCiz(skorEkle(yazilanAd || 'OYUNCU', puan), yazilanAd, puan);
+  const oyuncuAdi = yazilanAd || 'OYUNCU';
+  const skorListesi = skorEkle(oyuncuAdi, puan);
+  skorTablosunuCiz(skorListesi, yazilanAd, puan);
+  const sira = skorListesi.findIndex(k => k.ad === oyuncuAdi && k.puan === puan) + 1;
+  platformaYazdir(oyuncuAdi, puan, sira || skorListesi.length);
   $('#bitScreen').classList.remove('gizli');
   /* Ölçüm ancak ekran görünürken doğru: gizliyken kutuların boyu sıfır. */
   Object.keys(BITIS.basarili.alanlar).forEach(id => yaziyiSigdir($('#' + id)));
@@ -1931,6 +1981,7 @@ function kur(){
   window.addEventListener('keydown', isimTusu);
   $('#bitBtn').addEventListener('click', anaSayfayaDon);
   $('#molaBtn').addEventListener('click', molaVer);
+  pdPaneliKur();
 
   izgarayiKur();       // arka planda duran boş matris (başlangıç ekranının altında)
   requestAnimationFrame(dongu);

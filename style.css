@@ -93,6 +93,42 @@ img{ -webkit-user-drag:none; user-drag:none; }
 :focus, :focus-visible{ outline:none; }
 .gizli{ display:none !important; }
 
+/* ---------- PLATFORM PANELİ (geliştirici) ----------
+   Oyunun tasarımıyla ilgisi yok, o yüzden sahnenin 9:16 ölçeğine değil
+   gerçek pencereye bağlı: sağ alt köşede sabit duruyor, her şeyin üstünde. */
+#pdBtn{
+  position:fixed; right:10px; bottom:10px; z-index:9999;
+  width:34px; height:34px; border-radius:50%; border:none;
+  background:rgba(0,0,0,.35); color:#fff; font-size:16px; line-height:1;
+  cursor:pointer;
+}
+#pdPanel{
+  position:fixed; right:10px; bottom:52px; z-index:9999;
+  width:240px; max-width:calc(100vw - 20px);
+  background:rgba(20,20,30,.92); color:#e5e7eb; border-radius:10px;
+  padding:10px; font:12px/1.4 system-ui, sans-serif;
+}
+#pdPanel .pd-ust{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+#pdPanel .pd-ust b{ font-size:13px; }
+#pdKapatBtn{
+  background:none; border:none; color:#e5e7eb; font-size:16px; line-height:1; cursor:pointer;
+}
+#pdPanel .pd-satir{ margin:2px 0; color:#cbd5e1; }
+#pdPanel .pd-satir span{ color:#fff; font-weight:600; }
+#pdPanel .pd-butonlar{ display:flex; flex-wrap:wrap; gap:4px; margin:8px 0; }
+#pdPanel .pd-butonlar button{
+  flex:1 1 auto; font-size:11px; padding:5px 6px; border:none; border-radius:5px;
+  background:#374151; color:#fff; cursor:pointer;
+}
+#pdPanel .pd-form{ display:flex; flex-wrap:wrap; gap:4px; border-top:1px solid rgba(255,255,255,.15); padding-top:8px; }
+#pdPanel .pd-form input{
+  flex:1 1 60px; min-width:0; font-size:11px; padding:5px 6px; border:none; border-radius:5px;
+}
+#pdPanel .pd-form button{
+  flex:1 1 100%; font-size:11px; padding:6px; border:none; border-radius:5px;
+  background:#7c3aed; color:#fff; cursor:pointer;
+}
+
 /* ================= SAHNE =================
    9:16 KİLİTLİ. Pencere ne olursa olsun oyun hep aynı oranda. */
 #sahne{

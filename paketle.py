@@ -116,7 +116,16 @@ def main():
     css_ham  = oku("style.css")
     js       = oku("script.js")    # JS'teki yollar tabloyla çözülüyor, değiştirilmiyor
 
-    tablo = varliklari_topla(html_ham + css_ham + js)
+    # index.html'deki DİĞER script bağlantıları (kiosk platformu:
+    # sample-vanilla-js/js/*.js). Bunlar da gömülmezse pakette dosya
+    # bulunamıyor ve yazıcı entegrasyonu hiç çalışmıyor.
+    ek_scriptler = [y for y in re.findall(r'<script src="([^"]+)"></script>', html_ham)
+                    if y != "script.js"]
+    ek_js = {y: oku(y) for y in ek_scriptler}
+    if ek_scriptler:
+        print("Gömülen script:", ", ".join(ek_scriptler))
+
+    tablo = varliklari_topla(html_ham + css_ham + js + "".join(ek_js.values()))
     print("Gömülen dosya:", len(tablo))
 
     # HTML yorumları pakete girmiyor: içlerinde "assets/..." geçen bir yorum
@@ -139,6 +148,11 @@ def main():
     if link not in html:
         raise SystemExit("HATA: index.html içinde stil bağlantısı bulunamadı.")
     html = html.replace(link, "<style>\n%s\n</style>" % css)
+
+    # Platform scriptleri: sırası korunuyor, script.js'ten önce yükleniyorlar
+    for yol, kaynak in ek_js.items():
+        html = html.replace('<script src="%s"></script>' % yol,
+                            "<script>\n%s\n</script>" % kaynak)
 
     # <script src="script.js"></script> -> gömülü tablo + gömülü script
     etiket = '<script src="script.js"></script>'
