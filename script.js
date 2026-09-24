@@ -1547,11 +1547,11 @@ function skorEkle(ad, p){
   try{ localStorage.setItem(SKOR_ANAHTAR, JSON.stringify(kirpik)); }catch(e){}
   return kirpik;
 }
-/* Panele SKOR_SATIR satır sığıyor. Çocuk daha geride kaldıysa ilk dört sıra
-   yazılıyor, altına NOKTALI bir ara satır, onun altına da çocuğun kendi
-   kaydı gerçek sırasıyla konuyor: yoksa altıncı olan çocuk tabloda kendini
-   hiç göremiyordu (test edenler böyle söyledi). Noktalı satır olmadan
-   dördün hemen altında yedi yazıyor ve araya bir şey girdiği anlaşılmıyordu. */
+/* Tabloda ilk SKOR_SATIR sıra duruyor. Çocuk daha geride kaldıysa altına
+   NOKTALI bir ara satır, onun altına da çocuğun kendi kaydı gerçek sırasıyla
+   ekleniyor: yoksa altıncı olan çocuk tabloda kendini hiç göremiyordu (test
+   edenler böyle söyledi). Noktalı satır listenin devam ettiğini gösteriyor;
+   o olmadan beşin hemen altındaki sekiz yazım hatası gibi duruyordu. */
 function skorTablosunuCiz(liste, vurgulaAd, vurgulaPuan){
   const kap = $('#bitTablo');
   kap.innerHTML = '';
@@ -1559,7 +1559,6 @@ function skorTablosunuCiz(liste, vurgulaAd, vurgulaPuan){
   const benim = liste.findIndex(k => k.ad === vurgulaAd && k.puan === vurgulaPuan);
   let gosterilen = liste.slice(0, SKOR_SATIR).map((k, i) => ({ k, sira:i + 1 }));
   if(benim >= SKOR_SATIR){
-    gosterilen = liste.slice(0, SKOR_SATIR - 1).map((k, i) => ({ k, sira:i + 1 }));
     gosterilen.push({ nokta:true });
     gosterilen.push({ k:liste[benim], sira:benim + 1 });
   }
