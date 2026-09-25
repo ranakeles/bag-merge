@@ -886,6 +886,16 @@ body:not(.sanat-bitis) #bitSahne{ display:none; }
   cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .tus-hit:active{ background:rgba(255,255,255,.35); border-radius:18%; }
 
+/* Sürüm etiketi: sol altta, oyunun önünde ama dokunmayı engellemeden.
+   Küçük ama fotoğrafta okunacak kadar: kioskta hangi kopyanın çalıştığını
+   yerinde görmek için. */
+#surum{
+  position:fixed; left:1vh; bottom:1vh; z-index:80; pointer-events:none;
+  font-family:var(--hud); font-size:1.5vh; line-height:1; letter-spacing:.06em;
+  padding:.5vh .9vh; border-radius:999px;
+  color:rgba(255,255,255,.92); background:rgba(28,18,72,.45);
+}
+
 /* ---------- SKOR TABLOSU ---------- */
 /* Satırlar panelin ÜSTÜNDEN başlıyor. Ortalanınca tek kişi oynadığında o
    tek satır panelin ortasında asılı kalıyor, tablo gibi durmuyordu. */
