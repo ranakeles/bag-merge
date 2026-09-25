@@ -1539,28 +1539,33 @@ function skorlariOku(){
   try{ const r = localStorage.getItem(SKOR_ANAHTAR); if(r) return JSON.parse(r); }catch(e){}
   return [];
 }
+/* Bu turun kaydı NESNE OLARAK geri veriliyor ve sırası kırpmadan önce
+   alınıyor. Eskiden tablo kaydı ad+puan ile arıyordu; aynı adla aynı puanı
+   almış eski bir kayıt listede daha yukarıdaysa çocuğun kendi satırı yerine
+   o bulunuyor, çocuk sekizinci olsa bile tabloda ilk beş görünüyordu.
+   Ad boş kaldığında (kayıt 'OYUNCU' adıyla giriyor) ise hiç bulunamıyordu. */
 function skorEkle(ad, p){
   const liste = skorlariOku();
-  liste.push({ ad, puan:p });
+  const kayit = { ad, puan:p };
+  liste.push(kayit);
   liste.sort((a,b)=> b.puan - a.puan);
+  const sira = liste.indexOf(kayit);          // gerçek sıra, kırpmadan önce
   const kirpik = liste.slice(0, 20);
   try{ localStorage.setItem(SKOR_ANAHTAR, JSON.stringify(kirpik)); }catch(e){}
-  return kirpik;
+  return { liste:kirpik, kayit, sira };
 }
 /* Tabloda ilk SKOR_SATIR sıra duruyor. Çocuk daha geride kaldıysa altına
    NOKTALI bir ara satır, onun altına da çocuğun kendi kaydı gerçek sırasıyla
    ekleniyor: yoksa altıncı olan çocuk tabloda kendini hiç göremiyordu (test
    edenler böyle söyledi). Noktalı satır listenin devam ettiğini gösteriyor;
    o olmadan beşin hemen altındaki sekiz yazım hatası gibi duruyordu. */
-function skorTablosunuCiz(liste, vurgulaAd, vurgulaPuan){
+function skorTablosunuCiz(liste, kayit, benim){
   const kap = $('#bitTablo');
   kap.innerHTML = '';
-  let vuruldu = false;
-  const benim = liste.findIndex(k => k.ad === vurgulaAd && k.puan === vurgulaPuan);
-  let gosterilen = liste.slice(0, SKOR_SATIR).map((k, i) => ({ k, sira:i + 1 }));
+  const gosterilen = liste.slice(0, SKOR_SATIR).map((k, i) => ({ k, sira:i + 1 }));
   if(benim >= SKOR_SATIR){
     gosterilen.push({ nokta:true });
-    gosterilen.push({ k:liste[benim], sira:benim + 1 });
+    gosterilen.push({ k:kayit, sira:benim + 1 });
   }
   gosterilen.forEach(({ k, sira, nokta }) => {
     const satir = document.createElement('div');
@@ -1572,11 +1577,9 @@ function skorTablosunuCiz(liste, vurgulaAd, vurgulaPuan){
       kap.appendChild(satir);
       return;
     }
-    /* Bu turun kaydı bir kez işaretleniyor: aynı ad ve puan tabloda birden
-       fazla olabilir, hepsi vurgulanırsa hangisinin bu tur olduğu kaybolur. */
-    if(!vuruldu && k.ad === vurgulaAd && k.puan === vurgulaPuan){
-      satir.classList.add('benim'); vuruldu = true;
-    }
+    /* Vurgulanan satır BU TURUN kaydı: aynı ad ve puan tabloda birden fazla
+       olabilir, kayıt nesnesiyle karşılaştırılınca karışmıyor. */
+    if(k === kayit) satir.classList.add('benim');
     satir.innerHTML = '<span class="skor-sira oyun-yazi">' + sira + '</span>' +
                       '<span class="skor-ad oyun-yazi"></span>' +
                       '<span class="skor-puan"></span>';
@@ -1767,10 +1770,9 @@ function oyunuBitir(){
   $('#bitPuanYedek').textContent = puan;
 
   const oyuncuAdi = yazilanAd || 'OYUNCU';
-  const skorListesi = skorEkle(oyuncuAdi, puan);
-  skorTablosunuCiz(skorListesi, yazilanAd, puan);
-  const sira = skorListesi.findIndex(k => k.ad === oyuncuAdi && k.puan === puan) + 1;
-  platformaYazdir(oyuncuAdi, puan, sira || skorListesi.length);
+  const { liste:skorListesi, kayit, sira } = skorEkle(oyuncuAdi, puan);
+  skorTablosunuCiz(skorListesi, kayit, sira);
+  platformaYazdir(oyuncuAdi, puan, sira + 1);   // sira 0 tabanlı, biletteki sıra 1 tabanlı
   $('#bitScreen').classList.remove('gizli');
   /* Ölçüm ancak ekran görünürken doğru: gizliyken kutuların boyu sıfır. */
   Object.keys(BITIS.basarili.alanlar).forEach(id => yaziyiSigdir($('#' + id)));
