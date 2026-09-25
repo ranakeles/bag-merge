@@ -1532,6 +1532,11 @@ function isimTusu(e){
 /* ---------- SKOR TABLOSU ---------- */
 /* Oyuncular tarayıcıda saklanıyor. Anahtar sürümlü: tablonun yapısı
    değişirse anahtar artırılır ve eski kayıt görmezden gelinir. */
+/* Ekranın sol altında yazan sürüm. Kioska yeni kopya kurulduğunda buradan
+   doğrulanıyor: fotoğrafta bu yazı yoksa ya da eskiyse, kioskta eski kopya
+   çalışıyor demektir. Her yeni pakette elle güncelleniyor. */
+const SURUM = 's25.09';
+
 const SKOR_ANAHTAR = 'bm_skor1';
 const SKOR_SATIR = 5;          // panele sığan satır sayısı
 
@@ -1963,6 +1968,7 @@ function tahtaGorselleri(){
 }
 
 function kur(){
+  $('#surum').textContent = SURUM;
   sesiKur();
   olculeriGuncelle();
   tahtaGorselleri();
